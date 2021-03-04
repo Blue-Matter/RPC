@@ -49,23 +49,24 @@ fluidPage(
   # === Main Window =========================================================================================================================================================
 
   column(12, # General tab panel
-    verticalTabsetPanel(id="Main",selected=1,
+    verticalTabsetPanel(id="Main",selected=4,
       verticalTabPanel(
                        h5(strong("Home")),
-                       column(12,h5("Home_Intro"),style='height:700px'),
+                       column(12,h5("Reference Point Calculator uses operatin",style="color:darkgrey"),style='height:700px'),
                        id="Home",
                        value=1,
                        box_height='65px'),
 
       verticalTabPanel(id="Fishery",value=2,
-           h5('Specify Fishery'),
+           h5('1. Specify Operating Model'),
            column(12, style='height:700px; padding-left:10px',
                   h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
-                    compatible openMSE operating model or sketching the fishery dynamics using the MERA system"),
-                HTML("<br>"),
+                    compatible openMSE operating model or sketching the fishery dynamics using the MERA system",style='color:darkgrey'),
+                  hr(),
+                  HTML("<br>"),
                 radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
-
                 conditionalPanel("input.Select==1",
+                  h5("Select an example operating model"),
                   column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                     div(style="display: inline-block;vertical-align:top; width: 250px;",selectInput("SelectOMDD", choices=OMs, label=NULL, selected=OMs[1])),
                     div(style="display: inline-block;vertical-align:top; width: 250px;",actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px'))
@@ -73,6 +74,7 @@ fluidPage(
                 ),
 
                 conditionalPanel("input.Select==2",
+                  h5("Load an openMSE compatible operating model object from file"),
                   column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                     div(style="display: inline-block;vertical-align:top; width: 250px;",tipify(fileInput("Load_OM",label=NULL,buttonLabel=h5('Browse',style='color:red; padding:0px;height:14px')),title="tipfy test)"))
                   )
@@ -80,28 +82,7 @@ fluidPage(
 
                 conditionalPanel("input.Select==3",
 
-
-
-           #tabsetPanel(id="OM_input", selected=1,
-
-                 #tabPanel(h5("Select"),
-
-                         # h5("Select an example operating model",style = "color:black"),
-                          #tipify(
-                           # selectInput("SelectOMDD", choices=OMs, label=NULL, selected=OMs[1]),
-                           # title="tipfy test"
-                          #),
-                          #actionButton("SelectOM",label = "Select"),
-
-                          #value=1),
-
-                 #tabPanel( h5("Load"),
-                  #         h5("Load an operating model from file",style = "color:black"),
-                           #tipify(fileInput("Load_OM",label=NULL),title="tipfy test)"),
-                   #        value=2),
-
-                # tabPanel( h5("Sketch"),
-                 #          h5("Construct a fully specified operating model using the MERA system"),
+                  h5("Construct a fully specified operating model using the MERA system"),
 
                              column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                                     fluidRow(
@@ -703,8 +684,8 @@ fluidPage(
 
                                                       )
                                                ),
-                                               column(4),
-                                               column(2,actionButton("BuildOM","Build sketched operating model",style='color:red',icon=icon('cogs')))
+                                               column(3),
+                                               column(3,actionButton("BuildOM","Build sketched operating model",style='color:red',icon=icon('cogs')))
 
                                              )
                                       )
@@ -712,29 +693,67 @@ fluidPage(
                              )
                      #)# end of sketch tabpanel
            #),
-           )),box_height='65px'), # end of Fishery vertical Tabpanel
+           )),box_height='95px'), # end of Fishery vertical Tabpanel
 
       verticalTabPanel(id="Historical",value=3,
 
-                         h5("Historical Reference Points"),
+                         h5("2. Visualize Historical Fishery"),
 
-                         column(12,style='height:700px',h5("Explore_Intro"),
+                         column(12,style='height:700px',h5("Explore_Intro",style="color:darkgrey"),
                          conditionalPanel('output.OM_L==1',
                            tabsetPanel(id="OM_hist", selected=1,
 
                              tabPanel(h5("Stock dynamics"),
-                                      h5("Here are some SSB plots",style = "color:black"),
-                                      plotOutput("plot_hist_bio",height=540),
+
+                                      tabsetPanel(id="OM_hist_bio", selected=1,
+                                          tabPanel(h5("Time series"),
+                                                   plotOutput("plot_hist_bio",height=540),
+                                                   value=1),
+                                          tabPanel(h5("Growth I"),
+                                                   plotOutput("plot_hist_growth_I",height=540),
+                                                   value=2),
+                                          tabPanel(h5("Growth II"),
+                                                   plotOutput("plot_hist_growth_II",height=540),
+                                                   value=3),
+                                          tabPanel(h5("Growth III"),
+                                                   plotOutput("plot_hist_growth_III",height=540),
+                                                   value=4),
+                                          tabPanel(h5("Maturity"),
+                                                   plotOutput("plot_hist_maturity",height=540),
+                                                   value=5),
+                                          tabPanel(h5("Natural mortality"),
+                                                   plotOutput("plot_hist_survival",height=540),
+                                                   value=6),
+                                          tabPanel(h5("Spatial"),
+                                                   plotOutput("plot_hist_spatial",height=540),
+                                                   value=7)
+
+                                      ),
+
                                       value=1),
+
                              tabPanel(h5("Fishing dynamics"),
                                       h5("Here are some exploitation plots",style = "color:black"),
                                       plotOutput("plot_hist_exp",height=540),
                                       value=2),
-                             tabPanel(h5("Performance metrics"),
-                                      h5("Here are the historical performance metrics",style = "color:black"),
-                                      plotOutput("plot_hist_RPs",height=540),
+
+                             tabPanel(h5("Management Quantities"),
+                                      tabsetPanel(id="OM_hist_RP", selected=1,
+                                                  tabPanel(h5("SSB by simulation"),
+                                                           sliderInput('nsim_hist_SSB',"Number of simulations to plot:",min=1,max=3,value=1,step=1),
+                                                           plotOutput("plot_hist_SSB_sim",height=540),
+                                                           value=1),
+                                                  tabPanel(h5("SSB"),
+                                                           plotOutput("plot_hist_SSB",height=540),
+                                                           # add table of probabililites & slider
+                                                           value=2)
+
+                                      ),
+                                      #plotOutput("plot_hist_RPs",height=540),
                                       value=3)
+
                            ) # tabsetpanel
+
                          ), # conditional panel
 
                          conditionalPanel('output.OM_L==0',
@@ -744,25 +763,91 @@ fluidPage(
 
                        box_height='95px'),
 
-      verticalTabPanel(id="Explore",value=3,
-                       h5("Explore Performance Metrics"),
+      verticalTabPanel(id="MS",value=4,
+                       h5("3. Define management procedures"),
+                       column(12, style='padding-left:0px',
+                              h5("MS_intro",style="color:darkgrey"),
+                              hr()
+                       ),
+
+                       conditionalPanel('output.OM_L==1',
+                          column(12, style="height:450px",
+
+                              column(4,
+
+                                h5("A. Design a custom management procedure",style='font-weight:bold'),
+                                column(3,h5('Label:')),
+                                column(9,textInput("MS_Label",label=NULL)),
+                                radioButtons("MS_Origin","Origin of estimated variables",choiceNames=c("Perfect Information","Stock Assessment"), choiceValues=1:2,inline=T),
+                                radioButtons("MS_IVar","Independent variable",choiceNames=c("SSB MSY","SSB depletion"),choiceValues=1:2,inline=T),
+                                radioButtons("MS_DVar","Dependent variable",choiceNames=c("F / FMSY","F / F0.1","F / Fmax","F / FSPR40"),choiceValues=1:4,inline=T),
+                                radioButtons("MS_control","Control points",choiceNames=c("None (constant)","2"),choiceValues=1:2,inline=T)
+
+                             ),
+                             column(3,style='padding-top:30px; padding-left:0px',
+
+                                conditionalPanel("input.MS_control<5", # Not sketching
+                                  setSliderColor(rep("orange", 6), 1:6),
+                                  conditionalPanel("input.MS_control==1", # at least 2 control points,
+                                     column(12,sliderInput('CP_yint',"Y intercept",min=0,max=2,value=1,step=0.02))
+                                  ),
+                                  conditionalPanel("input.MS_control==2", # at least 2 control points,
+                                    column(6,sliderInput('CP_1_x',"control point 1: x",min=0,max=2,value=0.4,step=0.02)),
+                                    column(6,sliderInput('CP_1_y',"y",min=0,max=2,value=0,step=0.02)),
+
+                                    column(6,sliderInput('CP_2_x',"control point 2: x",min=0,max=2,value=1,step=0.02)),
+                                    column(6,sliderInput('CP_2_y',"y",min=0,max=2,value=1,step=0.02))
+                                  )
+
+                                )
+
+                             ),
+
+                             column(5,style='padding-top:30px',
+                                plotOutput('HSplot'),
+                                column(7),
+                                column(5,actionButton("Build_MS","Build management procedure",style='color:red',icon=icon('cogs')))
+                             )
+                           ),
+
+                           column(12,
+                                  hr(),
+                                  column(12,
+                                       h5("B. Select from Management Procedure Presets",style='font-weight:bold'),
+
+                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Erat",label = "Current Effort Ratios",style="color:red",width='200px',height='20px')),
+                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Frat",label = "Current F Ratios",style="color:red",width='200px',height='20px')),
+                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Crat",label = "Current Catch Ratios",style="color:red",width='200px',height='20px')),
+                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_DFO",label = "DFO",style="color:red",width='200px',height='20px'))
+                                  )
+                                  #checkboxGroupButtons(inputId='MS_presets',label='B. Preset Management Strategies',choices=c("Current effort ratios","Current F ratios","Current Catch ratios"),status='danger'),
+                           ),
+
+                           column(12, style="padding-left:0px; height:150px",
+                                  hr(),
+                                  #uiOutput("SelectedHS"),
+                                  selectInput("HS_sel",label="Selected Management procedures:",choices='',selected="",multiple=TRUE)
+                           )
+
+                       ), # end of if OM loaded
+                       conditionalPanel('output.OM_L==0',
+                          column(12, style="700px",
+                                 h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.")
+                          )
+                       ), # end of if OM not loaded
+                       box_height='95px'),
+
+      verticalTabPanel(id="Results", value=5,
+                       h5("4. Management Outcomes"),
                        column(12, style='height:700px',
-                              h5("Explore_Intro"),
-                              checkboxInput("test","test")
+                              h5("Test_Intro",style="color:darkgrey")
                        ),
                        box_height='95px'),
 
-      verticalTabPanel(id="Test", value=4,
-                       h5("Test Management Options"),
-                       column(12, style='height:700px',
-                              h5("Test_Intro")
-                       ),
-                       box_height='95px'),
-
-      verticalTabPanel(id="Help",value=5,
+      verticalTabPanel(id="Help",value=6,
                        h5(strong("Help")),
                        column(12, style='height:700px',
-                              h5("Help_Intro")
+                              h5("Help_Intro",style="color:darkgrey")
                        ),
                        box_height='65px'),
 

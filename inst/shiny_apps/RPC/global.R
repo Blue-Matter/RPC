@@ -19,6 +19,8 @@ for (fl in list.files("./Data/OMs/")){
 }
 remove(OM)
 
+MSEhist<-readRDS("./Data/MSEhist.rda")# !alert
+
 # Shared variables
 
 Current_Year<<-as.integer(substr(Sys.time(),start=1,stop=4))

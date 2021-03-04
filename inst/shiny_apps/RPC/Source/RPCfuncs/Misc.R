@@ -20,7 +20,7 @@ runMSEhist<<-function(OM){
   withProgress(message = "Constructing operating model", value = 0, {
     MSEhist<<-runMSE(OM,Hist=T,extended=T)
   })
-  saveRDS(MSEhist,"C:/temp/MSEhist.rda") # !alert
+  #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #
 }
 
 LowSlopes<-function(OMin, except = NULL) {
