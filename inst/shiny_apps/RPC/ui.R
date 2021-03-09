@@ -57,6 +57,8 @@ fluidPage(
                        value=1,
                        box_height='65px'),
 
+      #HTML("<br>"),
+
       verticalTabPanel(id="Fishery",value=2,
            h5('1. Specify Operating Model'),
            column(12, style='height:700px; padding-left:10px',
@@ -815,7 +817,6 @@ fluidPage(
                                   column(12,
                                        h5("B. Select from Management Procedure Presets",style='font-weight:bold'),
 
-                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Erat",label = "Current Effort Ratios",style="color:red",width='200px',height='20px')),
                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Frat",label = "Current F Ratios",style="color:red",width='200px',height='20px')),
                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Crat",label = "Current Catch Ratios",style="color:red",width='200px',height='20px')),
                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_DFO",label = "DFO",style="color:red",width='200px',height='20px'))

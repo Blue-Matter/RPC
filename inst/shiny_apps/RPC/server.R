@@ -448,78 +448,15 @@ server <- function(input, output, session) {
 
   observeEvent(input$Build_MS,{
 
-
-    if(input$MS_Origin==1){
-      Assess<-"Perfect" # need <<- to bring into this namespace
-    }else{
-      Assess<-"SCA_Pope"
-    }
-
-    if(input$MS_IVar==1){ # SSBMSY
-      OCP_type="SSB_SSBMSY"
-    }else{
-      OCP_type="SSB_SSB0"
-    }
-
-    if(input$MS_IVar==1){
-      xlab1="SSB relative to SSBMSY"
-    }else{
-      xlab1="SSB relative to unfished"
-    }
-
-
-    if(input$MS_DVar==1){
-      Ftarget_type="FMSY"
-    }else if(input$MS_DVar==2){
-      Ftarget_type="F01"
-    }else if(input$MS_DVar==3){
-      Ftarget_type="Fmax"
-    }else{
-      Ftarget_type="FSPR"
-    }
-    SPR=0.4
-
-    if(input$MS_control==1){
-      relF_min=input$CP_yint
-      relF_max=input$CP_yint
-      LOCP=0
-      TOCP=0.01
-    }else{
-      relF_min=input$CP_1_x
-      relF_max=input$CP_2_x
-      LOCP=input$CP_1_y
-      TOCP=input$CP_2_y
-    }
-
-
-    if(input$MS_Label==""){
-      MPstr_prefix<-"MP"
-    }else{
-      MPstr_prefix<-input$MS_Label
-    }
-
-    MPstr_temp<-paste(MPstr_prefix,"1",sep="_")
-
-    while(MPstr_temp%in%MPs$Sel){
-      ind<-as.numeric(strsplit(MPstr_temp,"_")[[1]][2])+1
-      MPstr_temp<-paste(MPstr_prefix,ind,sep="_")
-    }
-
-    MPs$All<<-c(MPs$All,MPstr_temp)
-
-    if(MPs$Sel[1]==""){
-      MPs$Sel<<-MPstr_temp
-    }else{
-      MPs$Sel<<-c(MPs$Sel,MPstr_temp)
-    }
-
+    make_RPC_MP(input)
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
-    Ass<<-get(Assess)
-    assign(MPstr_temp,make_MP(.Assess=Ass,HCR_ramp,OCP_type=OCP_type,Ftarget_type=Ftarget_type,LOCP=LOCP,TOCP=TOCP,relF_min=relF_min,relF_max=relF_max,SPR=SPR))
-    AM(paste0("Management Procedure '",MPstr_temp,"' constructed",paste("  (Assess =",Assess,", OCP_type =", OCP_type,", Ftarget_type =",Ftarget_type,", LOCP =",LOCP, ", TOCP =", TOCP, ", relF_min =",relF_min, "refF_max =",relF_max,",SPR = ",SPR,")")))
-
   })
+
+
+  observeEvent(input$MS_Frat,{getMPs('Frat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
+  observeEvent(input$MS_Crat,{getMPs('Crat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
+  observeEvent(input$MS_DFO,{getMPs('DFO'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
 
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
