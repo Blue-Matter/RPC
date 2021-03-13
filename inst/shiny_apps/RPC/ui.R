@@ -41,17 +41,134 @@ fluidPage(
 
   # === Header ==============================================================================================================================================================
 
-  column(5,
-     column(2,h1("RPC"),style="height:65px"),
-     column(10,h3("reference point calculator (alpha)"),style="height:65px;padding-top:8px")
-  ),
+  column(12,
+     column(1,h1("RPC"),style="height:65px"),
+     column(5,h3("reference point calculator (alpha)"),style="height:65px;padding-top:8px"),
+
+
+      column(6,style="padding-top:25px",
+
+         div(style="display: inline-block;vertical-align:top;float:right;",
+             dropdownButton(inputId="FPAT_File",
+                            column(12,
+                                   h5(tags$b("Glossary",style="color:#347ab6")),
+                                   column(12,
+
+                                          tabsetPanel(
+
+                                            tabPanel(h5("FPI ",style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'),value=1),
+                                            tabPanel(h5("MERA",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
+                                            tabPanel(h5("FPAT",style = "color:black"), HTML("<br>"), value=3)
+
+                                          )# end of dropdownbutton CMP
+
+                                   ),
+                                   column(12,HTML("<br>")),
+
+                                   h5(tags$b("Contact",style="color:#347ab6")),
+                                   column(12,
+                                          h5("For technical questions or bug reports please contact ", a("tom@bluematterscience.com", href="mailto:tom@bluematterscience.com", target="_blank"),style = "color:grey")
+                                   ),
+                                   h5(tags$b("Software",style="color:#347ab6")),
+                                   column(12,
+                                          h5("FPAT v0.1.0",style = "color:grey")
+                                   ),
+                                   h5(tags$b("Acknowledgements",style="color:#347ab6")),
+                                   column(12,
+                                          h5("FAO, UW, MERA sponsors")
+
+                                   )
+
+                            ),
+
+                            label = "Help",
+                            icon = icon("info"),
+                            status = "dropdownbutton",
+                            right=TRUE,
+                            circle = FALSE,
+                            width="800px"
+
+             )
+         ), # end of help menu dropdown
+
+
+         # Reports menu dropdown
+         div(style="display: inline-block;vertical-align:top; float:right;",
+
+             dropdownButton(
+
+               column(12,
+                      column(9,h5("Operating model",style="font-weight:bold;color:#347ab6")),
+                      column(3,downloadButton("OM_Rep"," ")),
+                      column(9,h5("Conditioning",style="font-weight:bold;color:#347ab6")),
+                      column(3,downloadButton("Cond_Rep"," ")),
+                      column(9,h5("FPAT results",style="font-weight:bold;color:#347ab6")),
+                      column(3,downloadButton("FPAT_Rep"," "))
+
+               ),
+               inputId = "Reports",
+               label = "Reports",
+               icon = icon("newspaper"),
+               status = "dropdownbutton",
+               circle = FALSE,
+               right=TRUE,
+               width="300px"
+             )
+
+         ), # end of reports menu dropdown
+
+         # Settings menu dropdown
+         div(style="display: inline-block;vertical-align:top; float:right;",
+
+             dropdownButton(
+
+               column(12,
+                      h5(tags$b("Settings for controlling OM conditioning etc",style="color:#347ab6")),
+               ),
+               inputId = "DD_Settings",
+               label = "Settings",
+               icon = icon("sliders-h"),
+               status = "dropdownbutton",
+               circle = FALSE,
+               right=TRUE,
+               width="400px"
+             )
+
+         ), # end of settings menu dropdown
+
+         # File menu dropdown
+         div(style="display: inline-block;vertical-align:top; float:right;",
+
+             dropdownButton(
+
+               column(12,tags$hr(style="margin-top: 3px; margin-bottom: 3px"),
+                      h5(tags$b("FPAT Session",style="color:#347ab6")),
+                      column(6,h5("Load (.fpat)",style = "color:grey"), tipify(fileInput("Load_session",label=NULL,accept=c("fpat",".fpat")),title="Load a previous session including calculated results (large)")),
+                      column(1),
+                      column(5,h5("Save (.fpat)",style = "color:grey"),    downloadButton("Save_session","",width="100px"))
+               ),
+
+
+               inputId = "DD_file",
+               label = "File",
+               icon = icon("file"),
+               status = "dropdownbutton",
+               circle = FALSE,
+               right=TRUE,
+               width="400px"
+             )
+
+         ) # end of file menu dropdown
+      )# end of column 6
+
+  ),  # end of tool bar
 
   # === Main Window =========================================================================================================================================================
 
   column(12, # General tab panel
-    verticalTabsetPanel(id="Main",selected=4,
+    verticalTabsetPanel(id="Main",selected=3,
       verticalTabPanel(
-                       h5(strong("Home")),
+                       h5("Home"),
                        column(12,h5("Reference Point Calculator uses operatin",style="color:darkgrey"),style='height:700px'),
                        id="Home",
                        value=1,
@@ -60,7 +177,7 @@ fluidPage(
       #HTML("<br>"),
 
       verticalTabPanel(id="Fishery",value=2,
-           h5('1. Specify Operating Model'),
+           h5(strong('Step 1. Specify Operating Model')),
            column(12, style='height:700px; padding-left:10px',
                   h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
                     compatible openMSE operating model or sketching the fishery dynamics using the MERA system",style='color:darkgrey'),
@@ -697,76 +814,9 @@ fluidPage(
            #),
            )),box_height='95px'), # end of Fishery vertical Tabpanel
 
-      verticalTabPanel(id="Historical",value=3,
 
-                         h5("2. Visualize Historical Fishery"),
-
-                         column(12,style='height:700px',h5("Explore_Intro",style="color:darkgrey"),
-                         conditionalPanel('output.OM_L==1',
-                           tabsetPanel(id="OM_hist", selected=1,
-
-                             tabPanel(h5("Stock dynamics"),
-
-                                      tabsetPanel(id="OM_hist_bio", selected=1,
-                                          tabPanel(h5("Time series"),
-                                                   plotOutput("plot_hist_bio",height=540),
-                                                   value=1),
-                                          tabPanel(h5("Growth I"),
-                                                   plotOutput("plot_hist_growth_I",height=540),
-                                                   value=2),
-                                          tabPanel(h5("Growth II"),
-                                                   plotOutput("plot_hist_growth_II",height=540),
-                                                   value=3),
-                                          tabPanel(h5("Growth III"),
-                                                   plotOutput("plot_hist_growth_III",height=540),
-                                                   value=4),
-                                          tabPanel(h5("Maturity"),
-                                                   plotOutput("plot_hist_maturity",height=540),
-                                                   value=5),
-                                          tabPanel(h5("Natural mortality"),
-                                                   plotOutput("plot_hist_survival",height=540),
-                                                   value=6),
-                                          tabPanel(h5("Spatial"),
-                                                   plotOutput("plot_hist_spatial",height=540),
-                                                   value=7)
-
-                                      ),
-
-                                      value=1),
-
-                             tabPanel(h5("Fishing dynamics"),
-                                      h5("Here are some exploitation plots",style = "color:black"),
-                                      plotOutput("plot_hist_exp",height=540),
-                                      value=2),
-
-                             tabPanel(h5("Management Quantities"),
-                                      tabsetPanel(id="OM_hist_RP", selected=1,
-                                                  tabPanel(h5("SSB by simulation"),
-                                                           sliderInput('nsim_hist_SSB',"Number of simulations to plot:",min=1,max=3,value=1,step=1),
-                                                           plotOutput("plot_hist_SSB_sim",height=540),
-                                                           value=1),
-                                                  tabPanel(h5("SSB"),
-                                                           plotOutput("plot_hist_SSB",height=540),
-                                                           # add table of probabililites & slider
-                                                           value=2)
-
-                                      ),
-                                      #plotOutput("plot_hist_RPs",height=540),
-                                      value=3)
-
-                           ) # tabsetpanel
-
-                         ), # conditional panel
-
-                         conditionalPanel('output.OM_L==0',
-                            h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.")
-                         )
-                         ),
-
-                       box_height='95px'),
-
-      verticalTabPanel(id="MS",value=4,
-                       h5("3. Define management procedures"),
+      verticalTabPanel(id="MS",value=3,
+                       h5(strong("Step 2. Define management procedures")),
                        column(12, style='padding-left:0px',
                               h5("MS_intro",style="color:darkgrey"),
                               hr()
@@ -827,7 +877,8 @@ fluidPage(
                            column(12, style="padding-left:0px; height:150px",
                                   hr(),
                                   #uiOutput("SelectedHS"),
-                                  selectInput("HS_sel",label="Selected Management procedures:",choices='',selected="",multiple=TRUE)
+                                  div(style="display: inline-block;vertical-align:top; width: 1200px;",selectInput("HS_sel",label="Selected Management procedures:",choices='',selected="",multiple=TRUE,width='1200px')),
+                                  div(style="display: inline-block; width: 200px;", br(), actionButton("MS_Clear",label = "Clear",style="color:red;",width='200px',height='20px')),
                            )
 
                        ), # end of if OM loaded
@@ -838,19 +889,181 @@ fluidPage(
                        ), # end of if OM not loaded
                        box_height='95px'),
 
-      verticalTabPanel(id="Results", value=5,
-                       h5("4. Management Outcomes"),
+      verticalTabPanel(id="Results", value=4,
+                       h5(strong("Step 3. Management Outcomes")),
                        column(12, style='height:700px',
-                              h5("Test_Intro",style="color:darkgrey")
+
+                              conditionalPanel('output.Sel==""',{
+                                h5("Please select at least one management procedure in Step 2 above",style="color:darkgrey")
+                              }),
+
+                              conditionalPanel('output.Sel!=""',{
+
+                                column(4,conditionalPanel('output.MSErun==0',h5("Run an MSE simulation test of the MP(s): ",style="color:black")))
+
+
+                                column(4,actionButton("runMSE",label = "Run MSE Simulation Test",style="color:red;",width='200px',height='20px'))
+
+
+
+                              }),
+
+                              column(12,
+                              HTML('<br>'),
+
+
+                              conditionalPanel('output.MSErun==0',{
+                                h5("Please run an MSE simulation test to see results",style="color:darkgrey")
+                              }),
+
+
+                              conditionalPanel('output.MSErun==1',{
+                                tabsetPanel(id="Res", selected=1,
+
+                                            tabPanel(h5("SSB0"),
+
+                                                 tabsetPanel(id="SSB0", selected=1,
+                                                             tabPanel(h5("Median time series"),
+                                                                      plotOutput("B_proj_plot",height=520),
+
+                                                                      value=1),
+                                                             tabPanel(h5("Probability of exceeding RPs"),
+                                                                      plotOutput("B_prob_plot",height=520),
+                                                                      value=2),
+                                                             tabPanel(h5("Stochastic projection"),
+                                                                      column(9,plotOutput("B_stoch_plot",height=500)),
+                                                                      column(3,
+                                                                             selectInput("SMP1","",choices="",selected=""),
+                                                                             selectInput("SMP2","",choices="",selected="")
+                                                                             #selectInput("SMP3","",choices="",selected="")
+                                                                      ),
+                                                                      value=3),
+                                                             tabPanel(h5("By Simulation"),
+                                                                      column(2,
+                                                                             selectInput("StochMP","",choices="",selected=""),
+                                                                             sliderInput('nsim_hist_SSB',"Number of simulations to plot:",min=1,max=3,value=1,step=1),
+                                                                             actionButton("StochB_resample","Resample")),
+                                                                      column(10,plotOutput("plot_hist_SSB_sim",height=520)),
+                                                                      value=4),
+                                                             tabPanel(h5("Table"),
+                                                                      h5("COMING SOON: SSB relative to SSB0 datatable to go here",style = "color:black"),
+                                                                      value=5)
+                                                 ),
+                                                 value=1),
+
+                                            tabPanel(h5("BMSY"),
+
+                                                     tabsetPanel(id="SSBMSY", selected=1,
+                                                             tabPanel(h5("Median time series"),
+                                                                      h5("COMING SOON: Median SSBMSY SSB time series plots to go here",style = "color:black"),
+                                                                      value=1),
+                                                             tabPanel(h5("Probability of exceeding RPs"),
+                                                                      h5("COMING SOON: Probability of exceeding SSBMSY fractions to go here",style = "color:black"),
+                                                                      value=2),
+                                                             tabPanel(h5("Stochastic projection"),
+                                                                      h5("COMING SOON: SSB relative to SSBMSY Stochastic projection plot to go here",style = "color:black"),
+                                                                      value=3),
+                                                             tabPanel(h5("By Simulation"),
+                                                                      h5("COMING SOON:SSB relative to SSBMSY by simulation plot to go here",style = "color:black"),
+                                                                      value=4),
+                                                             tabPanel(h5("Table"),
+                                                                      h5("COMING SOON:SSB relative to SSBMSY datatable to go here",style = "color:black"),
+                                                                      value=5)
+                                                     ),
+                                                     value=2),
+
+                                            tabPanel(h5("FMSY"),
+                                                     h5("COMING SOON: Tableset panel with outputs for F relative FMSY",style = "color:black"),
+                                                     plotOutput("plot_FMSY",height=540),
+                                                     value=3),
+
+                                            tabPanel(h5("MSY"),
+                                                     h5("COMING SOON: Tableset panel with catch relative to MSY",style = "color:black"),
+                                                     plotOutput("plot_MSY",height=540),
+                                                     value=4),
+
+                                            tabPanel(h5("Summary"),
+                                                     h5("COMING SOON: summary plots / Tables",style = "color:black"),
+                                                     plotOutput("plot_summary",height=540),
+                                                     value=5),
+
+                                            tabPanel(h5("Trade-offs"),
+                                                     h5("COMING SOON: SSB0 RP, SSBMSY RP, FMSY RP & MSY RP trade-offs",style = "color:black"),
+                                                     plotOutput("plot_TO",height=540),
+                                                     value=6)
+
+                                ) # tabsetpanel
+
+                              }) # end of conditional MSErun==1
+                              ) # end of column 12
+
                        ),
                        box_height='95px'),
 
-      verticalTabPanel(id="Help",value=6,
-                       h5(strong("Help")),
+      verticalTabPanel(id="Hist", value=5,
+                       h5("APPENDIX: Detailed Operating Model Info"),
                        column(12, style='height:700px',
-                              h5("Help_Intro",style="color:darkgrey")
+                              h5("Test_Intro",style="color:darkgrey"),
+
+                              conditionalPanel('output.OM_L==0',{
+                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.")
+
+                              }),
+                              conditionalPanel('output.OM_L==1',{
+                                tabsetPanel(id="OM_hist", selected=1,
+
+                                            tabPanel(h5("Stock dynamics"),
+
+                                                     tabsetPanel(id="OM_hist_bio", selected=1,
+                                                                 tabPanel(h5("Time series"),
+                                                                          plotOutput("plot_hist_bio",height=540),
+                                                                          value=1),
+                                                                 tabPanel(h5("Growth I"),
+                                                                          plotOutput("plot_hist_growth_I",height=540),
+                                                                          value=2),
+                                                                 tabPanel(h5("Growth II"),
+                                                                          plotOutput("plot_hist_growth_II",height=540),
+                                                                          value=3),
+                                                                 tabPanel(h5("Growth III"),
+                                                                          plotOutput("plot_hist_growth_III",height=540),
+                                                                          value=4),
+                                                                 tabPanel(h5("Maturity"),
+                                                                          plotOutput("plot_hist_maturity",height=540),
+                                                                          value=5),
+                                                                 tabPanel(h5("Natural mortality"),
+                                                                          plotOutput("plot_hist_survival",height=540),
+                                                                          value=6),
+                                                                 tabPanel(h5("Spatial"),
+                                                                          plotOutput("plot_hist_spatial",height=540),
+                                                                          value=7)
+
+                                                     ),
+                                                     value=1),
+
+                                            tabPanel(h5("Fishing dynamics"),
+                                                     h5("Here are some exploitation plots",style = "color:black"),
+                                                     plotOutput("plot_hist_exp",height=540),
+                                                     value=2),
+
+                                            tabPanel(h5("Management Quantities"),
+                                                     tabsetPanel(id="OM_hist_RP", selected=1,
+
+                                                                 tabPanel(h5("SSB"),
+                                                                          plotOutput("plot_hist_SSB",height=540),
+                                                                          # add table of probabililites & slider
+                                                                          value=1)
+
+                                                     ),
+                                                     #plotOutput("plot_hist_RPs",height=540),
+                                                     value=3)
+
+                                ) # tabsetpanel
+
+                              }) # end of conditional OM_L==1
+
                        ),
-                       box_height='65px'),
+                       box_height='95px'),
+
 
       contentWidth=11
 

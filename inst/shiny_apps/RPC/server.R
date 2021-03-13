@@ -13,14 +13,16 @@ server <- function(input, output, session) {
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
 
+  MSErun<-reactiveVal(0)
+  output$MSErun <- reactive({MSErun()})
+  outputOptions(output, "MSErun",suspendWhenHidden=FALSE)
+
   MPs<<-reactiveValues(Sel="",All=avail('MP'))
   output$Sel <- reactive({ MPs$Sel})
   output$All <- reactive({MPs$All})
   outputOptions(output,"All",suspendWhenHidden=FALSE)
   outputOptions(output,"Sel",suspendWhenHidden=FALSE)
   updateSelectInput(session,"HS_sel",choices=avail('MP'),selected="")
-
-
 
   for (fl in list.files("./Source/MERA")) source(file.path("./Source/MERA", fl), local = TRUE)
 
@@ -50,14 +52,16 @@ server <- function(input, output, session) {
 
   # Fishery panel ---------------------------------------------------
 
+  # OM select
   observeEvent(input$SelectOM,{
     OM_temp <- get(input$SelectOMDD)
     OM <<- modOM(OM_temp,nsim)
     runMSEhist(OM)
     OM_L(1)
+    MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
     AM(paste("Operating model",input$SelectOMDD,"selected"))
-    saveRDS()
+
   })
 
   # OM load
@@ -69,6 +73,7 @@ server <- function(input, output, session) {
 
       OM_temp<-readRDS(file=filey$datapath)
       OM<<-modOM(OM_temp,nsim)
+
 
     },
 
@@ -86,6 +91,7 @@ server <- function(input, output, session) {
       AM(paste0("Operating model loaded: ", filey$datapath))
       runMSEhist(OM)
       OM_L(1)
+      MSErun(0)
       updateVerticalTabsetPanel(session,'Main',selected=3)
 
     }else{
@@ -109,24 +115,12 @@ server <- function(input, output, session) {
 
     runMSEhist(OM)
     OM_L(1)
+    MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
     AM(paste0("Operating model sketched: ", OM@Name))
 
   })
 
-  # Historical panel --------------------------------------------------
-
-  output$plot_hist_bio <- renderPlot(hist_bio())
-  output$plot_hist_growth_I <- renderPlot(hist_growth_I())
-  output$plot_hist_growth_II <- renderPlot(hist_growth_II())
-  output$plot_hist_growth_III <- renderPlot(hist_growth_III())
-  output$plot_hist_maturity <- renderPlot(hist_maturity())
-  output$plot_hist_survival <- renderPlot(hist_survival())
-  output$plot_hist_spatial <- renderPlot(hist_spatial())
-
-  output$plot_hist_exp <- renderPlot(hist_exp())
-
-  output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(input))
 
   # Management Strategy Panel -----------------------------------------------------
 
@@ -160,7 +154,56 @@ server <- function(input, output, session) {
 
   })
 
-  # Test panel --------------------------------------------------------
+
+  observeEvent(input$Build_MS,{
+
+    make_RPC_MP(input)
+    updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+
+  })
+
+
+  # Results panel ------------------------------------------------
+
+  observeEvent(input$runMSE,{
+
+    withProgress({
+      MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = T)
+      SMP1<-MSEproj@MPs[1]
+      SMP2 <- MSEproj@MPs[MSEproj@nMPs]
+      #if(MSEproj@nMPs>2)SMP3 <- MSEproj@MPs[3]
+
+      updateSelectInput(session,'SMP1',choices=MSEproj@MPs,selected = SMP1)
+      updateSelectInput(session,'SMP2',choices=MSEproj@MPs,selected = SMP2)
+      updateSelectInput(session,'StochMP',choices=MSEproj@MPs,selected = SMP1)
+      # updateSelectInput(session,'SMP3',choices=MSEproj@MPs,selected = SMP3)
+
+      MSErun(1)
+
+      saveRDS(MSEproj,"C:/temp/MSEproj.rda")
+
+    })
+  })
+
+
+
+
+  output$B_proj_plot <- renderPlot(B_proj_plot())
+  output$B_prob_plot <- renderPlot(B_prob_plot())
+  output$B_stoch_plot <- renderPlot(B_stoch_plot(input))
+  output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(input))
+
+  # OM panel --------------------------------------------------
+
+  output$plot_hist_bio <- renderPlot(hist_bio())
+  output$plot_hist_growth_I <- renderPlot(hist_growth_I())
+  output$plot_hist_growth_II <- renderPlot(hist_growth_II())
+  output$plot_hist_growth_III <- renderPlot(hist_growth_III())
+  output$plot_hist_maturity <- renderPlot(hist_maturity())
+  output$plot_hist_survival <- renderPlot(hist_survival())
+  output$plot_hist_spatial <- renderPlot(hist_spatial())
+  output$plot_hist_exp <- renderPlot(hist_exp())
+
 
   # Help panel --------------------------------------------------------
 
@@ -446,18 +489,12 @@ server <- function(input, output, session) {
   })
 
 
-  observeEvent(input$Build_MS,{
-
-    make_RPC_MP(input)
-    updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
-
-  })
 
 
   observeEvent(input$MS_Frat,{getMPs('Frat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
   observeEvent(input$MS_Crat,{getMPs('Crat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
   observeEvent(input$MS_DFO,{getMPs('DFO'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
-
+  observeEvent(input$MS_Clear,{AM("MP selection cleared"); MPs$Sel<<-""; updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])

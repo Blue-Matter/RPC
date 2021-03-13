@@ -85,6 +85,6 @@ make_RPC_MP<-function(input){
   }
 
   Ass<<-get(Assess)
-  assign(MPstr_temp,make_MP(.Assess=Ass,HCR_ramp,OCP_type=OCP_type,Ftarget_type=Ftarget_type,LOCP=LOCP,TOCP=TOCP,relF_min=relF_min,relF_max=relF_max,SPR=SPR))
+  assign(MPstr_temp,make_MP(.Assess=Ass,HCR_ramp,OCP_type=OCP_type,Ftarget_type=Ftarget_type,LOCP=LOCP,TOCP=TOCP,relF_min=relF_min,relF_max=relF_max,SPR=SPR), envir = .GlobalEnv)
   AM(paste0("Management Procedure '",MPstr_temp,"' constructed",paste("  (Assess =",Assess,", OCP_type =", OCP_type,", Ftarget_type =",Ftarget_type,", LOCP =",LOCP, ", TOCP =", TOCP, ", relF_min =",relF_min, "refF_max =",relF_max,",SPR = ",SPR,")")))
 }
