@@ -7,9 +7,12 @@ server <- function(input, output, session) {
   #All_MPs<<-avail('MP')
   #Sel_MPs<<-""
 
+  OMs<<-unique(avail('OM')[avail('OM')!='testOM'], c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
+
+
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
-  OM_L<-reactiveVal(1)
+  OM_L<-reactiveVal(0)
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
 
@@ -180,7 +183,7 @@ server <- function(input, output, session) {
 
       MSErun(1)
 
-      saveRDS(MSEproj,"C:/temp/MSEproj.rda")
+      #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
 
     })
   })
@@ -205,7 +208,20 @@ server <- function(input, output, session) {
   output$plot_hist_exp <- renderPlot(hist_exp())
 
 
-  # Help panel --------------------------------------------------------
+  # Log  --------------------------------------------------------
+
+  output$Download_Log <-downloadHandler(
+
+    filename = function(){"RPC_Log.txt"}, #"report.html",
+
+    content = function(file) {
+      writeLines(paste(Log_text$text, collapse = ", "), file)
+    }
+
+  )
+
+
+
 
   # MERA panel --------------------------------------------------------
 

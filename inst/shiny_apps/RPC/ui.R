@@ -56,9 +56,9 @@ fluidPage(
 
                                           tabsetPanel(
 
-                                            tabPanel(h5("FPI ",style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'),value=1),
-                                            tabPanel(h5("MERA",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
-                                            tabPanel(h5("FPAT",style = "color:black"), HTML("<br>"), value=3)
+                                            tabPanel(h5("RPC",style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'),value=1),
+                                            tabPanel(h5("MSE",style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'),value=2),
+                                            tabPanel(h5("MERA",style = "color:black"), HTML("<br>"), value=3)
 
                                           )# end of dropdownbutton CMP
 
@@ -71,13 +71,16 @@ fluidPage(
                                    ),
                                    h5(tags$b("Software",style="color:#347ab6")),
                                    column(12,
-                                          h5("FPAT v0.1.0",style = "color:grey")
+                                          h5("RPC v0.1.0",style = "color:grey"),
+                                          tags$a(img(src = "openMSE.png", height = 35, width = 115),href="https://www.openmse.com",target='_blank')
+
                                    ),
                                    h5(tags$b("Acknowledgements",style="color:#347ab6")),
                                    column(12,
-                                          h5("FAO, UW, MERA sponsors")
+                                          h5("DFO, WG members")
 
-                                   )
+                                   ),
+                                   column(12,tags$a(img(src = "bluematter.png", height = 38, width = 80),href="https://www.bluematterscience.com",target='_blank'))
 
                             ),
 
@@ -100,9 +103,9 @@ fluidPage(
                column(12,
                       column(9,h5("Operating model",style="font-weight:bold;color:#347ab6")),
                       column(3,downloadButton("OM_Rep"," ")),
-                      column(9,h5("Conditioning",style="font-weight:bold;color:#347ab6")),
+                      column(9,h5("MPs",style="font-weight:bold;color:#347ab6")),
                       column(3,downloadButton("Cond_Rep"," ")),
-                      column(9,h5("FPAT results",style="font-weight:bold;color:#347ab6")),
+                      column(9,h5("RPC results",style="font-weight:bold;color:#347ab6")),
                       column(3,downloadButton("FPAT_Rep"," "))
 
                ),
@@ -123,7 +126,7 @@ fluidPage(
              dropdownButton(
 
                column(12,
-                      h5(tags$b("Settings for controlling OM conditioning etc",style="color:#347ab6")),
+                      h5(tags$b("Settings for controlling MSE specifications",style="color:#347ab6")),
                ),
                inputId = "DD_Settings",
                label = "Settings",
@@ -142,10 +145,10 @@ fluidPage(
              dropdownButton(
 
                column(12,tags$hr(style="margin-top: 3px; margin-bottom: 3px"),
-                      h5(tags$b("FPAT Session",style="color:#347ab6")),
-                      column(6,h5("Load (.fpat)",style = "color:grey"), tipify(fileInput("Load_session",label=NULL,accept=c("fpat",".fpat")),title="Load a previous session including calculated results (large)")),
+                      h5(tags$b("RPC Session",style="color:#347ab6")),
+                      column(6,h5("Load (.rpc)",style = "color:grey"), tipify(fileInput("Load_session",label=NULL,accept=c("rpc",".rpc")),title="Load a previous session including calculated results")),
                       column(1),
-                      column(5,h5("Save (.fpat)",style = "color:grey"),    downloadButton("Save_session","",width="100px"))
+                      column(5,h5("Save (.rpc)",style = "color:grey"),    downloadButton("Save_session","",width="100px"))
                ),
 
 
@@ -166,10 +169,27 @@ fluidPage(
   # === Main Window =========================================================================================================================================================
 
   column(12, # General tab panel
-    verticalTabsetPanel(id="Main",selected=3,
+    verticalTabsetPanel(id="Main",selected=1,
       verticalTabPanel(
                        h5("Home"),
-                       column(12,h5("Reference Point Calculator uses operatin",style="color:darkgrey"),style='height:700px'),
+                       column(12,
+                              h4("Welcome to the Alpha test of Reference Point Calculator: a simulation tool for informating the selection of reference points and harvest control rules."),
+                              h5("If possible please leave any feedback on the App in
+                                 the", a("RPC Feedback google sheet",href="https://docs.google.com/spreadsheets/d/1rqB0719h5Wx7X9wdCaFJHzt3p91vV4bRQdFAm55J6AE/edit?usp=sharing", target="_blank")),
+                              hr(),
+                              column(12,style='padding-top:0px',
+
+                                     h5("There are three steps for using the App:"),
+                                     column(6,h5("Step 1: specify an operating model"),img(src = "Step1.png",height=220,width=440)),
+                                     column(6,h5("Step 2: Define management procedures"),img(src = "Step2.png",height=220,width=440)),
+                                     column(6,h5("Step 3a: Run an MSE test"),img(src = "Step3a.png",height=220,width=160)),
+                                     column(6,h5("Step 3b: Visualize outcomes of the testing"),img(src = "Step3b.png",height=220,width=440))
+                              ),
+
+
+                              style='height:800px'
+                       ),
+
                        id="Home",
                        value=1,
                        box_height='65px'),
@@ -178,9 +198,9 @@ fluidPage(
 
       verticalTabPanel(id="Fishery",value=2,
            h5(strong('Step 1. Specify Operating Model')),
-           column(12, style='height:700px; padding-left:10px',
+           column(12, style='height:800px; padding-left:10px',
                   h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
-                    compatible openMSE operating model or sketching the fishery dynamics using the MERA system",style='color:darkgrey'),
+                    compatible openMSE operating model or sketching the fishery dynamics using the MERA system"),
                   hr(),
                   HTML("<br>"),
                 radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
@@ -816,9 +836,11 @@ fluidPage(
 
 
       verticalTabPanel(id="MS",value=3,
-                       h5(strong("Step 2. Define management procedures")),
+                    h5(strong("Step 2. Define management procedures")),
+                    column(12, style='height:800px',
                        column(12, style='padding-left:0px',
-                              h5("MS_intro",style="color:darkgrey"),
+                              h5("One an operating model is specified you can define management procedures that make management recommendations
+                                 based on estimates of stock status and exploition rates"),
                               hr()
                        ),
 
@@ -883,19 +905,21 @@ fluidPage(
 
                        ), # end of if OM loaded
                        conditionalPanel('output.OM_L==0',
-                          column(12, style="700px",
-                                 h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.")
+                          column(12, style="800px",
+                                 h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Step 1. Specify Operating Model' panel above.",style="color:darkgrey")
                           )
-                       ), # end of if OM not loaded
+                       ) # end of if OM not loaded
+                    ), # end of column 12
                        box_height='95px'),
 
       verticalTabPanel(id="Results", value=4,
                        h5(strong("Step 3. Management Outcomes")),
-                       column(12, style='height:700px',
+                       column(12, style='height:800px',
 
                               conditionalPanel('output.Sel==""',{
                                 h5("Please select at least one management procedure in Step 2 above",style="color:darkgrey")
                               }),
+                              hr(),
 
                               conditionalPanel('output.Sel!=""',{
 
@@ -1001,12 +1025,13 @@ fluidPage(
                        box_height='95px'),
 
       verticalTabPanel(id="Hist", value=5,
-                       h5("APPENDIX: Detailed Operating Model Info"),
-                       column(12, style='height:700px',
-                              h5("Test_Intro",style="color:darkgrey"),
+                       h5("Detailed Operating Model Info"),
+                       column(12, style='height:800px',
+                              h5("This panel provides a complete description of the parameters and dynamics of the operating model used in testing."),
+                              hr(),
 
                               conditionalPanel('output.OM_L==0',{
-                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.")
+                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.",style="color:darkgrey")
 
                               }),
                               conditionalPanel('output.OM_L==1',{

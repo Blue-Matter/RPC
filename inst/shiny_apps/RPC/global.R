@@ -13,13 +13,21 @@ library(MSEextra)
 
 #for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
 for (fl in list.files("./Source/RPCfuncs")) source(file.path("./Source/RPCfuncs", fl), local = TRUE)
-for (fl in list.files("./Data/OMs/")){
-  OM<-readRDS(file.path("./Data/OMs", fl))
-  assign(OM@Name,OM)
-}
-remove(OM)
 
-MSEhist<-readRDS("./Data/MSEhist.rda")# !alert
+#for (fl in list.files("./Data/OMs/")){
+ # OM<<-readRDS(file.path("./Data/OMs", fl))
+  #assign(OM@Name,OM,envir=globalenv())
+#}
+
+DFO_BoF_Herring<-readRDS("./data/OMs/DFO_BoF_Herring.rda")
+DFO_DEMO1<-readRDS("./data/OMs/DFO_DEMO1.rda")
+DFO_DEMO2<-readRDS("./data/OMs/DFO_DEMO2.rda")
+DFO_Inside_YE_Rockfish<-readRDS("./data/OMs/DFO_IYRF.rds")
+
+
+#remove(OM)
+
+#MSEhist<-readRDS("./Data/MSEhist.rda")# !alert
 
 # Shared variables
 
@@ -28,7 +36,6 @@ CurrentYr<<-2021 # as.integer(input$Lyear) #as.integer(substr(as.character(Sys.t
 Syear<<-1951
 Lyear<<-2018
 nsim<<-24 # for alpha testing, maybe 92 or 148 for real application
-OMs<<-avail('OM')[avail('OM')!='testOM']
 
 
 # App design
@@ -245,6 +252,8 @@ Err_list<<-list("Perfect" = "Err_perf","Good (accurate and precise)" = "Err_good
                 "Data poor (inaccurate and imprecise)" = "Err_bad")
 
 
+
+OMs<<-unique(avail('OM')[avail('OM')!='testOM'], c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
 
 
 
