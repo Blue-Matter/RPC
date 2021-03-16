@@ -916,19 +916,15 @@ fluidPage(
                        h5(strong("Step 3. Management Outcomes")),
                        column(12, style='height:800px',
 
-                              conditionalPanel('output.Sel==""',{
+                              conditionalPanel('output.MPsSpec==0',{
                                 h5("Please select at least one management procedure in Step 2 above",style="color:darkgrey")
                               }),
                               hr(),
 
-                              conditionalPanel('output.Sel!=""',{
+                              conditionalPanel('output.MPsSpec==1',{
 
                                 column(4,conditionalPanel('output.MSErun==0',h5("Run an MSE simulation test of the MP(s): ",style="color:black")))
-
-
                                 column(4,actionButton("runMSE",label = "Run MSE Simulation Test",style="color:red;",width='200px',height='20px'))
-
-
 
                               }),
 

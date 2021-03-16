@@ -16,6 +16,11 @@ server <- function(input, output, session) {
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
 
+
+  MPsSpec<-reactiveVal(0)
+  output$MPsSpec <- reactive({MPsSpec()})
+  outputOptions(output, "MPsSpec",suspendWhenHidden=FALSE)
+
   MSErun<-reactiveVal(0)
   output$MSErun <- reactive({MSErun()})
   outputOptions(output, "MSErun",suspendWhenHidden=FALSE)
@@ -152,7 +157,7 @@ server <- function(input, output, session) {
     }else{
       MPs$Sel<<-c(MPs$Sel,input$HS_sel)
     }
-
+    MPsSpec(1)
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
   })
@@ -162,8 +167,15 @@ server <- function(input, output, session) {
 
     make_RPC_MP(input)
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+    MPsSpec(1)
 
   })
+
+  observeEvent(input$MS_Frat,{getMPs('Frat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
+  observeEvent(input$MS_Crat,{getMPs('Crat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
+  observeEvent(input$MS_DFO,{getMPs('DFO'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
+  observeEvent(input$MS_Clear,{AM("MP selection cleared"); MPs$Sel<<-""; updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(0)})
+
 
 
   # Results panel ------------------------------------------------
@@ -507,10 +519,6 @@ server <- function(input, output, session) {
 
 
 
-  observeEvent(input$MS_Frat,{getMPs('Frat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
-  observeEvent(input$MS_Crat,{getMPs('Crat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
-  observeEvent(input$MS_DFO,{getMPs('DFO'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
-  observeEvent(input$MS_Clear,{AM("MP selection cleared"); MPs$Sel<<-""; updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)})
 
   USERID<-Sys.getenv()[names(Sys.getenv())=="USERNAME"]
   SessionID<-paste0(USERID,"-",strsplit(as.character(Sys.time())," ")[[1]][1],"-",strsplit(as.character(Sys.time())," ")[[1]][2])
