@@ -1,7 +1,7 @@
 
 
 fluidPage(
-
+  useShinyalert(),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
    tags$head(
@@ -22,7 +22,6 @@ fluidPage(
 
       ")),
 
-
     tags$script('
                 var dimension = [0, 0];
                 $(document).on("shiny:connected", function(e) {
@@ -36,7 +35,6 @@ fluidPage(
                     Shiny.onInputChange("dimension", dimension);
                 });
             ')
-
   ),
 
   # === Header ==============================================================================================================================================================
@@ -71,7 +69,7 @@ fluidPage(
                                    ),
                                    h5(tags$b("Software",style="color:#347ab6")),
                                    column(12,
-                                          h5("RPC v0.1.0",style = "color:grey"),
+                                          h5("RPC v0.1.1",style = "color:grey"),
                                           tags$a(img(src = "openMSE.png", height = 35, width = 115),href="https://www.openmse.com",target='_blank')
 
                                    ),
@@ -179,11 +177,11 @@ fluidPage(
                               hr(),
                               column(12,style='padding-top:0px',
 
-                                     h5("There are three steps for using the App:"),
-                                     column(6,h5("Step 1: specify an operating model"),img(src = "Step1.png",height=220,width=440)),
-                                     column(6,h5("Step 2: Define management procedures"),img(src = "Step2.png",height=220,width=440)),
-                                     column(6,h5("Step 3a: Run an MSE test"),img(src = "Step3a.png",height=220,width=160)),
-                                     column(6,h5("Step 3b: Visualize outcomes of the testing"),img(src = "Step3b.png",height=220,width=440))
+                                     h5("There are four steps for using the App:"),
+                                     column(6,h5("Step 1: Specify an operating model"),img(src = "Step1.png",height=220,width=440)),
+                                     column(6,h5("Step 2: Examine historical fishery"),img(src = "Step2a.png",height=220,width=440)),
+                                     column(6,h5("Step 3: Define management procedures"),img(src = "Step2.png",height=220,width=440)),
+                                     column(6,h5("Step 4: Run MSE and visualize outcomes"),img(src = "Step3b.png",height=220,width=440))
                               ),
 
 
@@ -834,22 +832,85 @@ fluidPage(
            #),
            )),box_height='95px'), # end of Fishery vertical Tabpanel
 
+      verticalTabPanel(id="HistResults", value=3,
+                       h5(strong("Step 2. Examine Historical Fishery")),
+                       column(12, style='height:800px',
 
-      verticalTabPanel(id="MS",value=3,
-                    h5(strong("Step 2. Define management procedures")),
+                              conditionalPanel('output.OM_L==0',{
+                                h5("Please select, load or sketch an operating model in step 1 above",style="color:darkgrey")
+                              }),
+                              hr(),
+
+                              conditionalPanel('output.OM_L==1',{
+
+
+                                tabsetPanel(id="HistRes1", selected=1,
+
+                                            tabPanel(h5("SSB"),
+
+                                                     tabsetPanel(id="SSBhist", selected=1,
+                                                                 tabPanel(h5("Time series"),
+                                                                          plotOutput("hist_SSBref_plot",height=520),
+
+                                                                          value=1),
+
+                                                                 tabPanel(h5("Table"),
+                                                                          h5("COMING SOON: historical SSB datatable to go here",style = "color:black"),
+                                                                          value=2)
+                                                     ),
+                                                     value=1),
+
+                                            tabPanel(h5("Surplus production"),
+
+                                                     tabsetPanel(id="SPhist", selected=1,
+                                                                 tabPanel(h5("Time series"),
+                                                                          plotOutput("hist_BvsSP_plot",height=520),
+
+                                                                          value=1),
+                                                                 tabPanel(h5("Other diagnostics"),
+                                                                          h5("COMING SOON: SP curves, implied serious harm etc",style = "color:black"),
+                                                                          value=2)
+
+                                                     ),
+                                                     value=2)
+
+
+                                ) # tabsetpanel
+
+                              }) # end of conditional OM_L==1
+                       ), # end of column 12
+
+                       box_height='95px'),
+
+
+      verticalTabPanel(id="MS",value=4,
+                    h5(strong("Step 3. Define Management Procedures")),
                     column(12, style='height:800px',
                        column(12, style='padding-left:0px',
-                              h5("One an operating model is specified you can define management procedures that make management recommendations
+                              h5("Once an operating model is specified you can define management procedures that make management recommendations
                                  based on estimates of stock status and exploition rates"),
                               hr()
                        ),
 
                        conditionalPanel('output.OM_L==1',
-                          column(12, style="height:450px",
 
+                          column(12,
+
+                                 column(12,
+                                        h5("A. Select management procedure presets for exploration of outcomes",style='font-weight:bold'),
+
+                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Frat",label = "Current F Ratios",style="color:red",width='200px',height='20px')),
+                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Crat",label = "Current Catch Ratios",style="color:red",width='200px',height='20px')),
+                                        div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_DFO",label = "DFO",style="color:red",width='200px',height='20px'))
+                                 )
+                                 #checkboxGroupButtons(inputId='MS_presets',label='B. Preset Management Strategies',choices=c("Current effort ratios","Current F ratios","Current Catch ratios"),status='danger'),
+                          ),
+
+                          column(12, style="height:470px",
+                                 hr(),
                               column(4,
 
-                                h5("A. Design a custom management procedure",style='font-weight:bold'),
+                                h5("B. Design a custom management procedure",style='font-weight:bold'),
                                 column(3,h5('Label:')),
                                 column(9,textInput("MS_Label",label=NULL)),
                                 radioButtons("MS_Origin","Origin of estimated variables",choiceNames=c("Perfect Information","Stock Assessment"), choiceValues=1:2,inline=T),
@@ -877,30 +938,19 @@ fluidPage(
 
                              ),
 
-                             column(5,style='padding-top:30px',
+                             column(5,style='padding-top:0px',
                                 plotOutput('HSplot'),
                                 column(7),
                                 column(5,actionButton("Build_MS","Build management procedure",style='color:red',icon=icon('cogs')))
                              )
                            ),
 
-                           column(12,
-                                  hr(),
-                                  column(12,
-                                       h5("B. Select from Management Procedure Presets",style='font-weight:bold'),
-
-                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Frat",label = "Current F Ratios",style="color:red",width='200px',height='20px')),
-                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_Crat",label = "Current Catch Ratios",style="color:red",width='200px',height='20px')),
-                                       div(style="display: inline-block;vertical-align:top; width: 200px;",actionButton("MS_DFO",label = "DFO",style="color:red",width='200px',height='20px'))
-                                  )
-                                  #checkboxGroupButtons(inputId='MS_presets',label='B. Preset Management Strategies',choices=c("Current effort ratios","Current F ratios","Current Catch ratios"),status='danger'),
-                           ),
 
                            column(12, style="padding-left:0px; height:150px",
                                   hr(),
                                   #uiOutput("SelectedHS"),
-                                  div(style="display: inline-block;vertical-align:top; width: 1200px;",selectInput("HS_sel",label="Selected Management procedures:",choices='',selected="",multiple=TRUE,width='1200px')),
-                                  div(style="display: inline-block; width: 200px;", br(), actionButton("MS_Clear",label = "Clear",style="color:red;",width='200px',height='20px')),
+                                  div(style="display: inline-block;vertical-align:top; width: 1100px;",selectInput("HS_sel",label="Selected Management procedures:",choices='',selected="",multiple=TRUE,width='1200px')),
+                                  div(style="display: inline-block; width: 300px;", br(), actionButton("MS_Clear",label = "Clear",style="color:red;",width='200px',height='20px')),
                            )
 
                        ), # end of if OM loaded
@@ -912,12 +962,12 @@ fluidPage(
                     ), # end of column 12
                        box_height='95px'),
 
-      verticalTabPanel(id="Results", value=4,
-                       h5(strong("Step 3. Management Outcomes")),
+      verticalTabPanel(id="Results", value=5,
+                       h5(strong("Step 4. Management Outcomes")),
                        column(12, style='height:800px',
 
                               conditionalPanel('output.MPsSpec==0',{
-                                h5("Please select at least one management procedure in Step 2 above",style="color:darkgrey")
+                                h5("Please select at least one management procedure in Step 3 above",style="color:darkgrey")
                               }),
                               hr(),
 
@@ -1020,14 +1070,14 @@ fluidPage(
                        ),
                        box_height='95px'),
 
-      verticalTabPanel(id="Hist", value=5,
+      verticalTabPanel(id="Hist", value=6,
                        h5("Detailed Operating Model Info"),
                        column(12, style='height:800px',
                               h5("This panel provides a complete description of the parameters and dynamics of the operating model used in testing."),
                               hr(),
 
                               conditionalPanel('output.OM_L==0',{
-                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Specify Fishery' panel above.",style="color:darkgrey")
+                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Step 1: Specify Fishery' panel above.",style="color:darkgrey")
 
                               }),
                               conditionalPanel('output.OM_L==1',{

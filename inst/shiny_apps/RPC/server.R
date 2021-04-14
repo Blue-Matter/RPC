@@ -1,14 +1,17 @@
 
 
+
 options(shiny.maxRequestSize=1000*1024^2)
 
 server <- function(input, output, session) {
 
+  #for (fl in list.files("./Source/Local")) source(file.path("./Source/Local", fl), local = TRUE)
+
   #All_MPs<<-avail('MP')
   #Sel_MPs<<-""
 
+  plotres<-100
   OMs<<-unique(avail('OM')[avail('OM')!='testOM'], c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
-
 
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
@@ -31,6 +34,9 @@ server <- function(input, output, session) {
   outputOptions(output,"All",suspendWhenHidden=FALSE)
   outputOptions(output,"Sel",suspendWhenHidden=FALSE)
   updateSelectInput(session,"HS_sel",choices=avail('MP'),selected="")
+
+  OBJs<<-reactiveValues(MSEhist="",MSEproj="")
+
 
   for (fl in list.files("./Source/MERA")) source(file.path("./Source/MERA", fl), local = TRUE)
 
@@ -64,7 +70,8 @@ server <- function(input, output, session) {
   observeEvent(input$SelectOM,{
     OM_temp <- get(input$SelectOMDD)
     OM <<- modOM(OM_temp,nsim)
-    runMSEhist(OM)
+    MSEhist<<-runMSEhist(OM)
+    OBJs$MSEhist<-MSEhist
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -81,7 +88,12 @@ server <- function(input, output, session) {
 
       OM_temp<-readRDS(file=filey$datapath)
       OM<<-modOM(OM_temp,nsim)
+      AM(paste0("Operating model loaded: ", filey$datapath))
+      MSEhist<<-runMSEhist(OM)
 
+      OM_L(1)
+      MSErun(0)
+      updateVerticalTabsetPanel(session,'Main',selected=3)
 
     },
 
@@ -93,21 +105,6 @@ server <- function(input, output, session) {
       return(0)
 
     })
-
-    if(class(OM)=='OM'){
-
-      AM(paste0("Operating model loaded: ", filey$datapath))
-      runMSEhist(OM)
-      OM_L(1)
-      MSErun(0)
-      updateVerticalTabsetPanel(session,'Main',selected=3)
-
-    }else{
-
-      shinyalert("Incorrect class of object", "This file should be an object of MSEtool class 'OM'", type = "error")
-      AM(paste0("Object not of class 'OM'", filey$datapath))
-
-    }
 
   })
 
@@ -121,7 +118,7 @@ server <- function(input, output, session) {
       OM<<-makeOM(input,PanelState,nsim)
     }
 
-    runMSEhist(OM)
+    MSEhist<<-runMSEhist(OM)
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -129,6 +126,11 @@ server <- function(input, output, session) {
 
   })
 
+
+  # Historical results panel -----------------------------------------------------
+
+  output$hist_SSBref_plot<-renderPlot(hist_SSBref_plot(OBJs),res=plotres)
+  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP_plot(OBJs),res=plotres)
 
   # Management Strategy Panel -----------------------------------------------------
 
@@ -181,43 +183,45 @@ server <- function(input, output, session) {
   # Results panel ------------------------------------------------
 
   observeEvent(input$runMSE,{
-
-    withProgress({
-      MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = T)
-      SMP1<-MSEproj@MPs[1]
-      SMP2 <- MSEproj@MPs[MSEproj@nMPs]
-      #if(MSEproj@nMPs>2)SMP3 <- MSEproj@MPs[3]
-
-      updateSelectInput(session,'SMP1',choices=MSEproj@MPs,selected = SMP1)
-      updateSelectInput(session,'SMP2',choices=MSEproj@MPs,selected = SMP2)
-      updateSelectInput(session,'StochMP',choices=MSEproj@MPs,selected = SMP1)
-      # updateSelectInput(session,'SMP3',choices=MSEproj@MPs,selected = SMP3)
-
-      MSErun(1)
-
-      #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
-
-    })
+    tryCatch(
+      {
+        withProgress(message="Running MSE Simulation test:", {
+          MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = T)
+          OBJs$MSEproj<-MSEproj
+          SMP1 <- MSEproj@MPs[1]
+          SMP2 <- MSEproj@MPs[MSEproj@nMPs]
+          #MPs$Sel<-MSEproj@MPs
+          updateSelectInput(session,'SMP1',choices=MSEproj@MPs,selected = SMP1)
+          updateSelectInput(session,'SMP2',choices=MSEproj@MPs,selected = SMP2)
+          updateSelectInput(session,'StochMP',choices=MSEproj@MPs,selected = SMP1)
+          MSErun(1)
+          #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
+        })
+      },
+      error = function(e){
+        shinyalert("MSE did not run", paste("Error:",e), type = "error")
+        AM(paste0(e,"\n"))
+        MSErun(0)
+      }
+    )
   })
 
 
-
-
-  output$B_proj_plot <- renderPlot(B_proj_plot())
-  output$B_prob_plot <- renderPlot(B_prob_plot())
-  output$B_stoch_plot <- renderPlot(B_stoch_plot(input))
-  output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(input))
+  output$B_proj_plot <- renderPlot(B_proj_plot(OBJs),res=plotres)
+  output$B_prob_plot <- renderPlot(B_prob_plot(OBJs),res=plotres)
+  output$B_stoch_plot <- renderPlot(B_stoch_plot(OBJs,input),res=plotres)
+  output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(OBJs,input),res=plotres)
 
   # OM panel --------------------------------------------------
 
-  output$plot_hist_bio <- renderPlot(hist_bio())
-  output$plot_hist_growth_I <- renderPlot(hist_growth_I())
-  output$plot_hist_growth_II <- renderPlot(hist_growth_II())
-  output$plot_hist_growth_III <- renderPlot(hist_growth_III())
-  output$plot_hist_maturity <- renderPlot(hist_maturity())
-  output$plot_hist_survival <- renderPlot(hist_survival())
-  output$plot_hist_spatial <- renderPlot(hist_spatial())
-  output$plot_hist_exp <- renderPlot(hist_exp())
+  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
+  output$plot_hist_growth_I <- renderPlot(hist_growth_I(OBJs),res=plotres)
+  output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
+  output$plot_hist_growth_III <- renderPlot(hist_growth_III(OBJs),res=plotres)
+  output$plot_hist_maturity <- renderPlot(hist_maturity(OBJs),res=plotres)
+  output$plot_hist_survival <- renderPlot(hist_survival(OBJs),res=plotres)
+  output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
+  output$plot_hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
 
 
   # Log  --------------------------------------------------------

@@ -91,8 +91,8 @@ stoch_plot_leg<-function(MPlabcols,MPind){
 
 # Called functions
 
-B_proj_plot<-function(dummy=1){
-
+B_proj_plot<-function(OBJs){
+  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1)
   layout(matrix(c(1,2),nrow=1),widths=c(1.5,0.5))
@@ -104,8 +104,8 @@ B_proj_plot<-function(dummy=1){
 
 }
 
-B_prob_plot<-function(dummy=1){
-
+B_prob_plot<-function(OBJs){
+  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1)
 
@@ -150,8 +150,9 @@ B_prob_plot<-function(dummy=1){
 
 }
 
-B_stoch_plot<-function(input){
+B_stoch_plot<-function(OBJs,input){
   # input=list(MPstoch1=MSEproj@MPs[1],MPstoch2=MSEproj@MPs[2],MPstoch3=MSEproj@MPs[3])
+  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1,alpha = 0.5)
   MPlabcols <- rainbow(nMP,start=0.2,end=1)
@@ -185,8 +186,9 @@ B_stoch_plot<-function(input){
 
 
 
-hist_SSB_sim<-function(input){
+hist_SSB_sim<-function(OBJs,input){
 
+  MSEproj<-OBJs$MSEproj
   proyears<-MSEproj@proyears
   nyears<-MSEproj@nyears
   cols<-c('red','blue','black')

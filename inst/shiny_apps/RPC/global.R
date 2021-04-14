@@ -10,22 +10,28 @@ library(MSEtool)
 library(SAMtool)
 library(DLMtool)
 library(MSEextra)
+library(shinyalert)
 
 #for (fl in list.files("./Source/UI")) source(file.path("./Source/UI", fl), local = TRUE)
-for (fl in list.files("./Source/RPCfuncs")) source(file.path("./Source/RPCfuncs", fl), local = TRUE)
+for (fl in list.files("./Source/RPCfuncs")) source(file.path("./Source/RPCfuncs", fl))
 
 #for (fl in list.files("./Data/OMs/")){
  # OM<<-readRDS(file.path("./Data/OMs", fl))
   #assign(OM@Name,OM,envir=globalenv())
 #}
 
-DFO_BoF_Herring<-readRDS("./data/OMs/DFO_BoF_Herring.rda")
-DFO_DEMO1<-readRDS("./data/OMs/DFO_DEMO1.rda")
-DFO_DEMO2<-readRDS("./data/OMs/DFO_DEMO2.rda")
+
+A_DFO_DEMO1<-readRDS("./data/OMs/DFO_DEMO1.rda")
+A_DFO_DEMO2<-readRDS("./data/OMs/DFO_DEMO2.rda")
 DFO_Inside_YE_Rockfish<-readRDS("./data/OMs/DFO_IYRF.rds")
+DFO_BoF_Herring<-readRDS("./data/OMs/Fit.rda")@OM
+DFO_HG_Herring<-readRDS("./data/OMs/HG_herring.rda")
+DFO_Inside_QB_Rockfish<-readRDS("./data/OMs/insQB_prelim.rds")
+DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD_QH.rds")
+DFO_Pacific_Hake<-readRDS("./data/OMs/Hake.rda")
 
 
-#remove(OM)
+remove(OM)
 
 #MSEhist<-readRDS("./Data/MSEhist.rda")# !alert
 

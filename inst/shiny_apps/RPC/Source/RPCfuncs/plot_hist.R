@@ -27,8 +27,9 @@ tsplot<-function(x,xlab="",ylab="",zeroyint=T,cols=list(colm="dark blue", col50=
 
 }
 
-hist_bio<-function(dummy=1){
+hist_bio<-function(OBJs){
 
+  MSEhist<-OBJs$MSEhist
   par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
   tsplot(x=apply(MSEhist@TSdata$SBiomass,1:2,sum),xlab="Historical Year",ylab="Spawning biomass")
   tsplot(apply(MSEhist@TSdata$Biomass,1:2,sum),xlab="Historical Year",ylab="Biomass")
@@ -39,17 +40,18 @@ hist_bio<-function(dummy=1){
 
 }
 
-hist_growth_I<-function(dummy=1)  plot('Growth', MSEhist, plot.num=1)
-hist_growth_II<-function(dummy=1)  plot('Growth', MSEhist, plot.num=2)
-hist_growth_III<-function(dummy=1)  plot('Growth', MSEhist, plot.num=3)
-hist_maturity<-function(dummy=1)  plot('Maturity', MSEhist)
-hist_survival<-function(dummy=1)  plot('M', MSEhist)
-hist_spatial<-function(dummy=1)  plot('Spatial', MSEhist)
+# testOM@nsim<-24; MSEhist <- runMSE(testOM,Hist=T)
+hist_growth_I<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=1)
+hist_growth_II<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=2)
+hist_growth_III<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=3)
+hist_maturity<-function(OBJs)  plot('Maturity', OBJs$MSEhist)
+hist_survival<-function(OBJs)  plot('M', OBJs$MSEhist)
+hist_spatial<-function(OBJs)  plot('Spatial', OBJs$MSEhist)
 
 
 
-hist_exp<-function(dummy=1){
-
+hist_exp<-function(OBJs){
+  MSEhist<-OBJs$MSEhist
   par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
   cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
   tsplot(apply(MSEhist@TSdata$Landings,1:2,sum),xlab="Historical Year",ylab="Landings",cols=cols)
