@@ -100,7 +100,7 @@ tabsetPanel(id="HistRes1", selected=1,
             tabPanel(h5("90% R/S"),
                      tabsetPanel(id="RpS90hist", selected=1,
                                  tabPanel(h5("Diagnostic"),
-                                          HTML("Myers et al. (1994) proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, relatively good recruitment has still been observed in light of high fishing mortality."),
+                                          HTML("<a href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, relatively good recruitment has still been observed in light of high fishing mortality."),
                                           plotOutput("hist_RpS90_plot",height=520),
                                           value=1),
 
