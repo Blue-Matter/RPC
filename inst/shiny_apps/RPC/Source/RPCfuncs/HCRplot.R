@@ -8,29 +8,39 @@ HCR_plot<-function(input){
   }
 
   if(input$MS_IVar==1){
-    xlab1="SSB relative to SSBMSY"
+    xlab1="SSB/SSB[MSY]"
+  }else if(input$MS_IVar==2){
+    xlab1="SSB/SSB[0]"
+  }else if(input$MS_IVar==3){
+    xlab1="SSB/Dynamic~SSB[0]"
+  }else if(input$MS_IVar==4){
+    xlab1="F/F[MSY]"
+  }else if(input$MS_IVar==5){
+    xlab1="F/F[0.1]"
   }else{
-    xlab1="SSB relative to unfished"
+    xlab1="F/F[40~'%'~SPR]"
   }
 
-  if(input$MS_Origin==1){
-    lab2="(perfect information)"
-  }else{
-    lab2="(estimated by stock assesment)"
+  if(input$MS_Origin=="Perfect"){
+    lab2="(perfect~information)"
+  }else if(input$MS_Origin=="SCA_Pope"){
+    lab2="(estimated~by~stock~assesment)"
+  }else {
+    lab2="(from~assessment~emulator)"
   }
 
   if(input$MS_DVar==1){
-    ylab1="F relative to FMSY"
+    ylab1="F/F[MSY]"
   }else if(input$MS_DVar==2){
-    ylab1="F relative to F0.1"
+    ylab1="F/F[0.1]"
   }else if(input$MS_DVar==3){
-    ylab1="F relative to Fmax"
+    ylab1="F/F[max]"
   }else{
-    ylab1="F relative to FSPR 40%"
+    ylab1="F/F[40~'%'~SPR]"
   }
 
-  xlab<-paste(xlab1,lab2)
-  ylab<-paste(ylab1,lab2)
+  xlab<-parse(text = paste0(xlab1, "~", lab2))
+  ylab<-parse(text = paste0(ylab1, "~", lab2))
 
   if(input$MS_control==1){
     xs<-c(0,xmax)

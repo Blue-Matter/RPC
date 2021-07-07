@@ -9,6 +9,9 @@ library(shinydashboard)
 library(MSEtool)
 library(SAMtool)
 library(DLMtool)
+if(!requireNamespace("MSEextra", quietly = TRUE)) {
+  MSEtool::MSEextra()
+}
 library(MSEextra)
 library(shinyalert)
 
@@ -27,7 +30,7 @@ DFO_Inside_YE_Rockfish<-readRDS("./data/OMs/DFO_IYRF.rds")
 DFO_BoF_Herring<-readRDS("./data/OMs/Fit.rda")@OM
 DFO_HG_Herring<-readRDS("./data/OMs/HG_herring.rda")
 DFO_Inside_QB_Rockfish<-readRDS("./data/OMs/insQB_prelim.rds")
-DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD_QH.rds")
+DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
 #DFO_Pacific_Hake<-readRDS("./data/OMs/Hake.rda")
 
 

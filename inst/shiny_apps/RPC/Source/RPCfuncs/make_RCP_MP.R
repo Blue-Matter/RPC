@@ -20,11 +20,7 @@ getMPs<-function(type="Frat"){
 
 
 make_RPC_MP<-function(input){
-  if(input$MS_Origin==1){
-    Assess<-"Perfect" # need <<- to bring into this namespace
-  }else{
-    Assess<-"SCA_Pope"
-  }
+  Assess <- input$MS_Origin # will need <<- to bring into this namespace
 
   if(input$MS_IVar==1){ # SSBMSY
     OCP_type="SSB_SSBMSY"

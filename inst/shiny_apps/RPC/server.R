@@ -19,7 +19,6 @@ server <- function(input, output, session) {
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
 
-
   MPsSpec<-reactiveVal(0)
   output$MPsSpec <- reactive({MPsSpec()})
   outputOptions(output, "MPsSpec",suspendWhenHidden=FALSE)
@@ -36,7 +35,6 @@ server <- function(input, output, session) {
   updateSelectInput(session,"HS_sel",choices=avail('MP'),selected="")
 
   OBJs<<-reactiveValues(MSEhist="",MSEproj="")
-
 
   for (fl in list.files("./Source/MERA")) source(file.path("./Source/MERA", fl), local = TRUE)
 
@@ -67,9 +65,17 @@ server <- function(input, output, session) {
   # Fishery panel ---------------------------------------------------
 
   # OM select
+  observeEvent(input$SelectOMDD,{
+    OM_temp <- get(input$SelectOMDD)
+    updateSliderInput(session, "Custom_nsim",
+                      min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
+    updateSliderInput(session, "Custom_proyears",
+                      min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+  })
+
   observeEvent(input$SelectOM,{
     OM_temp <- get(input$SelectOMDD)
-    OM <<- modOM(OM_temp,nsim)
+    OM <<- modOM(OM_temp, input$Custom_nsim, input$Custom_proyears)
     MSEhist<<-runMSEhist(OM)
     OBJs$MSEhist<-MSEhist
     OM_L(1)
@@ -80,21 +86,18 @@ server <- function(input, output, session) {
   })
 
   # OM load
-  observeEvent(input$Load_OM,{
-
-    filey<-input$Load_OM
-
+  observeEvent(input$Load_OMprelim,{
+    filey <- input$Load_OMprelim
     tryCatch({
 
-      OM_temp<-readRDS(file=filey$datapath)
-      OM<<-modOM(OM_temp,nsim)
+      OM_temp<<-readRDS(file=filey$datapath)
+      stopifnot(inherits(OM_temp, "OM"))
+
+      updateSliderInput(session, "Custom_nsim_load",
+                        min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
+      updateSliderInput(session, "Custom_proyears_load",
+                        min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
       AM(paste0("Operating model loaded: ", filey$datapath))
-      MSEhist<<-runMSEhist(OM)
-
-      OM_L(1)
-      MSErun(0)
-      updateVerticalTabsetPanel(session,'Main',selected=3)
-
     },
 
     error = function(e){
@@ -105,7 +108,16 @@ server <- function(input, output, session) {
       return(0)
 
     })
+  })
 
+  observeEvent(input$Load_OM,{
+    OM<<-modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
+    MSEhist<<-runMSEhist(OM)
+    OBJs$MSEhist<-MSEhist
+
+    OM_L(1)
+    MSErun(0)
+    updateVerticalTabsetPanel(session,'Main',selected=3)
   })
 
   observeEvent(input$BuildOM,{
@@ -129,8 +141,23 @@ server <- function(input, output, session) {
 
   # Historical results panel -----------------------------------------------------
 
-  output$hist_SSBref_plot<-renderPlot(hist_SSBref_plot(OBJs),res=plotres)
-  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP_plot(OBJs),res=plotres)
+  output$hist_SSBref_plot<-renderPlot(hist_SSBref(OBJs),res=plotres)
+  output$hist_SSBref_table<-renderTable(hist_SSBref(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
+
+  output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
+  output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
+
+  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP(OBJs),res=plotres)
+  output$hist_BvsSP_table<-renderTable(hist_BvsSP(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
+
+  output$hist_RpS_plot<-renderPlot(hist_RpS(OBJs),res=plotres)
+  output$hist_RpS_table<-renderTable(hist_RpS(OBJs, figure = FALSE), rownames = TRUE)
+
+  output$hist_Rmax_plot<-renderPlot(hist_Rmax(OBJs),res=plotres)
+  output$hist_Rmax_table<-renderTable(hist_Rmax(OBJs, figure = FALSE), rownames = TRUE)
+
+  output$hist_RpS90_plot<-renderPlot(hist_RpS90(OBJs),res=plotres)
+  output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
 
   # Management Strategy Panel -----------------------------------------------------
 
