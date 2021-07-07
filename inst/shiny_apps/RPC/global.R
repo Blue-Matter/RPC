@@ -1,7 +1,7 @@
 library(dplyr)
 library(DT)
-library(ggplot2)
-library(ggrepel)
+#library(ggplot2)
+#library(ggrepel)
 library(shinyWidgets)
 library(shiny)
 library(shinyBS)
@@ -34,7 +34,7 @@ DFO_Inside_QB_Rockfish<-readRDS("./data/OMs/insQB_prelim.rds")
 DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
 #DFO_Pacific_Hake<-readRDS("./data/OMs/Hake.rda")
 
-#OMs<<-unique(avail('OM')[avail('OM')!='testOM'])
+OMs<<-unique(avail('OM')[avail('OM')!='testOM'])
 
 
 #MSEhist<-readRDS("./Data/MSEhist.rda")# !alert

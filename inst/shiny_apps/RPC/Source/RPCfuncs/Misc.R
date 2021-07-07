@@ -13,7 +13,7 @@ modOM<<-function(OM_temp,nsim,proyears){
   OM_temp<-MSEtool::SubCpars(OM_temp,sims=1:nsim)
   OM_temp@nsim<-nsim
   proyears_full <- OM_temp@proyears
-  if(!missing(proyears) && proyears < proyears_full) { # Needs to be incorporated into MSEtool
+  if(!missing(proyears) && proyears < proyears_full) { # Add to MSEtool
     OM_temp@proyears <- proyears
     cpars <- OM_temp@cpars
     n_cpars <- names(cpars)
@@ -49,7 +49,7 @@ modOM<<-function(OM_temp,nsim,proyears){
 
 runMSEhist<<-function(OM){
   withProgress(message = "Constructing operating model", value = 0, {
-    MSEhist<-runMSE(OM,Hist=T,extended=T)
+    MSEhist <- runMSE(OM, Hist = TRUE)
   })
   MSEhist
   #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #

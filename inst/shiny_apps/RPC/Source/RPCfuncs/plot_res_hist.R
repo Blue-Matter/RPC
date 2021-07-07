@@ -113,7 +113,7 @@ hist_R <- function(OBJs, figure = TRUE) {
     par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
 
     # Recruitment by year
-    tsplot(out$predR_y,yrs=out$yrs,xlab="Year",ylab="Recruitment",zeroyint=TRUE)
+    tsplot(out$R,yrs=out$yrs,xlab="Year",ylab="Recruitment",zeroyint=TRUE)
     abline(h = 0)
 
     # Plot stock-recruit relationship

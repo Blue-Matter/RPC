@@ -213,7 +213,7 @@ server <- function(input, output, session) {
     tryCatch(
       {
         withProgress(message="Running MSE Simulation test:", {
-          MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = T)
+          MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = TRUE)
           OBJs$MSEproj<-MSEproj
           SMP1 <- MSEproj@MPs[1]
           SMP2 <- MSEproj@MPs[MSEproj@nMPs]
@@ -249,6 +249,7 @@ server <- function(input, output, session) {
   output$plot_hist_survival <- renderPlot(hist_survival(OBJs),res=plotres)
   output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
   output$plot_hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
+  output$plot_hist_sel <- renderPlot(hist_sel(OBJs),res=plotres)
 
 
   # Log  --------------------------------------------------------

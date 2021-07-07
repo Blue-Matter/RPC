@@ -108,7 +108,10 @@ fluidPage(
                        h5(strong("Step 2. Examine Historical Fishery")),
                        column(12, style='height:800px',
                               conditionalPanel('output.OM_L==0',{
-                                h5("Please select, load or sketch an operating model in step 1 above",style="color:darkgrey")
+                                h5("Please select, load or sketch an operating model in step 1 above.")
+                              }),
+                              conditionalPanel('output.OM_L==1',{
+                                h5("These figures are intended to help guide selection of biomass limit reference points based on guidance from the literature.")
                               }),
                               hr(),
 
@@ -120,24 +123,24 @@ fluidPage(
                        ),
                        box_height='95px'),
 
-
       verticalTabPanel(id="MS",value=4,
                     h5(strong("Step 3. Define Management Procedures")),
                     column(12, style='height:800px',
                        column(12, style='padding-left:0px',
                               h5("Once an operating model is specified you can define management procedures that make management recommendations
-                                 based on estimates of stock status and exploition rates"),
+                                 based on estimates of stock status and exploitation rates"),
                               hr()
                        ),
 
-                       conditionalPanel('output.OM_L==1',
-                         source(file.path("ui", "ui_MP.R"), local = TRUE)$value
-                       ), # end of if OM loaded
                        conditionalPanel('output.OM_L==0',
                           column(12, style="800px",
                                  h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Step 1. Specify Operating Model' panel above.",style="color:darkgrey")
                           )
-                       ) # end of if OM not loaded
+                       ),
+
+                       conditionalPanel('output.OM_L==1',
+                                        source(file.path("ui", "ui_MP.R"), local = TRUE)$value
+                       )
                     ), # end of column 12
                        box_height='95px'),
 
@@ -183,7 +186,7 @@ fluidPage(
                               }),
                               conditionalPanel('output.OM_L==1',{
                                 source(file.path("ui", "ui_OM.R"), local = TRUE)$value # Additional OM plots
-                              }) # end of conditional OM_L==1
+                              })
 
                        ),
                        box_height='95px'),
