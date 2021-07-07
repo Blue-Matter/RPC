@@ -21,44 +21,53 @@ column(12,
                      radioButtons("MS_Origin", "Origin of estimated variables",
                                   choiceNames=c("Perfect Information", "Stock Assessment", "Assessment Shortcut"),
                                   choiceValues=c("Perfect", "SCA_Pope", "Shortcut2"),inline=T),
-                     radioButtons("MS_IVar","Operational control point (HCR independent variable)",
-                                  choiceNames=list(HTML("SSB / SSB<sub>MSY</sub>"),
-                                                   HTML("Depletion (SSB / Initial SSB<sub>0</sub>)"),
-                                                   HTML("Dynamic depletion (SSB / Dynamic SSB<sub>0</sub>)"),
-                                                   HTML("F / F<sub>MSY</sub>"),
-                                                   HTML("F / F<sub>0.1</sub>"),
-                                                   HTML("F / F<sub>40% SPR</sub>")),
-                                  choiceValues=1:6,inline=FALSE),
                      radioButtons("MS_DVar","Output type (dependent variable)",
                                   choiceNames=list(HTML("F / F<sub>MSY</sub>"),
                                                    HTML("F / F<sub>0.1</sub>"),
                                                    HTML("F / F<sub>max</sub>"),
-                                                   HTML("F / F<sub>40% SPR</sub>")),
+                                                   HTML("F / F<sub>SPR</sub>")),
                                   choiceValues=1:4,inline=T),
-                     radioButtons("MS_control","Number of control points",choiceNames=c("None (constant)","2"),choiceValues=1:2,inline=T)
+                     radioButtons("MS_control","Number of operational control points (OCP)",choiceNames=c("None (Fixed F)", "2"),choiceValues=1:2,inline=T),
+                     conditionalPanel("input.MS_control != 1",
+                                      radioButtons("MS_IVar","OCP type (Harvest control rule independent variable)",
+                                                   choiceNames=list(HTML("SSB / SSB<sub>MSY</sub>"),
+                                                                    HTML("Depletion (SSB / Initial SSB<sub>0</sub>)"),
+                                                                    HTML("Dynamic depletion (SSB / Dynamic SSB<sub>0</sub>)"),
+                                                                    HTML("F / F<sub>MSY</sub>"),
+                                                                    HTML("F / F<sub>0.1</sub>"),
+                                                                    HTML("F / F<sub>SPR</sub>")),
+                                                   choiceValues=1:6,inline=FALSE)
+                                      ),
 
               ),
               column(3,style='padding-top:30px; padding-left:0px',
 
                      conditionalPanel("input.MS_control<5", # Not sketching
                                       setSliderColor(rep("orange", 6), 1:6),
+                                      conditionalPanel("input.MS_IVar == 6",
+                                                       column(12, sliderInput("SPR_OCP", "Control point spawning potential ratio",min=0.1,max=0.7,value=0.4,step=0.01))
+                                      ),
+                                      conditionalPanel("input.MS_DVar == 4",
+                                                       column(12, sliderInput("SPR_targ", "Output spawning potential ratio",min=0.1,max=0.7,value=0.4,step=0.01))
+                                      ),
+
                                       conditionalPanel("input.MS_control==1", # at least 2 control points,
-                                                       column(12,sliderInput('CP_yint',"Y intercept",min=0,max=2,value=1,step=0.02))
+                                                       column(12,sliderInput('CP_yint',"Value of output",min=0,max=2,value=1,step=0.02))
                                       ),
                                       conditionalPanel("input.MS_control==2", # at least 2 control points,
-                                                       column(6,sliderInput('CP_1_x',"control point 1: x",min=0,max=2,value=0.4,step=0.02)),
+                                                       column(6,sliderInput('CP_1_x',"Control point 1: x",min=0,max=2,value=0.4,step=0.02)),
                                                        column(6,sliderInput('CP_1_y',"y",min=0,max=2,value=0,step=0.02)),
 
-                                                       column(6,sliderInput('CP_2_x',"control point 2: x",min=0,max=2,value=1,step=0.02)),
+                                                       column(6,sliderInput('CP_2_x',"Control point 2: x",min=0,max=2,value=1,step=0.02)),
                                                        column(6,sliderInput('CP_2_y',"y",min=0,max=2,value=1,step=0.02))
                                       )
-
                      )
-
               ),
 
               column(5,style='padding-top:0px',
-                     plotOutput('HSplot'),
+                     conditionalPanel("input.MS_control != 1",
+                                      plotOutput('HSplot')
+                                      ),
                      column(7),
                      column(5,actionButton("Build_MS","Build management procedure",style='color:red',icon=icon('cogs')))
               )

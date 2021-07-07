@@ -19,45 +19,46 @@ getMPs<-function(type="Frat"){
 
 
 
-make_RPC_MP<-function(input){
-  Assess <- input$MS_Origin # will need <<- to bring into this namespace
+make_RPC_MP<-function(input) {
+  Assess <- input$MS_Origin
+  Ass <<- get(Assess)
 
-  if(input$MS_IVar==1){ # SSBMSY
-    OCP_type="SSB_SSBMSY"
-  }else{
-    OCP_type="SSB_SSB0"
+  if(input$MS_IVar==1) { # SSBMSY
+    OCP_type <- "SSB_SSBMSY"
+  } else if(input$MS_IVar==2) { # initial SSB0
+    OCP_type <- "SSB_SSB0"
+  } else if(input$MS_IVar==3) {
+    OCP_type <- "SSB_dSSB0"
+  } else if(input$MS_IVar==4) {
+    OCP_type <- "F_FMSY"
+  } else if(input$MS_IVar==5) {
+    OCP_type <- "F_F01"
+  } else if(input$MS_IVar==6) {
+    OCP_type <- "F_FSPR"
   }
+  SPR_OCP <- ifelse(input$MS_IVar==6, input$SPR_OCP, NA_real_)
 
-  if(input$MS_IVar==1){
-    xlab1="SSB relative to SSBMSY"
-  }else{
-    xlab1="SSB relative to unfished"
-  }
-
-
-  if(input$MS_DVar==1){
+  if(input$MS_DVar==1) {
     Ftarget_type="FMSY"
-  }else if(input$MS_DVar==2){
+  } else if(input$MS_DVar==2) {
     Ftarget_type="F01"
-  }else if(input$MS_DVar==3){
+  } else if(input$MS_DVar==3) {
     Ftarget_type="Fmax"
-  }else{
+  } else{
     Ftarget_type="FSPR"
   }
-  SPR=0.4
+  SPR_targ <- ifelse(input$MS_DVar==4, input$SPR_targ, NA_real_)
 
   if(input$MS_control==1){
     relF_min=input$CP_yint
     relF_max=input$CP_yint
-    LOCP=0
-    TOCP=0.01
+    LOCP <- TOCP <- 0
   }else{
     relF_min=input$CP_1_x
     relF_max=input$CP_2_x
     LOCP=input$CP_1_y
     TOCP=input$CP_2_y
   }
-
 
   if(input$MS_Label==""){
     MPstr_prefix<-"MP"
@@ -67,7 +68,7 @@ make_RPC_MP<-function(input){
 
   MPstr_temp<-paste(MPstr_prefix,"1",sep="_")
 
-  while(MPstr_temp%in%MPs$Sel){
+  while(MPstr_prefix %in% MPs$Sel){
     ind<-as.numeric(strsplit(MPstr_temp,"_")[[1]][2])+1
     MPstr_temp<-paste(MPstr_prefix,ind,sep="_")
   }
@@ -80,7 +81,22 @@ make_RPC_MP<-function(input){
     MPs$Sel<<-c(MPs$Sel,MPstr_temp)
   }
 
-  Ass<<-get(Assess)
-  assign(MPstr_temp,make_MP(.Assess=Ass,HCR_ramp,OCP_type=OCP_type,Ftarget_type=Ftarget_type,LOCP=LOCP,TOCP=TOCP,relF_min=relF_min,relF_max=relF_max,SPR=SPR), envir = .GlobalEnv)
-  AM(paste0("Management Procedure '",MPstr_temp,"' constructed",paste("  (Assess =",Assess,", OCP_type =", OCP_type,", Ftarget_type =",Ftarget_type,", LOCP =",LOCP, ", TOCP =", TOCP, ", relF_min =",relF_min, "refF_max =",relF_max,",SPR = ",SPR,")")))
+  if(packageVersion("SAMtool") >= "1.2.1") {
+    assign(MPstr_temp, make_MP(Ass, HCR_segment, OCP_type = OCP_type, Ftarget_type = Ftarget_type,
+                               OCP = c(LOCP, TOCP), relF = c(relF_min, relF_max),
+                               SPR_OCP = SPR_OCP, SPR_targ = SPR_targ),
+           envir = .GlobalEnv)
+    AM(paste0("Management Procedure '", MPstr_temp,"' constructed as:\n",
+              paste0("  make_MP(Assess = ", Assess, ", HCR = HCR_ramp, OCP_type = \"", OCP_type, "\", Ftarget_type = \"", Ftarget_type,
+                     "\", LOCP = ", LOCP, ", TOCP = ", TOCP, ", relF_min = ", relF_min, ", refF_max = ", relF_max,
+                     ", SPR_OCP = ", SPR_OCP, ", SPR_targ = ", SPR_targ, ")")))
+  } else {
+    assign(MPstr_temp, make_MP(Ass, HCR_ramp, OCP_type = OCP_type, Ftarget_type = Ftarget_type, LOCP = LOCP, TOCP = TOCP,
+                               relF_min = relF_min, relF_max = relF_max, SPR_OCP = SPR_OCP, SPR_targ = SPR_targ),
+           envir = .GlobalEnv)
+    AM(paste0("Management Procedure '", MPstr_temp,"' constructed as:\n",
+              paste0("  make_MP(Assess = ", Assess, ", HCR = HCR_ramp, OCP_type = \"", OCP_type, "\", Ftarget_type = \"", Ftarget_type,
+                     "\", LOCP = ", LOCP, ", TOCP = ", TOCP, ", relF_min = ", relF_min, ", refF_max = ", relF_max,
+                     ", SPR_OCP = ", SPR_OCP, ", SPR_targ = ", SPR_targ, ")")))
+  }
 }

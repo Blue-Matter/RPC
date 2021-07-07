@@ -4,13 +4,13 @@ HCR_plot<-function(input){
   if(input$MS_IVar==1){
     xmax<-2.5
   }else{
-    xmax=1
+    xmax=1.2
   }
 
   if(input$MS_IVar==1){
     xlab1="SSB/SSB[MSY]"
   }else if(input$MS_IVar==2){
-    xlab1="SSB/SSB[0]"
+    xlab1="SSB/Initial~SSB[0]"
   }else if(input$MS_IVar==3){
     xlab1="SSB/Dynamic~SSB[0]"
   }else if(input$MS_IVar==4){
@@ -18,7 +18,7 @@ HCR_plot<-function(input){
   }else if(input$MS_IVar==5){
     xlab1="F/F[0.1]"
   }else{
-    xlab1="F/F[40~'%'~SPR]"
+    xlab1=paste0("F/F[", 100 * input$SPR_OCP, "~'%'~SPR]")
   }
 
   if(input$MS_Origin=="Perfect"){
@@ -36,7 +36,7 @@ HCR_plot<-function(input){
   }else if(input$MS_DVar==3){
     ylab1="F/F[max]"
   }else{
-    ylab1="F/F[40~'%'~SPR]"
+    ylab1=paste0("F/F[", 100 * input$SPR_targ, "~'%'~SPR]")
   }
 
   xlab<-parse(text = paste0(xlab1, "~", lab2))
@@ -48,9 +48,8 @@ HCR_plot<-function(input){
     linecol='orange'
 
   }else{
-
     xs<-c(0,input$CP_1_x,input$CP_2_x,xmax)
-    ys<-c(0,input$CP_1_y,input$CP_2_y,input$CP_2_y)
+    ys<-c(input$CP_1_y,input$CP_1_y,input$CP_2_y,input$CP_2_y)
     linecol="#0000ff95"
   }
 
