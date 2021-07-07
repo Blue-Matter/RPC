@@ -913,8 +913,8 @@ fluidPage(
                                                                           HTML("<a href=\"https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2018/2018_009-eng.html\">Kronlund et al. (2018)</a> used surplus production as a metric for identifying potential serious harm. Biomass thresholds below which there was poor surplus production, or biomass during a time when poor surplus production is observed, are obvious candidates for limit reference points."),
                                                                           plotOutput("hist_BvsSP_plot",height=520),
                                                                           value=1),
-                                                                 tabPanel(h5("Other diagnostics"),
-                                                                          h5("COMING SOON: SP curves, implied serious harm etc",style = "color:black"),
+                                                                 tabPanel(h5("Table"),
+                                                                          tableOutput("hist_BvsSP_table"),
                                                                           value=2)
 
                                                      ),
@@ -936,10 +936,10 @@ fluidPage(
 
                                             tabPanel(HTML("<h5>50% R<sub>max</sub></h5>"),
                                                      tabsetPanel(id="Rmaxhist", selected=1,
-                                                                 tabPanel(h5("Time series"),
-                                                                          HTML("<p>Mace (1994) proposed that the SSB (SSB<sub>50%Rmax</sub>) corresponding to 50% of maximum recruitment from the stock-recruit function as a limit reference point for recruitment overfishing.
+                                                                 tabPanel(h5("Diagnostic"),
+                                                                          HTML("<p><a href=\"https://doi.org/10.1139/f94-013\">Mace (1994)</a> proposed that the SSB (SSB<sub>50%Rmax</sub>) corresponding to 50% of maximum recruitment from the stock-recruit function as a limit reference point for recruitment overfishing.
                                                                           However, this diagnostic can be indeterminate if the stock has not been observed to be below SSB<sub>50%Rmax</sub>."),
-                                                                          HTML("<p>Myers et al. (1994) developed a diagnostic procedure to determine the appropriateness of SSB<sub>50%Rmax</sub>, and potentially any candidate LRP (see their Figure 2 reproduced below). The slope of
+                                                                          HTML("<p><a href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> developed a diagnostic procedure to determine the appropriateness of SSB<sub>50%Rmax</sub>, and potentially any candidate LRP (see their Figure 2 reproduced below). The slope of
                                                                           a regression line of log(R) vs. log(SSB) with points above the LRP should be lower than from points below. If the slope-above is steeper than the slope-below, then the candidate LRP may not be high enough.
                                                                           On the other hand, if the slope-above and slope-below are both negative, then the candidate LRP may be overly cautious.</p>"),
                                                                           HTML("<p>The left figure below shows the stock-recruit relationship (lines) along with historical value scatter points (median in black points). The right shows the log(R) and log(SSB) with the regression lines above and below SSB<sub>50%Rmax</sub>.
@@ -957,8 +957,8 @@ fluidPage(
 
                                             tabPanel(h5("90% R/S"),
                                                      tabsetPanel(id="RpS90hist", selected=1,
-                                                                 tabPanel(h5("Time series"),
-                                                                          HTML("Myers et al. (1994) proposed an LRP at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner. The idea is that at this biomass, relatively good recruitment has still been observed in light of high fishing mortality."),
+                                                                 tabPanel(h5("Diagnostic"),
+                                                                          HTML("Myers et al. (1994) proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, relatively good recruitment has still been observed in light of high fishing mortality."),
                                                                           plotOutput("hist_RpS90_plot",height=520),
                                                                           value=1),
 

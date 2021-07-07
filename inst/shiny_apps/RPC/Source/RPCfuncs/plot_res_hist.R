@@ -91,7 +91,7 @@ hist_BvsSP<-function(OBJs, figure = TRUE){
     #legend('topright',legend=c("Median","Sim 1","Sim 2","Sim 3","All sims"),text.col=c("black","red","green","blue","dark grey"),bty="n")
 
   } else {
-    out <- make_df(SP, hy)
+    out <- make_df(SP, hy[-length(hy)])
     return(out)
   }
 }
