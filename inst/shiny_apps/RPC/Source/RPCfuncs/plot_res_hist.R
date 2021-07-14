@@ -1,4 +1,5 @@
-hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asymptotic", "Dynamic")) {
+hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asymptotic", "Dynamic"),
+                      prob_ratio = NA, prob_ylim = c(0, 1)) {
   SSBtab <- match.arg(SSBtab)
 
   MSEh<-OBJs$MSEhist
@@ -9,32 +10,35 @@ hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asympto
   SSB<-apply(MSEh@TSdata$SBiomass,1:2,sum)
 
   SSB0h<-array(SSB[,1],dim(SSB))
-  SSB0d<-MSEh@Ref$Dynamic_Unfished$SSB0
   SSB0a<-MSEh@Ref$ByYear$SSB0
+  SSB0d<-MSEh@Ref$Dynamic_Unfished$SSB0
 
   SSBrh<-SSB/SSB0h
   SSBra<-SSB/SSB0a[,1:nyh]
   SSBrd<-SSB/SSB0d[,1:nyh]
 
-  lev<-0.4
-  pmat4<-cbind(apply(SSBrh>lev,2,mean),apply(SSBra>lev,2,mean),apply(SSBrd>lev,2,mean))
-  lev<-0.1
-  pmat1<-cbind(apply(SSBrh>lev,2,mean),apply(SSBra>lev,2,mean),apply(SSBrd>lev,2,mean))
-
   if(figure) {
-    par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
-    tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
-    tsplot(x=SSBrh,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Initial~SSB[0]))
-    tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Asymptotic~SSB[0]))
-    tsplot(x=SSBrd,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Dynamic~SSB[0]))
+    if(is.na(prob_ratio)) {
+      par(mfcol=c(2,2),mai=c(0.3,0.8,0.2,0.1),omi=c(0.6,0,0,0))
+      tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
+      tsplot(x=SSBrh,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Initial~SSB[0]))
+      tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Asymptotic~SSB[0]))
+      tsplot(x=SSBrd,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Dynamic~SSB[0]))
+    } else {
+      pmat <- sapply(list(SSBrh, SSBra, SSBrd), function(x) apply(x > prob_ratio, 2, mean))
 
-    matplot(hy,pmat1,type='l',lty=c(1,1,2),col=c('grey','black','black'),ylab="Probability of below 10% ref pt")
+      matplot(hy,pmat,type='o',lty=c(1,2,3), ylim = prob_ylim, col = "black", lwd = 1.75,
+              pch = c(16, 1, 4),
+              xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[0]>", prob_ratio)))
 
-    #plot(1,axes=F,ylab="",col='white',xlab="")
-    legend('bottomleft',legend=c('Initial',"Asymptotic","Dynamic"),
-           col=c('grey','black','black'), lty=c(1,1,2),text.col=c('grey','black','black'),
-           title=expression(SSB[0]~ref~pts),title.col='black',bty='n',cex=1)
-    matplot(hy,pmat4,type='l',lty=c(1,1,2),col=c('grey','black','black'),ylab="Probability of below 40% ref pt")
+      legend('bottomleft',legend=c("Initial", "Asymptotic", "Dynamic"), lwd = 1.75,
+             #col=c('grey','black','black'),
+             pch = c(16, 1, 4),
+             lty=c(1,2,3), #text.col=c('grey','black','black'),
+             title=expression(SSB[0]~Type),#title.col='black',
+             bty='n',cex=1)
+    }
+
   } else {
 
     if(SSBtab == "SSB") {
@@ -97,7 +101,7 @@ hist_BvsSP<-function(OBJs, figure = TRUE){
 }
 
 
-hist_R <- function(OBJs, figure = TRUE) {
+hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
 
   Hist <- OBJs$MSEhist
   out <- stock_recruit_int(Hist)
@@ -110,30 +114,77 @@ hist_R <- function(OBJs, figure = TRUE) {
   Rdev <- log(out$R/out$predR_y)
 
   if(figure) {
-    par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
+    if(SR_only) {
+      # Plot stock-recruit relationship
+      if(missing(SR_xlim)) SR_xlim <- c(0, max(out$SSB))
+      if(missing(SR_ylim)) SR_ylim <- c(0, max(out$R))
+      if(missing(SR_y_RPS0)) {
+        SR_y_RPS0 <- Hist@OM@nyears
+      } else if(SR_y_RPS0 > Hist@OM@nyears) { # convert calendar year to matrix column
+        SR_y_RPS0 <- max(1, SR_y_RPS0 - Hist@OM@CurrentYr + Hist@OM@nyears)
+      }
 
-    # Recruitment by year
-    tsplot(out$R,yrs=out$yrs,xlab="Year",ylab="Recruitment",zeroyint=TRUE)
-    abline(h = 0)
+      matplot(out$SSB, out$R, typ = "n", xlim = SR_xlim, ylim = SR_ylim,
+              xlab = "Spawning biomass", ylab = "Recruitment")
+      if(any(SR_include == 2)) {
+        plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
+      }
+      if(any(SR_include == 1)) {
+        matpoints(out$SSB, out$R, pch = 16, col = "#99999920")
+        points(medSSB, medR, pch = 19)
 
-    # Plot stock-recruit relationship
-    matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-            xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
-    plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
-    points(medSSB, medR, pch = 19)
-    legend("topright", c("Median", "All sims"), text.col = c("black", "dark grey"), bty = "n")
-    abline(h = 0, col = "grey")
+        legend("topright", c("Median", "All sims"), text.col = c("black", "dark grey"), bty = "n")
+      }
+      abline(h = 0, col = "grey")
 
-    # log-recruitment deviation
-    tsplot(Rdev,yrs=out$yrs,xlab="Year",ylab="Log recruitment deviation",zeroyint=FALSE)
-    abline(h = 0, lty = 3)
+      if(any(SR_include == 3)) {
+        StockPars <- Hist@SampPars$Stock
+        FleetPars <- Hist@SampPars$Fleet
 
-    ## Recruitment deviations vs SSB
-    matplot(out$SSB, Rdev, typ = "p", xlim = c(0, max(out$SSB)), #ylim = c(0, max(R)),
-            col = "#99999920", pch = 19,
-            xlab = "Spawning biomass", ylab = "Log recruitment deviation")
-    plotquant(Rdev, yrs = medSSB, addline = TRUE)
-    abline(h = 0, lty = 3)
+        RpS_crash <- median(1/Hist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
+
+        RpS_0 <- vapply(1:Hist@OM@nsim, function(x, y) {
+          MSEtool:::Ref_int_cpp(1e-8, M_at_Age = StockPars$M_ageArray[x, , y],
+                                Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+                                V_at_Age = Hist@SampPars$Fleet$V[x, , y],
+                                StockPars$SRrel[x], maxage = StockPars$maxage,
+                                plusgroup = StockPars$plusgroup)[3, ]
+        }, numeric(1), y = SR_y_RPS0) %>% median()
+
+        RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
+
+        abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")
+        abline(a = 0, b = RpS_med, lty = 2, lwd = 2)
+        abline(a = 0, b = RpS_crash, lty = 2, lwd = 2, col = "red")
+      }
+    } else {
+
+      par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
+
+      # Plot stock-recruit relationship
+      #matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
+      #        xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
+      #plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
+      #points(medSSB, medR, pch = 19)
+      #legend("topright", c("Median", "All sims"), text.col = c("black", "dark grey"), bty = "n")
+      #abline(h = 0, col = "grey")
+
+      # log-recruitment deviation
+      tsplot(Rdev,yrs=out$yrs,xlab="Year",ylab="Log recruitment deviation",zeroyint=FALSE)
+      abline(h = 0, lty = 3)
+
+      ## Recruitment deviations vs SSB
+      matplot(out$SSB, Rdev, typ = "p", xlim = c(0, max(out$SSB)), #ylim = c(0, max(R)),
+              col = "#99999920", pch = 19,
+              xlab = "Spawning biomass", ylab = "Log recruitment deviation")
+      plotquant(Rdev, yrs = medSSB, addline = TRUE)
+      abline(h = 0, lty = 3)
+
+      # Recruitment by year
+      tsplot(out$R,yrs=out$yrs,xlab="Year",ylab="Recruitment",zeroyint=TRUE)
+      abline(h = 0)
+    }
+
   } else {
 
     out <- make_df(out$R, out$yrs)
@@ -351,3 +402,201 @@ stock_recruit_int <- function(Hist) {
 
   list(R = R, SSB = SSB, predR_y = predR_y, predR = predR, predSSB = predSSB, yrs = yrs)
 }
+
+
+
+
+hist_SPR <- function(OBJs, SR = FALSE) {
+  if(!is.null(MSEhist@TSdata$SPR)) {
+
+    MSEhist<-OBJs$MSEhist
+    yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
+
+    Fmed <- MSEhist@Ref$ByYear$Fmed
+    StockPars <- MSEhist@SampPars$Stock
+    #SPR_med <- vapply(1:MSEhist@OM@nsim, function(x) {
+    #  vapply(1:MSEhist@OM@nyears, function(y) {
+    #    MSEtool:::Ref_int_cpp(Fmed[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
+    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
+    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
+    #                          plusgroup = StockPars$plusgroup)[2, ]
+    #  }, numeric(1))
+    #}, numeric(MSEhist@OM@nyears))
+
+    if(SR) {
+      R <- apply(MSEhist@AtAge$Number[, 1, , ], 1:2, sum)
+      SSB <- apply(MSEhist@TSdata$SBiomass, 1:2, sum)
+
+      RpS <- apply(R/SSB, 1, median)
+      hist_R(OBJs, figure = TRUE, SR_only = TRUE)
+      lapply(RpS, function(x) abline(a = 0, b = x, col = "blue"))
+      abline(h = 0, b = median(RpS), lty = 2, col = "blue")
+
+    } else {
+      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
+      cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+      # Equilibrium and dynamic SPR
+      tsplot(MSEhist@TSdata$SPR$Equilibrium, yrs, xlab="Year", ylab="Equilibrium SPR", cols=cols, ymax = 1.05)
+      tsplot(MSEhist@TSdata$SPR$Dynamic, yrs, xlab="Year", ylab="Dynamic SPR", cols=cols, ymax = 1.05)
+
+      # SPRcrash
+      SPR_crash <- MSEhist@Ref$ByYear$SPRcrash[, 1:length(yrs)]
+      tsplot(SPR_crash, yrs, xlab="Year", ylab=expression(SPR[crash]), cols=cols,
+             ymax = 1.1 * max(SPR_crash))
+
+      # SPR/SPRcrash
+      tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - SPR_crash), yrs, xlab="Year",
+             ylab=expression((1-SPR[eq])/(1-SPR[crash])), cols=cols)
+
+      # SPR replacement
+      #tsplot(t(SPR_med), yrs, xlab="Year", ylab=expression(SPR[med]), cols=cols)
+
+      # SPR/SPR replacement
+      #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_med)), yrs, xlab="Year",
+      #       ylab=expression((1-SPR[eq])/(1-SPR[med])), cols=cols)
+    }
+
+    # SPR MSY
+    #FMSY <- MSEhist@Ref$ByYear$FMSY
+    #StockPars <- MSEhist@SampPars$Stock
+    #SPR_MSY <- vapply(1:MSEhist@OM@nsim, function(x) {
+    #  vapply(1:MSEhist@OM@nyears, function(y) {
+    #    MSEtool:::Ref_int_cpp(FMSY[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
+    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
+    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
+    #                          plusgroup = StockPars$plusgroup)[2, ]
+    #  }, numeric(1))
+    #}, numeric(MSEhist@OM@nyears))
+    #tsplot(t(SPR_MSY), yrs, xlab="Year", ylab=expression(SPR[MSY]), cols=cols)
+#
+    ## SPR/SPR MSY
+    #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_MSY)), yrs, xlab="Year",
+    #       ylab=expression((1-SPR[eq])/(1-SPR[MSY])), cols=cols)
+  }
+
+}
+
+
+hist_YieldCurve <- function(OBJs, YC_type = 1, exp_type = c("F", "SPR"), yr_bio, yr_sel, F_range) {
+  #YC_type <- match.arg(YC_type, choices = c(1, 2))
+  exp_type <- match.arg(exp_type)
+
+  Hist <- OBJs$MSEhist
+  StockPars <- Hist@SampPars$Stock
+  FleetPars <- Hist@SampPars$Fleet
+
+  if(missing(yr_bio)) {
+    yr_bio <- Hist@OM@nyears
+  } else {
+    yr_bio <- max(1, yr_bio - Hist@OM@CurrentYr + Hist@OM@nyears)
+  }
+  if(missing(yr_sel)) {
+    yr_sel <- Hist@OM@nyears
+  } else {
+    yr_sel <- max(1, yr_sel - Hist@OM@CurrentYr + Hist@OM@nyears)
+  }
+
+  M <- StockPars$M_ageArray[, , yr_bio]
+  Mat_age <- StockPars$Mat_age[, , yr_bio]
+  Wt_age <- StockPars$Wt_age[, , yr_bio]
+  V <- FleetPars$V[, , yr_sel]
+
+  if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
+  F_search <- seq(min(F_range), max(F_range), length.out = 50)
+  #F_search <- seq(log(1e-8), log(3 * max(M)), length.out = 50) %>% exp()
+
+
+  if(YC_type == 1) {  # Constant R0/h
+    YC <- lapply(1:Hist@OM@nsim, function(x) {
+      vapply(log(F_search), function(y) {
+        MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                           Mat_at_Age = Mat_age[x, ], V_at_Age = V[x, ], maxage = StockPars$maxage,
+                           R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                           opt = 2, plusgroup = StockPars$plusgroup)
+      }, numeric(11))
+    })
+  } else { # Constant alpha, beta
+    YC <- lapply(1:Hist@OM@nsim, function(x) {
+      vapply(log(F_search), function(y) {
+        RPC:::MSYCalcs2(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                           Mat_at_Age = Mat_age[x, ], V_at_Age = V[x, ], maxage = StockPars$maxage,
+                           R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                           opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])
+      }, numeric(11))
+    })
+  }
+
+  Yield <- sapply(YC, function(x) x[1, ])
+  SSB <- sapply(YC, function(x) x[3, ])
+
+  par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+  cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+  if(exp_type == "SPR") {
+    SPR_F <- vapply(1:Hist@OM@nsim, function(x) {
+      vapply(F_search, function(y) {
+        MSEtool:::Ref_int_cpp(y, M_at_Age = M[x, ],
+                              Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ],
+                              V_at_Age = V[x, ], StockPars$SRrel[x], maxage = StockPars$maxage,
+                              plusgroup = StockPars$plusgroup)[2, ]
+      }, numeric(1))
+    }, numeric(length(F_search)))
+
+    tsplot(t(Yield),yrs=t(SPR_F),xlab="SPR",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+  } else {
+    tsplot(t(Yield),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+  }
+  tsplot(t(Yield),yrs=t(SSB),xlab="Spawning biomass",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+
+}
+
+
+
+hist_Frep <- function(OBJs, yr_SPRcrash) {
+  MSEhist<-OBJs$MSEhist
+  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
+
+  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+  cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+
+  if(!is.null(MSEhist@TSdata$SPR)) {
+
+    # Equilibrium and dynamic SPR
+    tsplot(MSEhist@TSdata$SPR$Equilibrium, yrs, xlab="Year", ylab="Equilibrium SPR", cols=cols, ymax = 1.05)
+    tsplot(MSEhist@TSdata$SPR$Dynamic, yrs, xlab="Year", ylab="Dynamic SPR", cols=cols, ymax = 1.05)
+
+    # SPRcrash
+    tsplot(MSEhist@Ref$ByYear$SPRcrash[, 1:length(yrs)], yrs, xlab="Year", ylab=expression(SPR[crash]), cols=cols)
+
+    # SPR/SPRcrash
+    if(missing(yr_SPRcrash)) yr_SPRcrash <- MSEhist@OM@nyears
+    SPR_crash <- MSEhist@Ref$ByYear$SPRcrash[, yr_SPRcrash]
+    tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - SPR_crash), yrs, xlab="Year",
+           ylab=expression((1-SPR[eq])/(1-SPR[crash])), cols=cols)
+
+    # SPR MSY
+    #FMSY <- MSEhist@Ref$ByYear$FMSY
+    #StockPars <- MSEhist@SampPars$Stock
+    #SPR_MSY <- vapply(1:MSEhist@OM@nsim, function(x) {
+    #  vapply(1:MSEhist@OM@nyears, function(y) {
+    #    MSEtool:::Ref_int_cpp(FMSY[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
+    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
+    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
+    #                          plusgroup = StockPars$plusgroup)[2, ]
+    #  }, numeric(1))
+    #}, numeric(MSEhist@OM@nyears))
+    #tsplot(t(SPR_MSY), yrs, xlab="Year", ylab=expression(SPR[MSY]), cols=cols)
+#
+    ## SPR/SPR MSY
+    #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_MSY)), yrs, xlab="Year",
+    #       ylab=expression((1-SPR[eq])/(1-SPR[MSY])), cols=cols)
+  }
+
+}
+
+

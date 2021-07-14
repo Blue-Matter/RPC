@@ -144,8 +144,65 @@ server <- function(input, output, session) {
   output$hist_SSBref_plot<-renderPlot(hist_SSBref(OBJs),res=plotres)
   output$hist_SSBref_table<-renderTable(hist_SSBref(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
 
+  observeEvent({
+    input$SSB0_prob
+    input$SSB0_yrange},
+    output$hist_SSBref_prob <- renderPlot(hist_SSBref(OBJs, prob_ratio = input$SSB0_prob, prob_ylim = input$SSB0_yrange),
+                                          res = plotres)
+  )
+
   output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
   output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
+
+  observeEvent(input$HistRes1, {
+    test_Hist <- try({ # Is there a better way using observe/react?
+      SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
+      R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
+      M_max <- max(OBJs$MSEhist@SampPars$Stock$M_ageArray) %>% round(2)
+
+      Hist_yr <- seq(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, OBJs$MSEhist@OM@CurrentYr)
+
+      updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
+      updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
+      updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+
+      updateSliderInput(session, "YC_Frange", min = 0, max = 6 * M_max, value = c(0, 2 * M_max), step = 0.01)
+      updateSliderInput(session, "YC_y_bio", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+      updateSliderInput(session, "YC_y_sel", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+    }, silent = TRUE)
+  })
+
+  output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
+
+  observeEvent({
+    input$YC_Frange
+    input$YC_y_bio
+    input$YC_y_sel
+    input$YC_exp_type
+    input$YC_calc
+  }, {
+
+    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc, exp_type = input$YC_exp_type,
+                                                      yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
+                                                      F_range = input$YC_Frange),
+                                      res = plotres)
+  }
+  )
+
+  observeEvent({
+    input$SR_plot_options
+    input$SR_xrange
+    input$SR_yrange
+    input$SR_y_RPS0
+  }, {
+    #y_RPS0 <- input$SR_y_RPS0 - OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@nyears
+    y_RPS0 <- input$SR_y_RPS0
+
+    output$hist_SR_plot <- renderPlot(hist_R(OBJs, SR_only = TRUE,
+                                             SR_xlim = input$SR_xrange, SR_ylim = input$SR_yrange, SR_y_RPS0 = y_RPS0,
+                                             SR_include = input$SR_plot_options),
+                                      res = plotres)
+  })
 
   output$hist_BvsSP_plot<-renderPlot(hist_BvsSP(OBJs),res=plotres)
   output$hist_BvsSP_table<-renderTable(hist_BvsSP(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
