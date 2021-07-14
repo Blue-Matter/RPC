@@ -374,7 +374,7 @@ hist_RpS90 <- function(OBJs, figure = TRUE) {
 
 make_df <- function(x, Year, probs = c(0.25, 0.5, 0.75)) {
   xx <- t(apply(x, 2, quantile, probs = probs))
-  structure(xx, dimnames = list(Year, c("25%ile", "Median", "75%ile")))
+  structure(xx, dimnames = list(Year, c("Lower quartile", "Median", "Upper quartile")))
 }
 
 stock_recruit_int <- function(Hist) {
