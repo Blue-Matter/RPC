@@ -67,12 +67,58 @@ hist_bio<-function(OBJs){
 
 }
 
+
+hist_bio_schedule <- function(OBJs, var = "Len_age", n_age_plot, yr_plot, sim) {
+
+  labs <- c(Len_age = "Mean Length at age", Wt_age = "Weight at age",
+            Mat_age = "Maturity", M_ageArray = "Natural mortality")
+  ylab <- labs[match(var, names(labs))]
+  Hist <- OBJs$MSEhist
+  OM <- Hist@OM
+  sched <- getElement(Hist@SampPars$Stock, var)
+
+
+  yr_cal <- 1:(OM@nyears + OM@proyears) - OM@nyears + OM@CurrentYr
+
+  if(missing(yr_plot)) {
+    yr_plot <- OM@nyears
+  } else {
+    yr_plot <- max(1, yr_plot - OM@CurrentYr + OM@nyears)
+  }
+  if(missing(n_age_plot)) {
+    n_age_plot <- OM@maxage + 1
+  } else {
+    n_age_plot <- max(n_age_plot, 2)
+  }
+  if(missing(sim)) {
+    sim <- 1
+  } else {
+    sim <- max(sim, 1)
+  }
+
+  age <- 1:dim(sched)[2] - 1
+  age_plot <- pretty(age, n_age_plot)
+  age_plot <- age_plot[age_plot <= max(age)]
+
+  par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+
+  matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, typ = 'l', lty = 1,
+          xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
+  text(max(yr_cal), sched[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
+  abline(v = Hist@OM@CurrentYr, lty = 3)
+  title(paste0("Simulation #", sim))
+
+  #cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+  tsplot(sched[, , yr_plot], age, xlab = "Age", ylab = ylab, ymax = 1.1 * max(sched[, , yr_plot]))
+  title(paste("Year", yr_cal[yr_plot]))
+
+  invisible()
+}
+
+
 # testOM@nsim<-24; MSEhist <- runMSE(testOM,Hist=T)
 hist_growth_I<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=1)
 hist_growth_II<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=2)
-hist_growth_III<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=3)
-hist_maturity<-function(OBJs)  plot('Maturity', OBJs$MSEhist)
-hist_survival<-function(OBJs)  plot('M', OBJs$MSEhist)
 hist_spatial<-function(OBJs)  plot('Spatial', OBJs$MSEhist)
 hist_sel<-function(OBJs)  plot('Selectivity', OBJs$MSEhist)
 

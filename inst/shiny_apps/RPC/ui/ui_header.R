@@ -91,9 +91,13 @@ column(12,
                     column(12,
                            tags$hr(style = "margin-top: 3px; margin-bottom: 3px"),
                            h5(tags$b("RPC Session", style = "color:#347ab6")),
-                           column(6, h5("Load (.rpc)", style = "color:grey"), tipify(fileInput("Load_session", label = NULL, accept = c("rpc",".rpc")), title = "Load a previous session including calculated results")),
+                           column(6,
+                                  h5("Load (.rpc)", style = "color:grey"),
+                                  tipify(fileInput("Load_session", label = NULL, accept = c("rpc", ".rpc")),
+                                         title = "Load a previous session including calculated results")
+                                  ),
                            column(1),
-                           column(5, h5("Save (.rpc)", style = "color:grey"), downloadButton("Save_session", "", width = "100px"))
+                           column(5, h5("Save (.rpc)", style = "color:grey"), downloadButton("Save_session", "", width = "200px"))
                     ),
                     inputId = "DD_file",
                     label = "File",

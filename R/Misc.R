@@ -1,5 +1,5 @@
 
-MSYCalcs2 <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, V_at_Age,
+MSYCalcs2 <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age,
                       maxage, R0x, SRrelx, hx, opt=1, plusgroup=0, SSBpR0) {
   # Box 3.1 Walters & Martell 2004
   n_age <- maxage + 1
@@ -18,14 +18,14 @@ MSYCalcs2 <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, V_at_Age,
     lx[length(lx)] <- lx[length(lx)]/(1 - surv[length(lx)])
   }
 
-  Egg0 <- sum(l0 * Wt_at_Age * Mat_at_Age) # unfished egg-per-recruit (assuming fecundity proportional to weight)
-  EggF <- sum(lx * Wt_at_Age * Mat_at_Age) # fished egg-per-recruit (assuming fecundity proportional to weight)
+  Egg0 <- sum(l0 * Fec_at_Age) # unfished egg-per-recruit (assuming fecundity proportional to weight)
+  EggF <- sum(lx * Fec_at_Age) # fished egg-per-recruit (assuming fecundity proportional to weight)
 
   vB0 <- sum(l0 * Wt_at_Age * V_at_Age) # unfished and fished vuln. biomass per-recruit
   vBF <- sum(lx * Wt_at_Age * V_at_Age)
 
-  SB0 <- sum(l0 * Wt_at_Age * Mat_at_Age) # spawning biomas per-recruit - same as eggs atm
-  SBF <- sum(lx * Wt_at_Age * Mat_at_Age)
+  SB0 <- sum(l0 * Fec_at_Age) # spawning biomas per-recruit - same as eggs atm
+  SBF <- sum(lx * Fec_at_Age)
 
   B0 <- sum(l0 * Wt_at_Age) # biomass-per-recruit
   BF <- sum(lx * Wt_at_Age)

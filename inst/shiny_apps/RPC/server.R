@@ -61,6 +61,49 @@ server <- function(input, output, session) {
   output$Log <- renderText(Log_text$text)
   AM<<-function(newtext)    Log_text$text<-paste(newtext, Log_text$text, sep = "\n")
 
+  # Load session ------------------------------------------------
+  observeEvent(input$Load_session, {
+    filey <- input$Load_session
+    tryCatch({
+      prev_session <- readRDS(file = filey$datapath)
+      stopifnot(inherits(prev_session, "list"))
+
+      OBJs$MSEhist <<- prev_session$MSEhist
+      OBJs$MSEproj <<- prev_session$MSEproj
+
+      if(inherits(prev_session$MSEproj, "MSE")) {
+        AM(paste("MSE results loaded:", filey$name))
+        OM_L(1)
+        MSErun(1)
+        updateVerticalTabsetPanel(session, "Main", selected = 5)
+
+      } else if(inherits(prev_session$MSEhist, "Hist")) {
+        AM(paste("Operating model loaded:", filey$name))
+        OM_L(1)
+        MSErun(0)
+        updateVerticalTabsetPanel(session, "Main", selected = 3)
+
+      } else {
+        AM(paste("No operating model was found in file:", filey$name))
+      }
+    },
+
+    error = function(e){
+      AM(paste0(e,"\n"))
+      shinyalert("File read error", "Previous RPC session could not be loaded.", type = "error")
+      AM(paste0("Previous RPC session file could not be loaded: ", filey$name))
+      return(0)
+    })
+  })
+
+  # Save session ------------------------------------------------
+  output$Save_session <- downloadHandler(
+    filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
+    content = function(file) {
+      saveRDS(list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj),  # Need to add MPs and functions
+              file = file)
+    }
+  )
 
   # Fishery panel ---------------------------------------------------
 
@@ -82,7 +125,6 @@ server <- function(input, output, session) {
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
     AM(paste("Operating model",input$SelectOMDD,"selected"))
-
   })
 
   # OM load
@@ -97,14 +139,14 @@ server <- function(input, output, session) {
                         min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
       updateSliderInput(session, "Custom_proyears_load",
                         min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
-      AM(paste0("Operating model loaded: ", filey$datapath))
+      AM(paste0("Operating model loaded: ", filey$name))
     },
 
     error = function(e){
 
       AM(paste0(e,"\n"))
       shinyalert("File read error", "This does not appear to be a MSEtool OM object, saved by saveRDS()", type = "error")
-      AM(paste0("Operating model failed to load: ", filey$datapath))
+      AM(paste0("Operating model failed to load: ", filey$name))
       return(0)
 
     })
@@ -155,7 +197,8 @@ server <- function(input, output, session) {
   output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
 
   observeEvent(input$HistRes1, {
-    test_Hist <- try({ # Is there a better way using observe/react?
+    req(inherits(OBJs$MSEhist, "Hist"))
+    try({
       SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
       R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
       M_max <- max(OBJs$MSEhist@SampPars$Stock$M_ageArray) %>% round(2)
@@ -290,7 +333,6 @@ server <- function(input, output, session) {
     )
   })
 
-
   output$B_proj_plot <- renderPlot(B_proj_plot(OBJs),res=plotres)
   output$B_prob_plot <- renderPlot(B_prob_plot(OBJs),res=plotres)
   output$B_stoch_plot <- renderPlot(B_stoch_plot(OBJs,input),res=plotres)
@@ -299,11 +341,43 @@ server <- function(input, output, session) {
   # OM panel --------------------------------------------------
 
   output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
+
+  output$bio_year_text <- renderText(paste0("Right figure: Year",
+                                            ifelse(inherits(OBJs$MSEhist, "Hist"), paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
+                                                   "")))
+
+  observeEvent(input$OM_hist, {
+    req(inherits(OBJs$MSEhist, "Hist"))
+    try({
+
+      MSEhist <- OBJs$MSEhist
+      yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
+                    MSEhist@OM@CurrentYr + MSEhist@OM@proyears)
+      updateSliderInput(session, "bio_schedule_sim", min = 1, max = MSEhist@OM@nsim, value = 1, step = 1)
+      updateSliderInput(session, "bio_schedule_year", min = min(yr_cal), max = max(yr_cal),
+                        value = MSEhist@OM@CurrentYr, step = 1)
+      updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
+                        value = MSEhist@OM@maxage+1, step = 1)
+    }, silent = TRUE)
+  })
+
+
+  observeEvent({
+    input$bio_schedule
+    input$bio_schedule_sim
+    input$bio_schedule_year
+    input$bio_schedule_nage
+  }, {
+    output$plot_hist_age_schedule <- renderPlot(
+      hist_bio_schedule(OBJs, var = input$bio_schedule, n_age_plot = input$bio_schedule_nage,
+                        yr_plot = input$bio_schedule_year, sim = input$bio_schedule_sim),
+      res = plotres
+    )
+  })
+
   output$plot_hist_growth_I <- renderPlot(hist_growth_I(OBJs),res=plotres)
   output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
-  output$plot_hist_growth_III <- renderPlot(hist_growth_III(OBJs),res=plotres)
-  output$plot_hist_maturity <- renderPlot(hist_maturity(OBJs),res=plotres)
-  output$plot_hist_survival <- renderPlot(hist_survival(OBJs),res=plotres)
+
   output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
   output$plot_hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
   output$plot_hist_sel <- renderPlot(hist_sel(OBJs),res=plotres)
