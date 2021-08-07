@@ -69,7 +69,7 @@ fluidPage(
                        h5(strong('Step 1. Specify Operating Model')),
                        column(12, style='height:800px; padding-left:10px',
                               h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
-                                 compatible openMSE operating model or sketching the fishery dynamics using the MERA system"),
+                                 compatible openMSE operating model or sketching the fishery dynamics using the MERA system. Alternatively, load a previously saved RPC session (Select 'File' in upper right)."),
                               hr(),
                               HTML("<br>"),
                               radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
@@ -127,8 +127,8 @@ fluidPage(
                     h5(strong("Step 3. Define Management Procedures")),
                     column(12, style='height:800px',
                        column(12, style='padding-left:0px',
-                              h5("Once an operating model is specified you can define management procedures that make management recommendations
-                                 based on estimates of stock status and exploitation rates"),
+                              h5("Once an operating model is specified you can define management procedures (MPs) that make management recommendations
+                                 based on estimates of stock status and exploitation rates. When all desired MPs are chosen, proceed to Step 4."),
                               hr()
                        ),
 
@@ -139,7 +139,16 @@ fluidPage(
                        ),
 
                        conditionalPanel('output.OM_L==1',
-                                        source(file.path("ui", "ui_MP.R"), local = TRUE)$value
+                                        source(file.path("ui", "ui_MP.R"), local = TRUE)$value,
+                                        column(12, style="padding-left:0px; height:150px",
+                                              hr(),
+                                              #uiOutput("SelectedHS"),
+                                              div(style="display: inline-block;vertical-align:top; width: 1100px;",
+                                                  selectInput("HS_sel",label="Selected Management procedures:",choices="No_Fishing",selected="No_Fishing",multiple=TRUE,width='1000px')),
+                                              div(style="display: inline-block; width: 300px;", br(),
+                                                  actionButton("MS_Clear_Last",label = "Clear Last",style="color:red;",width='150px',height='20px'),
+                                                  actionButton("MS_Clear_All",label = "Clear All",style="color:red;",width='150px',height='20px')),
+                                        )
                        )
                     ), # end of column 12
                        box_height='95px'),

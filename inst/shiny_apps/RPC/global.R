@@ -34,17 +34,11 @@ DFO_Inside_QB_Rockfish<-readRDS("./data/OMs/insQB_prelim.rds")
 DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
 #DFO_Pacific_Hake<-readRDS("./data/OMs/Hake.rda")
 
-OMs<<-unique(avail('OM')[avail('OM')!='testOM'])
+OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'])
 
-
-#MSEhist<-readRDS("./Data/MSEhist.rda")# !alert
 
 # Shared variables
-
-Current_Year<<-as.integer(substr(Sys.time(),start=1,stop=4))
-CurrentYr<<-2021 # as.integer(input$Lyear) #as.integer(substr(as.character(Sys.time()),1,4))
-Syear<<-1951
-Lyear<<-2018
+CurrentYr<<-2021 # Remove after fixing RPCfuncs/plot_hist.R
 nsim<<-24 # Default value to start, user can adjust with sliders in app
 
 

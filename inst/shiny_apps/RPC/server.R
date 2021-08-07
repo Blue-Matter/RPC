@@ -11,7 +11,8 @@ server <- function(input, output, session) {
   #Sel_MPs<<-""
 
   plotres<-100
-  OMs<<-unique(avail('OM')[avail('OM')!='testOM'], c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
+  OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'],
+               c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
 
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
@@ -27,12 +28,12 @@ server <- function(input, output, session) {
   output$MSErun <- reactive({MSErun()})
   outputOptions(output, "MSErun",suspendWhenHidden=FALSE)
 
-  MPs<<-reactiveValues(Sel="",All=avail('MP'))
-  output$Sel <- reactive({ MPs$Sel})
+  MPs<<-reactiveValues(Sel="No_Fishing",All=avail('MP', msg = FALSE))
+  output$Sel <- reactive({MPs$Sel})
   output$All <- reactive({MPs$All})
   outputOptions(output,"All",suspendWhenHidden=FALSE)
   outputOptions(output,"Sel",suspendWhenHidden=FALSE)
-  updateSelectInput(session,"HS_sel",choices=avail('MP'),selected="")
+  #updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
   OBJs<<-reactiveValues(MSEhist="",MSEproj="")
 
@@ -86,6 +87,16 @@ server <- function(input, output, session) {
       } else {
         AM(paste("No operating model was found in file:", filey$name))
       }
+
+      if(!is.null(prev_session$MPs)) {
+        MPs$All <<- prev_session$MPs$All
+        MPs$Sel <<- prev_session$MPs$Sel
+      }
+      if(is.environment(prev_session$MPs_save) && length(ls(envir = prev_session$MPs_save))) {
+        MP_out <- ls(envir = prev_session$MPs_save)
+        lapply(ls(envir = prev_session$MPs_save),
+               function(x) assign(x, get(x, envir = prev_session$MPs_save), envir = .GlobalEnv))
+      }
     },
 
     error = function(e){
@@ -100,7 +111,14 @@ server <- function(input, output, session) {
   output$Save_session <- downloadHandler(
     filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
     content = function(file) {
-      saveRDS(list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj),  # Need to add MPs and functions
+      MPs_globalenv <- sapply(ls(envir = .GlobalEnv), function(x) inherits(get(x, envir = .GlobalEnv), "MP"))
+      MPs_save <- new.env()
+      if(sum(MPs_globalenv)) {
+        lapply(names(MPs_globalenv)[MPs_globalenv],
+               function(x) assign(x, value = get(x, envir = .GlobalEnv), envir = MPs_save))
+      }
+      saveRDS(list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj,
+                   MPs = list(All = MPs$All, Sel = MPs$Sel), MPs_env = MPs_save),
               file = file)
     }
   )
@@ -201,7 +219,7 @@ server <- function(input, output, session) {
     try({
       SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
       R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
-      M_max <- max(OBJs$MSEhist@SampPars$Stock$M_ageArray) %>% round(2)
+      Frange_max <- 1.1 * max(OBJs$MSEhist@Ref$ByYear$Fcrash) %>% round(2)
 
       Hist_yr <- seq(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, OBJs$MSEhist@OM@CurrentYr)
 
@@ -209,7 +227,7 @@ server <- function(input, output, session) {
       updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
       updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
 
-      updateSliderInput(session, "YC_Frange", min = 0, max = 6 * M_max, value = c(0, 2 * M_max), step = 0.01)
+      updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
       updateSliderInput(session, "YC_y_bio", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
       updateSliderInput(session, "YC_y_sel", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
     }, silent = TRUE)
@@ -233,6 +251,7 @@ server <- function(input, output, session) {
   )
 
   observeEvent({
+    input$HistRes1
     input$SR_plot_options
     input$SR_xrange
     input$SR_yrange
@@ -260,6 +279,35 @@ server <- function(input, output, session) {
   output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
 
   # Management Strategy Panel -----------------------------------------------------
+  output$MS_FixF_ratio_label <- renderText(paste0("Ratio of F relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
+  observeEvent(input$MS_FixF_ratio, {
+    updateTextInput(session, "MS_FixF_Label", value = paste0("CurF_", 100 * input$MS_FixF_ratio))
+  })
+
+  output$MS_FixC_ratio_label <- renderText(paste0("Ratio of catch relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
+  observeEvent(input$MS_FixC_ratio, {
+    updateTextInput(session, "MS_FixC_Label", value = paste0("CurC_", 100 * input$MS_FixC_ratio))
+  })
+
+  output$DLM_URL <- renderText("")
+  observeEvent(input$MS_DLM, {
+    output$DLM_URL <- renderText(paste0("https://dlmtool.openmse.com/reference/", input$MS_DLM, ".html"))
+  })
+
+  observeEvent(input$MS_Import_file, {
+    filey <- input$MS_Import_file
+    updateTextInput(session, "MS_Import_Label", value = filey$name)
+
+    tryCatch({
+      MP_out <- readRDS(file = filey$datapath)
+      stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
+    }, error = function(e) {
+      AM(paste0(e,"\n"))
+      shinyalert(paste0("No MP was found in file: ", filey$name), type = "error")
+      AM(paste0("No MP was found in file: ", filey$name))
+      return(0)
+    })
+  })
 
   output$HSplot <- renderPlot(HCR_plot(input))
 
@@ -279,32 +327,110 @@ server <- function(input, output, session) {
 
   })
 
-  observeEvent(input$HS_sel,{
-
+  observeEvent(input$HS_sel, {
     if(MPs$Sel[1]==""){
-      MPs$Sel<<-input$HS_sel
+      MPs$Sel<<-"No_Fishing"
     }else{
       MPs$Sel<<-c(MPs$Sel,input$HS_sel)
     }
     MPsSpec(1)
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
-
   })
 
+  observeEvent(input$Build_MS_FixF, {
+    if(!nchar(input$MS_FixF_Label)) {
+      shinyalert("No name for the MP was provided.", type = "error")
+    } else if(input$MS_FixF_Label %in% MPs$Sel) {
+      AM(paste0("Error: ", input$MS_FixF_Label, " already selected. Choose another name."))
+    } else {
+      MPs$All <<- c(MPs$All, input$MS_FixF_Label)
+      MPs$Sel <<- c(MPs$Sel, input$MS_FixF_Label)
+
+      MP_out <- CurF
+      formals(MP_out)$val <- input$MS_FixF_ratio
+      assign(input$MS_FixF_Label, structure(MP_out, class = "MP"), envir = .GlobalEnv)
+
+      updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+      MPsSpec(1)
+    }
+  })
+
+  observeEvent(input$Build_MS_FixC, {
+    if(!nchar(input$MS_FixC_Label)) {
+      shinyalert("No name for the MP was provided.", type = "error")
+    } else if(input$MS_FixC_Label %in% MPs$Sel) {
+      AM(paste0("Error: ", input$MS_FixC_Label, " MP already selected. Choose another name."))
+    } else {
+      MPs$All <<- c(MPs$All, input$MS_FixC_Label)
+      MPs$Sel <<- c(MPs$Sel, input$MS_FixC_Label)
+
+      MP_out <- CurC
+      formals(MP_out)$val <- input$MS_FixC_ratio
+      assign(input$MS_FixC_Label, structure(MP_out, class = "MP"), envir = .GlobalEnv)
+
+      updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+      MPsSpec(1)
+    }
+  })
 
   observeEvent(input$Build_MS,{
-
     make_RPC_MP(input)
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
     MPsSpec(1)
 
   })
 
-  observeEvent(input$MS_Frat,{getMPs('Frat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
-  observeEvent(input$MS_Crat,{getMPs('Crat'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
-  observeEvent(input$MS_DFO,{getMPs('DFO'); updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(1)})
-  observeEvent(input$MS_Clear,{AM("MP selection cleared"); MPs$Sel<<-""; updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel); MPsSpec(0)})
+  observeEvent(input$Build_MS_DLM, {
+    if(!input$MS_DLM %in% MPs$Sel) {
+      MPs$Sel <<- c(MPs$Sel, input$MS_DLM)
+      updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+      MPsSpec(1)
+    }
+  })
 
+  observeEvent(input$Build_MS_import, {
+    if(!nchar(input$MS_Import_Label)) {
+      shinyalert("No name for the MP was provided.", type = "error")
+    }
+
+    filey <- input$MS_Import_file
+    tryCatch({
+      MP_out <- readRDS(file = filey$datapath)
+      stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
+
+      if(input$MS_Import_Label %in% MPs$Sel) {
+        AM(paste0("Error: ", input$MS_Import_Label, " MP already selected. Choose another name."))
+      } else {
+        assign(input$MS_Import_Label, MP_out, envir = .GlobalEnv)
+
+        MPs$All <<- c(MPs$All, input$MS_Import_Label)
+        MPs$Sel <<- c(MPs$Sel, input$MS_Import_Label)
+
+        updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+        MPsSpec(1)
+      }
+    }, error = function(e) {
+      AM(paste0(e,"\n"))
+      shinyalert(paste0("No MP was found in file: ", filey$name), type = "error")
+      AM(paste0("No MP was found in file: ", filey$name))
+      return(0)
+    })
+  })
+
+  observeEvent(input$MS_Clear_Last, {
+    if(length(MPs$Sel) > 1) {
+      AM(paste0(MPs$Sel[length(MPs$Sel)], " MP removed"))
+      MPs$Sel <<- MPs$Sel[-length(MPs$Sel)]
+      updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+    }
+  })
+
+  observeEvent(input$MS_Clear_All, {
+    AM("MP selection cleared")
+    MPs$Sel <<- "No_Fishing"
+    updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+    #MPsSpec(1)
+  })
 
 
   # Results panel ------------------------------------------------
@@ -313,8 +439,8 @@ server <- function(input, output, session) {
     tryCatch(
       {
         withProgress(message="Running MSE Simulation test:", {
-          MSEproj<<-Project(MSEhist, MPs=unique(MPs$Sel), extended = TRUE)
-          OBJs$MSEproj<-MSEproj
+          MSEproj <- Project(OBJs$MSEhist, MPs=unique(MPs$Sel), extended = TRUE)
+          OBJs$MSEproj <<- MSEproj
           SMP1 <- MSEproj@MPs[1]
           SMP2 <- MSEproj@MPs[MSEproj@nMPs]
           #MPs$Sel<-MSEproj@MPs
@@ -346,7 +472,7 @@ server <- function(input, output, session) {
                                             ifelse(inherits(OBJs$MSEhist, "Hist"), paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
                                                    "")))
 
-  observeEvent(input$OM_hist, {
+  observeEvent(input$OM_hist_bio, {
     req(inherits(OBJs$MSEhist, "Hist"))
     try({
 

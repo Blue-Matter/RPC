@@ -27,16 +27,12 @@ hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asympto
     } else {
       pmat <- sapply(list(SSBrh, SSBra, SSBrd), function(x) apply(x > prob_ratio, 2, mean))
 
-      matplot(hy,pmat,type='o',lty=c(1,2,3), ylim = prob_ylim, col = "black", lwd = 1.75,
+      matplot(hy,pmat,type='o', lty = 1:3, ylim = prob_ylim, col = "black", lwd = 1.75,
               pch = c(16, 1, 4),
               xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[0]>", prob_ratio)))
 
       legend('bottomleft',legend=c("Initial", "Asymptotic", "Dynamic"), lwd = 1.75,
-             #col=c('grey','black','black'),
-             pch = c(16, 1, 4),
-             lty=c(1,2,3), #text.col=c('grey','black','black'),
-             title=expression(SSB[0]~Type),#title.col='black',
-             bty='n',cex=1)
+             pch = c(16, 1, 4), lty = 1:3, title = expression(SSB[0]~Type), bty='n',cex=1)
     }
 
   } else {
@@ -126,18 +122,24 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
 
       matplot(out$SSB, out$R, typ = "n", xlim = SR_xlim, ylim = SR_ylim,
               xlab = "Spawning biomass", ylab = "Recruitment")
-      if(any(SR_include == 2)) {
+      leg <- leg.text.col <- leg.pch <- leg.lty <- leg.lwd <- NULL
+
+      if(any(SR_include == 2)) { # Plot SR curve
         plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
       }
-      if(any(SR_include == 1)) {
+      if(any(SR_include == 1)) { # Plot individual S-R pairs
         matpoints(out$SSB, out$R, pch = 16, col = "#99999920")
         points(medSSB, medR, pch = 19)
 
-        legend("topright", c("Median", "All sims"), text.col = c("black", "dark grey"), bty = "n")
+        leg <- c(leg, "Median", "All sims")
+        leg.text.col <- c(leg.text.col, "black", "dark grey")
+        leg.pch <- c(leg.pch, 16, 16)
+        leg.lty <- c(leg.lty, NA, NA)
+        leg.lwd <- c(NA, NA)
       }
       abline(h = 0, col = "grey")
 
-      if(any(SR_include == 3)) {
+      if(any(SR_include == 3)) { # Plot recruits per spawner lines
         StockPars <- Hist@SampPars$Stock
         FleetPars <- Hist@SampPars$Fleet
 
@@ -157,6 +159,18 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
         abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")
         abline(a = 0, b = RpS_med, lty = 2, lwd = 2)
         abline(a = 0, b = RpS_crash, lty = 2, lwd = 2, col = "red")
+
+        leg <- c(leg, paste0("Unfished (", SR_y_RPS0 + Hist@OM@CurrentYr - Hist@OM@nyears, ") R/S"),
+                 "Median hist. R/S", "Maximum R/S")
+        leg.text.col <- c(leg.text.col, "blue", "black", "red")
+        leg.pch <- c(leg.pch, NA, NA, NA)
+        leg.lty <- c(leg.lty, 2, 2, 2)
+        leg.lwd <- c(leg.lty, 2, 2, 2)
+      }
+
+      if(!is.null(leg)) {
+        legend("topright", legend = leg, #text.col = leg.text.col,
+               col = leg.text.col, pch = leg.pch, lty = leg.lty, lwd = leg.lwd, bty = "n")
       }
     } else {
 

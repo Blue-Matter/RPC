@@ -1,4 +1,8 @@
 
+Current_Year<<-as.integer(substr(Sys.time(),start=1,stop=4))
+
+Syear<<-1951
+Lyear<<-Current_Year
 
 # ----- Fishery answers -----------------------------------------------------------------------------
 #F2

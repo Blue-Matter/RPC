@@ -46,7 +46,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           value=1),
 
                                  tabPanel(h5("Table"),
-                                          div(
+                                          div(style = "overflow-y:scroll; height:520px",
                                               tableOutput("hist_R_table")
                                               ),
                                           value = 2)
@@ -76,15 +76,17 @@ tabsetPanel(id="HistRes1", selected=1,
                                               ),
                                           value = 1),
                                  tabPanel(h5("Yield curve"),
-                                          p("Add SPR crash and F replacement, etc."),
                                           column(12,
                                                  column(3,
                                                         sliderInput("YC_Frange", "Fishing mortality range", min = 0, max = 3, value = c(0, 3), step = 0.01),
                                                         sliderInput("YC_y_bio", "Year for biological parameters", min = 0, max = 0, value = 0, step = 1, sep = ""),
                                                         sliderInput("YC_y_sel", "Year for selectivity", min = 0, max = 0, value = 0, step = 1, sep = ""),
-                                                        radioButtons("YC_exp_type", "Fishing pressure metric", choices = c("F", "SPR"), inline = TRUE),
+                                                        radioButtons("YC_exp_type", "Fishing pressure metric",
+                                                                     choiceNames = c("Instantaneous F", "Spawning potential ratio"),
+                                                                     choiceValues = c("F", "SPR")),
                                                         radioButtons("YC_calc", "Calculation type",
-                                                                     choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")), choiceValues = 1:2)
+                                                                     choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")),
+                                                                     choiceValues = 1:2)
                                                  ),
 
                                                  column(9,
@@ -116,11 +118,11 @@ tabsetPanel(id="HistRes1", selected=1,
                          column(12,
                                 column(3,
                                        checkboxGroupInput("SR_plot_options", "Plot options", selected = 1:3,
-                                                          choiceNames = c("Scatter plot", "Stock-recruit curve", "Recruits per spawner"),
+                                                          choiceNames = c("Scatter plot", "Stock-recruit curve", "Recruits per spawner (R/S)"),
                                                           choiceValues = 1:3),
                                        sliderInput("SR_yrange", "Recruitment range", min = 0, max = 0, value = c(0, 0), step = 0.1),
                                        sliderInput("SR_xrange", "Spawning biomass range", min = 0, max = 0, value = c(0, 0), step = 0.1),
-                                       sliderInput("SR_y_RPS0", "Year of unfished recruits per spawner", min = 0, max = 0, value = 0, step = 1, sep = "")
+                                       sliderInput("SR_y_RPS0", "Year of unfished R/S", min = 0, max = 0, value = 0, step = 1, sep = "")
                                 ),
 
                                 column(9,
