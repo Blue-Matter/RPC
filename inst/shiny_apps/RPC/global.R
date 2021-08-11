@@ -36,11 +36,7 @@ DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
 
 OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'])
 
-
-# Shared variables
-CurrentYr<<-2021 # Remove after fixing RPCfuncs/plot_hist.R
 nsim<<-24 # Default value to start, user can adjust with sliders in app
-
 
 # App design
 source("global_MERA.R", local = TRUE)

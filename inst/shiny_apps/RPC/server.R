@@ -289,6 +289,36 @@ server <- function(input, output, session) {
     updateTextInput(session, "MS_FixC_Label", value = paste0("CurC_", 100 * input$MS_FixC_ratio))
   })
 
+  observeEvent({
+    input$MS_Origin
+    input$MS_DVar
+    input$MS_control
+    input$MS_IVar
+    input$CP_yint
+    input$CP_1_x
+    input$CP_1_y
+    input$CP_2_x
+    input$CP_2_y
+  }, {
+
+    mod_name <- switch(input$MS_Origin, "Perfect" = "Perf", "SCA_Pope" = "Assess", "Shortcut2" = "Short")
+    output_name <- switch(input$MS_DVar, "1" = "FMSY", "2" = "F01", "3" = "Fmax", "4" = "FSPR")
+
+    if(input$MS_control == 1) {
+      output_val <- input$CP_yint * 100
+      MS_Name <- paste0(mod_name, "_", output_val, output_name)
+    } else {
+      output_val <- paste0(100 * input$CP_2_y, "/", 100 * input$CP_1_y)
+
+      OCP_name <- switch(input$MS_IVar, "1" = "SSBMSY", "2" = "iSSB0", "3" = "dSSB0",
+                         "4" = "FMSY", "5" = "F01", "6" = "FSPR")
+      OCP_val <- paste0(100 * input$CP_2_x, "/", 100 * input$CP_1_x)
+      MS_Name <- paste0(mod_name, "_", output_val, output_name, "_", OCP_val, OCP_name)
+    }
+
+    updateTextInput(session, "MS_HCR_Label", value = MS_Name)
+  })
+
   output$DLM_URL <- renderText("")
   observeEvent(input$MS_DLM, {
     output$DLM_URL <- renderText(paste0("https://dlmtool.openmse.com/reference/", input$MS_DLM, ".html"))
@@ -441,12 +471,6 @@ server <- function(input, output, session) {
         withProgress(message="Running MSE Simulation test:", {
           MSEproj <- Project(OBJs$MSEhist, MPs=unique(MPs$Sel), extended = TRUE)
           OBJs$MSEproj <<- MSEproj
-          SMP1 <- MSEproj@MPs[1]
-          SMP2 <- MSEproj@MPs[MSEproj@nMPs]
-          #MPs$Sel<-MSEproj@MPs
-          updateSelectInput(session,'SMP1',choices=MSEproj@MPs,selected = SMP1)
-          updateSelectInput(session,'SMP2',choices=MSEproj@MPs,selected = SMP2)
-          updateSelectInput(session,'StochMP',choices=MSEproj@MPs,selected = SMP1)
           MSErun(1)
           #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
         })
@@ -460,31 +484,77 @@ server <- function(input, output, session) {
   })
 
   output$B_proj_plot <- renderPlot(B_proj_plot(OBJs),res=plotres)
-  output$B_prob_plot <- renderPlot(B_prob_plot(OBJs),res=plotres)
-  output$B_stoch_plot <- renderPlot(B_stoch_plot(OBJs,input),res=plotres)
-  output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(OBJs,input),res=plotres)
+
+  observeEvent({
+    input$Res
+    input$SSB0
+  }, {
+    req(inherits(OBJs$MSEproj, "MSE"))
+    updateSliderInput(session, "SSB0_MSE_xrange",
+                      min = OBJs$MSEproj@OM$CurrentYr[1] + 1,
+                      max = OBJs$MSEproj@OM$CurrentYr[1] + OBJs$MSEproj@proyears,
+                      value = OBJs$MSEproj@OM$CurrentYr[1] + c(1, OBJs$MSEproj@proyears))
+
+    updateSelectInput(session, "SMP1", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[1])
+    updateSelectInput(session, "SMP2", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[OBJs$MSEproj@nMPs])
+    updateSelectInput(session, "StochMP", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[1])
+  })
+
+  observeEvent({
+    input$SSB0_MSE_prob
+    input$SSB0_MSE_yrange
+    input$SSB0_MSE_xrange
+  }, {
+    req(inherits(OBJs$MSEproj, "MSE"))
+    output$B_prob_table_label <- renderText({
+      paste0("Probability that SSB exceeds ", 100*input$SSB0_MSE_prob, "% SSB0 during ",
+             paste0(input$SSB0_MSE_xrange, collapse = " - "))
+    })
+    output$B_prob_plot <- renderPlot(B_prob_plot(OBJs, frac = input$SSB0_MSE_prob,
+                                                 xlim = input$SSB0_MSE_xrange, ylim = input$SSB0_MSE_yrange),
+                                     res=plotres)
+    output$B_prob_table <- renderTable(B_prob_plot(OBJs, frac = input$SSB0_MSE_prob,
+                                                   xlim = input$SSB0_MSE_xrange, figure = FALSE),
+                                       rownames = TRUE)
+  })
+
+  observeEvent({
+    input$SMP1
+    input$SMP2
+    input$SSB0_MSE_quantile
+  }, {
+    output$B_stoch_plot <- renderPlot(B_stoch_plot(OBJs, c(input$SMP1, input$SMP2), qval = input$SSB0_MSE_quantile), res=plotres)
+  })
+
+  observeEvent({
+    input$StochB_resample
+    input$StochMP
+  }, {
+    req(inherits(OBJs$MSEproj, "MSE"))
+    sims <- sample(1:OBJs$MSEproj@nsim, 3, replace = FALSE)[1:input$nsim_hist_SSB]
+    output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(OBJs, input$StochMP, sims),res=plotres)
+  })
+
+
 
   # OM panel --------------------------------------------------
 
   output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
 
-  output$bio_year_text <- renderText(paste0("Right figure: Year",
+  output$bio_year_text <- renderText(paste0("Right figure: year",
                                             ifelse(inherits(OBJs$MSEhist, "Hist"), paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
                                                    "")))
 
   observeEvent(input$OM_hist_bio, {
     req(inherits(OBJs$MSEhist, "Hist"))
-    try({
-
-      MSEhist <- OBJs$MSEhist
-      yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
-                    MSEhist@OM@CurrentYr + MSEhist@OM@proyears)
-      updateSliderInput(session, "bio_schedule_sim", min = 1, max = MSEhist@OM@nsim, value = 1, step = 1)
-      updateSliderInput(session, "bio_schedule_year", min = min(yr_cal), max = max(yr_cal),
-                        value = MSEhist@OM@CurrentYr, step = 1)
-      updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
-                        value = MSEhist@OM@maxage+1, step = 1)
-    }, silent = TRUE)
+    MSEhist <- OBJs$MSEhist
+    yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
+                  MSEhist@OM@CurrentYr + MSEhist@OM@proyears)
+    updateSliderInput(session, "bio_schedule_sim", min = 1, max = MSEhist@OM@nsim, value = 1, step = 1)
+    updateSliderInput(session, "bio_schedule_year", min = min(yr_cal), max = max(yr_cal),
+                      value = MSEhist@OM@CurrentYr, step = 1)
+    updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
+                      value = MSEhist@OM@maxage+1, step = 1)
   })
 
 
@@ -494,6 +564,7 @@ server <- function(input, output, session) {
     input$bio_schedule_year
     input$bio_schedule_nage
   }, {
+    req(inherits(OBJs$MSEhist, "Hist"))
     output$plot_hist_age_schedule <- renderPlot(
       hist_bio_schedule(OBJs, var = input$bio_schedule, n_age_plot = input$bio_schedule_nage,
                         yr_plot = input$bio_schedule_year, sim = input$bio_schedule_sim),
