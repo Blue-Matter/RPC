@@ -135,10 +135,8 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$SelectOM,{
-    OM_temp <- get(input$SelectOMDD)
-    OM <<- modOM(OM_temp, input$Custom_nsim, input$Custom_proyears)
-    MSEhist<<-runMSEhist(OM)
-    OBJs$MSEhist<-MSEhist
+    OM <- modOM(get(input$SelectOMDD), input$Custom_nsim, input$Custom_proyears)
+    OBJs$MSEhist <<- runMSEhist(OM)
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -150,7 +148,7 @@ server <- function(input, output, session) {
     filey <- input$Load_OMprelim
     tryCatch({
 
-      OM_temp<<-readRDS(file=filey$datapath)
+      OM_temp <- readRDS(file=filey$datapath)
       stopifnot(inherits(OM_temp, "OM"))
 
       updateSliderInput(session, "Custom_nsim_load",
@@ -171,9 +169,9 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$Load_OM,{
-    OM<<-modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
-    MSEhist<<-runMSEhist(OM)
-    OBJs$MSEhist<-MSEhist
+    OM_temp <- readRDS(file = input$Load_OMprelim$datapath)
+    OM <- modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
+    OBJs$MSEhist <<- runMSEhist(OM)
 
     OM_L(1)
     MSErun(0)
@@ -187,10 +185,10 @@ server <- function(input, output, session) {
       shinyalert("Incomplete Questionnaire", text=paste("The following questions have not been answered or answered incorrectly:",paste(temp$probQs,collapse=", ")), type = "warning")
     }else{
       doprogress("Reading sketch",1)
-      OM<<-makeOM(input,PanelState,nsim)
+      OM<-makeOM(input,PanelState,nsim)
     }
 
-    MSEhist<<-runMSEhist(OM)
+    OBJs$MSEhist <<- runMSEhist(OM)
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -200,20 +198,6 @@ server <- function(input, output, session) {
 
 
   # Historical results panel -----------------------------------------------------
-
-  output$hist_SSBref_plot<-renderPlot(hist_SSBref(OBJs),res=plotres)
-  output$hist_SSBref_table<-renderTable(hist_SSBref(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
-
-  observeEvent({
-    input$SSB0_prob
-    input$SSB0_yrange},
-    output$hist_SSBref_prob <- renderPlot(hist_SSBref(OBJs, prob_ratio = input$SSB0_prob, prob_ylim = input$SSB0_yrange),
-                                          res = plotres)
-  )
-
-  output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
-  output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
-
   observeEvent(input$HistRes1, {
     req(inherits(OBJs$MSEhist, "Hist"))
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
@@ -221,10 +205,54 @@ server <- function(input, output, session) {
 
     Hist_yr <- seq(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, OBJs$MSEhist@OM@CurrentYr)
 
+    updateSliderInput(session, "SSB_y", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+
     updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
     updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
     updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+
   })
+
+  output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs), res = plotres)
+  output$hist_SSB_table <- renderTable(hist_SSB(OBJs, figure = FALSE), rownames = TRUE)
+
+  observeEvent({
+    input$SSB_y
+    input$SSB_prob
+    input$SSB_yrange
+  }, {
+    output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs, prob_ratio = input$SSB_prob,
+                                                SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
+                                        res = plotres)
+    output$hist_SSB_prob_table_label <- renderText(paste("Annual probability that SSB has exceeded", 100 * input$SSB0_prob, "% SSB in", input$SSB_y))
+    output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs, figure = FALSE, prob_ratio = input$SSB_prob,
+                                                       SSB_y = input$SSB_y), rownames = TRUE)
+  })
+
+  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs),res=plotres)
+  observeEvent({
+    input$SSB0_prob
+    input$SSB0_yrange
+  }, {
+    output$hist_SSB0_prob <- renderPlot(hist_SSB0(OBJs, prob_ratio = input$SSB0_prob, prob_ylim = input$SSB0_yrange),
+                                        res = plotres)
+    output$hist_SSB0_table_label <- renderText(paste0("Annual probability that SSB/SSB0 > ", input$SSB0_prob))
+    output$hist_SSB0_table <- renderTable(hist_SSB0(OBJs, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
+  })
+
+  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs), res = plotres)
+  observeEvent({
+    input$SSBMSY_prob
+    input$SSBMSY_yrange
+  }, {
+    output$hist_SSBMSY_prob <- renderPlot(hist_SSBMSY(OBJs, prob_ratio = input$SSBMSY_prob, prob_ylim = input$SSBMSY_yrange),
+                                          res = plotres)
+    output$hist_SSBMSY_table_label <- renderText(paste0("Annual probability that SSB/SSBMSY > ", input$SSBMSY_prob))
+    output$hist_SSBMSY_table <- renderTable(hist_SSBMSY(OBJs, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
+  })
+
+  output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
+  output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 2)
 
   output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
   output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
@@ -580,11 +608,10 @@ server <- function(input, output, session) {
     input$YC_Frange
     input$YC_y_bio
     input$YC_y_sel
-    input$YC_exp_type
     input$YC_calc
   }, {
 
-    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc, exp_type = input$YC_exp_type,
+    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc,
                                                       yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
                                                       F_range = input$YC_Frange),
                                       res = plotres)

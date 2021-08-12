@@ -38,7 +38,7 @@ OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'])
 
 nsim<<-24 # Default value to start, user can adjust with sliders in app
 
-# App design
+# Load MERA stuff
 source("global_MERA.R", local = TRUE)
 
 

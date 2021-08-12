@@ -69,7 +69,8 @@ fluidPage(
                        h5(strong('Step 1. Specify Operating Model')),
                        column(12, style='height:800px; padding-left:10px',
                               h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
-                                 compatible openMSE operating model or sketching the fishery dynamics using the MERA system. Alternatively, load a previously saved RPC session (Select 'File' in upper right)."),
+                                 compatible openMSE operating model or sketching the fishery dynamics using the MERA system."),
+                              h5("Alternatively, load a previously saved RPC session (Select 'File' in upper right)."),
                               hr(),
                               HTML("<br>"),
                               radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
@@ -95,8 +96,8 @@ fluidPage(
                                                       ),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           actionButton("Load_OM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
-                                                      sliderInput("Custom_nsim_load", "Number of simulations", min = 0, max = 0, value = 0, step = 1, round = TRUE),
-                                                      sliderInput("Custom_proyears_load", "Number of projection years", min = 0, max = 0, value = 0, step = 1, round = TRUE)
+                                                      sliderInput("Custom_nsim_load", "Number of simulations", min = 0, max = 0, value = 0, step = 1),
+                                                      sliderInput("Custom_proyears_load", "Number of projection years", min = 0, max = 0, value = 0, step = 1)
                                                )
                               ),
 

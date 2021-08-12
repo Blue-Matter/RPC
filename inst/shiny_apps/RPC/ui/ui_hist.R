@@ -1,37 +1,114 @@
 tabsetPanel(id="HistRes1", selected=1,
 
-            tabPanel(HTML("<h5>SSB<sub>0</sub></h5>"),
-                     tabsetPanel(id="SSBhist", selected=1,
-                                 tabPanel(h5("Time series"),
-                                          HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
+            tabPanel(h5("Spawning biomass"),
+                     tabsetPanel(id="SSB", selected=1,
+
+                                 tabPanel(h5("Historical"),
+                                          tabsetPanel(id = "SSBhist", selected = 1,
+                                                      tabPanel(h5("Time series"),
+                                                               p("Historical spawning biomass from a certain year may be used as a limit reference point."),
+                                                               plotOutput("hist_SSB_plot",height=520),
+                                                               value=1),
+
+                                                      tabPanel(h5("Probability"),
+                                                               p("Report the annual probability that the spawning biomass has exceeded some historical value"),
+                                                               column(12,
+                                                                      column(3,
+                                                                             sliderInput("SSB_y", "Year", min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                                                             sliderInput("SSB_prob", "Threshold", min = 0, max = 2, value = 1, step = 0.01),
+                                                                             sliderInput("SSB_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                                      ),
+                                                                      column(9,
+                                                                             tabsetPanel(id = "SSBhistprob", selected = 1,
+                                                                                         tabPanel(h5("Figure"),
+                                                                                                  plotOutput("hist_SSB_prob", height = 520),
+                                                                                                  value = 1),
+                                                                                         tabPanel(h5("Table"),
+                                                                                                  div(style = "overflow-y:scroll; height:520px",
+                                                                                                      textOutput("hist_SSB_prob_table_label"),
+                                                                                                      tableOutput("hist_SSB_prob_table")
+                                                                                                  ),
+                                                                                                  value = 2)
+                                                                             )
+                                                                      )
+                                                               ),
+                                                               value = 2),
+
+                                                      tabPanel(h5("Table"),
+                                                               p("Median and interquartile range of historical spawning biomass."),
+                                                               div(style = "overflow-y:scroll; height:520px",
+                                                                   tableOutput("hist_SSB_table")
+                                                               ),
+                                                               value = 4)
+                                                      ),
+                                          value = 1),
+                                 tabPanel(HTML("<h5>SSB<sub>0</sub></h5>"),
+                                          tabsetPanel(id="SSB0hist", selected=1,
+                                                      tabPanel(h5("Time series"),
+                                                               HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
                                                                                <ul>
                                                                                <li><strong>Asymptotic SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with constant steepness and R</sub>0</sub>.</li>
-                                                                               <li><strong>Initial SSB<sub>0</sub></strong> is the asymptotic SSB<sub>0</sub> in the first year</li>
+                                                                               <li><strong>Initial SSB<sub>0</sub></strong> is the spawning biomass in the first year of the operating model</li>
                                                                                <li><strong>Dynamic SSB<sub>0</sub></strong> is the annual value calculated from reconstructing the model with zero catches, preserving the magnitude of the recruitment deviations.</li>
                                                                                </ul>
                                                                                </p>"),
-                                          plotOutput("hist_SSBref_plot",height=520),
-                                          value=1),
+                                                               plotOutput("hist_SSB0_plot",height=520),
+                                                               value=1),
 
-                                 tabPanel(h5("Probability"),
-                                          HTML("<p>Plot the annual probability that the spawning biomass has exceeded a given percentage of SSB<sub>0</sub>.</p>"),
-                                          column(12,
-                                                 column(3,
-                                                        sliderInput("SSB0_prob", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01),
-                                                        sliderInput("SSB0_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
-                                                        ),
-
-                                                 column(9,
-                                                        plotOutput("hist_SSBref_prob", height = 520)
-                                                 )
+                                                      tabPanel(h5("Probability"),
+                                                               HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>0</sub>.</p>"),
+                                                               column(12,
+                                                                      column(3,
+                                                                             sliderInput("SSB0_prob", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01),
+                                                                             sliderInput("SSB0_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                                      ),
+                                                                      column(9,
+                                                                             tabsetPanel(id = "SSB0histprob", selected = 1,
+                                                                                         tabPanel(h5("Figure"),
+                                                                                                  plotOutput("hist_SSB0_prob", height = 520),
+                                                                                                  value = 1),
+                                                                                         tabPanel(h5("Table"),
+                                                                                                  div(style = "overflow-y:scroll; height:520px",
+                                                                                                      textOutput("hist_SSB0_table_label"),
+                                                                                                      tableOutput("hist_SSB0_table")
+                                                                                                  ),
+                                                                                                  value = 2)
+                                                                             )
+                                                                      )
+                                                               ),
+                                                               value = 2)
                                           ),
                                           value = 2),
 
-                                 tabPanel(h5("Table"),
-                                          p("Median values of SSB."),
-                                          div(style = "overflow-y:scroll; height:520px",
-                                              tableOutput("hist_SSBref_table")
-                                              ),
+                                 tabPanel(HTML("<h5>SSB<sub>MSY</sub></h5>"),
+                                          tabsetPanel(id="SSBMSYhist", selected=1,
+                                                      tabPanel(h5("Time series"),
+                                                               plotOutput("hist_SSBMSY_plot", height = 520),
+                                                               value=1),
+
+                                                      tabPanel(h5("Probability"),
+                                                               HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>MSY</sub>.</p>"),
+                                                               column(12,
+                                                                      column(3,
+                                                                             sliderInput("SSBMSY_prob", HTML("SSB/SSB<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01),
+                                                                             sliderInput("SSBMSY_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                                      ),
+                                                                      column(9,
+                                                                             tabsetPanel(id = "SSBMSYhistprob", selected = 1,
+                                                                                         tabPanel(h5("Figure"),
+                                                                                                  plotOutput("hist_SSBMSY_prob", height = 520),
+                                                                                                  value = 1),
+                                                                                         tabPanel(h5("Table"),
+                                                                                                  div(style = "overflow-y:scroll; height:520px",
+                                                                                                      textOutput("hist_SSBMSY_table_label"),
+                                                                                                      tableOutput("hist_SSBMSY_table")
+                                                                                                  ),
+                                                                                                  value = 2)
+                                                                             )
+                                                                      )
+                                                               ),
+                                                               value = 2)
+                                          ),
                                           value = 3)
                      ),
                      value = 1),
@@ -130,7 +207,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           value=2)
 
                      ),
-                     value = 4),
+                     value = 5),
 
             tabPanel(h5("Recruits per spawner"),
                      tabsetPanel(id="RpShist", selected=1,
@@ -146,7 +223,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                               ),
                                           value=2)
                      ),
-                     value = 5),
+                     value = 6),
 
             tabPanel(HTML("<h5>50% R<sub>max</sub></h5>"),
                      tabsetPanel(id="Rmaxhist", selected=1,
@@ -169,7 +246,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           tableOutput("hist_Rmax_table"),
                                           value=2)
                      ),
-                     value = 6),
+                     value = 7),
 
             tabPanel(h5("90% R/S"),
                      tabsetPanel(id="RpS90hist", selected=1,
@@ -182,6 +259,6 @@ tabsetPanel(id="HistRes1", selected=1,
                                           tableOutput("hist_RpS90_table"),
                                           value=2)
                      ),
-                     value = 7)
+                     value = 8)
 
 ) # tabsetpanel

@@ -1,6 +1,101 @@
-hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asymptotic", "Dynamic"),
-                      prob_ratio = NA, prob_ylim = c(0, 1)) {
-  SSBtab <- match.arg(SSBtab)
+hist_SSB <- function(OBJs, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  MSEh<-OBJs$MSEhist
+  nyh<-MSEh@OM@nyears
+
+  hy<-MSEh@OM@CurrentYr - (nyh:1) + 1
+  yind <- SSB_y - MSEh@OM@CurrentYr + MSEh@OM@nyears
+
+  SSB<-apply(MSEh@TSdata$SBiomass,1:2,sum)
+
+  if(figure) {
+    if(is.na(prob_ratio)) {
+      tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
+    } else {
+      pvec <- apply(SSB > prob_ratio * SSB[, yind], 2, mean)
+
+      plot(hy, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
+           xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[", SSB_y, "]>", prob_ratio)))
+    }
+
+  } else {
+    if(is.na(prob_ratio)) {
+      make_df(SSB, hy)
+    } else {
+      pvec <- apply(SSB > prob_ratio * SSB[, yind], 2, mean)
+      structure(matrix(pvec, ncol = 1),
+                dimnames = list(hy, c("Probability")))
+    }
+  }
+}
+
+
+hist_SSBMSY <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
+
+  MSEhist<-OBJs$MSEhist
+  nyh<-MSEhist@OM@nyears
+
+  hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
+
+  SSB <- apply(MSEhist@TSdata$SBiomass,1:2,sum)
+
+  # Year specific SSBMSY (constant R0, h)
+  SSBMSY <- MSEhist@Ref$ByYear$SSBMSY[, 1:MSEhist@OM@nyears]
+
+  # Year specific FMSY (constant alpha, beta)
+  if(!all(apply(SSBMSY, 1, function(x) all(!diff(x))))) {
+    StockPars <- MSEhist@SampPars$Stock
+    FleetPars <- MSEhist@SampPars$Fleet
+    SSBMSY2 <- vapply(1:MSEhist@OM@nsim, function(x) {
+      vapply(1:MSEhist@OM@nyears, function(y) {
+        logFMSY <- optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
+                            Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+                            Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
+                            R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                            opt = 1, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])$minimum
+
+        RPC:::MSYCalcs2(logFMSY, M_at_Age = StockPars$M_ageArray[x, , y],
+                        Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+                        Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
+                        R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                        opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])["B"]
+      }, numeric(1))
+    }, numeric(MSEhist@OM@nyears)) %>% t()
+  }
+
+  if(figure) {
+    if(is.na(prob_ratio)) {
+      par(mfrow=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+
+      tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
+      if(!exists("SSBMSY2", inherits = FALSE)) {
+        tsplot(x=SSBMSY,yrs=hy,xlab="Year",ylab=expression(SSB[MSY]))
+        tsplot(x=SSB/SSBMSY,yrs=hy,xlab="Year",ylab=expression(SSB/SSB[MSY]))
+      } else {
+        tsplot(SSBMSY, hy, xlab = "Year", ylab = expression(SSB[MSY]~"(constant"~R[0]~h~")"))
+        tsplot(SSB/SSBMSY, hy, xlab = "Year", ylab = expression(SSB/SSB[MSY]~"(constant"~R[0]~h~")"))
+
+        tsplot(SSBMSY, hy, xlab = "Year", ylab = expression(SSB[MSY]~"(constant"~alpha~beta~")"))
+        tsplot(SSB/SSBMSY, hy, xlab = "Year", ylab = expression(SSB/SSB[MSY]~"(constant"~alpha~beta~")"))
+      }
+    } else {
+      pvec <- apply(SSB/SSBMSY > prob_ratio, 2, mean)
+
+      plot(hy, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
+           xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[MSY]>", prob_ratio)))
+    }
+
+  } else {
+    if(is.na(prob_ratio)) {
+      make_df(SSB/SSBMSY, hy)
+    } else {
+      pvec <- apply(SSB/SSBMSY > prob_ratio, 2, mean)
+      structure(matrix(pvec, ncol = 1), dimnames = list(hy, c("Probability")))
+    }
+  }
+}
+
+
+hist_SSB0 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   MSEh<-OBJs$MSEhist
   nyh<-MSEh@OM@nyears
@@ -36,13 +131,9 @@ hist_SSBref<-function(OBJs, figure = TRUE, SSBtab = c("SSB", "Initial", "Asympto
     }
 
   } else {
-
-    if(SSBtab == "SSB") {
-      out <- make_df(SSB, hy)
-    }
-    return(out)
+    sapply(list(SSBrh, SSBra, SSBrd), function(x) apply(x > prob_ratio, 2, mean)) %>%
+      structure(dimnames = list(hy, c("Initial", "Asymptotic", "Dynamic") %>% paste("SSB0")))
   }
-
 }
 
 
@@ -495,7 +586,7 @@ hist_SPR <- function(OBJs, SR = FALSE) {
 
 }
 
-hist_exp <-function(OBJs, yr_FMSY) {
+hist_exp <-function(OBJs) {
   MSEhist<-OBJs$MSEhist
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
@@ -529,7 +620,7 @@ hist_exp <-function(OBJs, yr_FMSY) {
     FleetPars <- MSEhist@SampPars$Fleet
     FMSY2 <- sapply(1:MSEhist@OM@nsim, function(x) {
       sapply(1:MSEhist@OM@nyears, function(y) {
-        optimize(RPC:::MSYCalcs2, log(c(1e-8, 5)), M_at_Age = StockPars$M_ageArray[x, , y],
+        optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
                  Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
                  Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
                  R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
