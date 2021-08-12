@@ -34,11 +34,34 @@ tabsetPanel(id="OM_hist", selected=1,
 
             tabPanel(h5("Fishing dynamics"),
                      tabsetPanel(id = "OM_hist_exp", selected = 1,
-                                 tabPanel(h5("Time series"),
-                                          plotOutput("plot_hist_exp",height=540),
+                                 tabPanel(h5("Yield curve"),
+                                          column(12,
+                                                 column(3,
+                                                        sliderInput("YC_Frange", "Fishing mortality range", min = 0, max = 3, value = c(0, 3), step = 0.01),
+                                                        sliderInput("YC_y_bio", textOutput("YC_bio_text"), min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                                        sliderInput("YC_y_sel", "Year for selectivity", min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                                        radioButtons("YC_exp_type", "Fishing pressure metric",
+                                                                     choiceNames = c("Instantaneous F", "Spawning potential ratio"),
+                                                                     choiceValues = c("F", "SPR")),
+                                                        radioButtons("YC_calc", "Calculation type",
+                                                                     choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")),
+                                                                     choiceValues = 1:2)
+                                                 ),
+
+                                                 column(9,
+                                                        plotOutput("hist_YC_plot", height = 520)
+                                                 )
+                                          ),
                                           value = 1),
                                  tabPanel(h5("Selectivity"),
-                                          plotOutput("plot_hist_sel",height=540),
+                                          column(12,
+                                                 column(3,
+                                                        sliderInput("sel_y", textOutput("sel_y_text"), min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
+                                                        ),
+                                                 column(9,
+                                                        plotOutput("plot_hist_sel",height=520)
+                                                        )
+                                                 ),
                                           value = 2)
                      ),
                      value=2),

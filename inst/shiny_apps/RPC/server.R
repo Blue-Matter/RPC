@@ -216,39 +216,18 @@ server <- function(input, output, session) {
 
   observeEvent(input$HistRes1, {
     req(inherits(OBJs$MSEhist, "Hist"))
-    try({
-      SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
-      R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
-      Frange_max <- 1.1 * max(OBJs$MSEhist@Ref$ByYear$Fcrash) %>% round(2)
+    SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
+    R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
 
-      Hist_yr <- seq(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, OBJs$MSEhist@OM@CurrentYr)
+    Hist_yr <- seq(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, OBJs$MSEhist@OM@CurrentYr)
 
-      updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
-      updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
-      updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
-
-      updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
-      updateSliderInput(session, "YC_y_bio", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
-      updateSliderInput(session, "YC_y_sel", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
-    }, silent = TRUE)
+    updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
+    updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
+    updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
   })
 
+  output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
   output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
-
-  observeEvent({
-    input$YC_Frange
-    input$YC_y_bio
-    input$YC_y_sel
-    input$YC_exp_type
-    input$YC_calc
-  }, {
-
-    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc, exp_type = input$YC_exp_type,
-                                                      yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
-                                                      F_range = input$YC_Frange),
-                                      res = plotres)
-  }
-  )
 
   observeEvent({
     input$HistRes1
@@ -538,14 +517,7 @@ server <- function(input, output, session) {
 
 
   # OM panel --------------------------------------------------
-
-  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
-
-  output$bio_year_text <- renderText(paste0("Right figure: year",
-                                            ifelse(inherits(OBJs$MSEhist, "Hist"), paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
-                                                   "")))
-
-  observeEvent(input$OM_hist_bio, {
+  observeEvent(input$OM_hist, {
     req(inherits(OBJs$MSEhist, "Hist"))
     MSEhist <- OBJs$MSEhist
     yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
@@ -555,8 +527,35 @@ server <- function(input, output, session) {
                       value = MSEhist@OM@CurrentYr, step = 1)
     updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
                       value = MSEhist@OM@maxage+1, step = 1)
+
+    output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
+
+    Frange_max <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash) %>% round(2)
+    updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
+    updateSliderInput(session, "YC_y_bio", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
+    updateSliderInput(session, "YC_y_sel", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
+
+    updateSliderInput(session, "sel_y", min = min(yr_cal), max = max(yr_cal),
+                      value = c(min(yr_cal), MSEhist@OM@CurrentYr))
   })
 
+  output$bio_year_text <- renderText({
+    paste0("Right figure: year", ifelse(inherits(OBJs$MSEhist, "Hist"),
+                                        paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
+                                        ""))
+  })
+
+  output$YC_bio_text <- renderText({
+    paste0("Year for biological parameters", ifelse(inherits(OBJs$MSEhist, "Hist"),
+                                        paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
+                                        ""))
+  })
+
+  output$sel_y_text <- renderText({
+    paste0("Year", ifelse(inherits(OBJs$MSEhist, "Hist"),
+                          paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
+                          ""))
+  })
 
   observeEvent({
     input$bio_schedule
@@ -576,8 +575,24 @@ server <- function(input, output, session) {
   output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
 
   output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
-  output$plot_hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
-  output$plot_hist_sel <- renderPlot(hist_sel(OBJs),res=plotres)
+
+  observeEvent({
+    input$YC_Frange
+    input$YC_y_bio
+    input$YC_y_sel
+    input$YC_exp_type
+    input$YC_calc
+  }, {
+
+    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc, exp_type = input$YC_exp_type,
+                                                      yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
+                                                      F_range = input$YC_Frange),
+                                      res = plotres)
+  }
+  )
+
+  observeEvent(input$sel_y, output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y),res=plotres))
+
 
 
   # Log  --------------------------------------------------------

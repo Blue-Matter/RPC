@@ -120,36 +120,103 @@ hist_bio_schedule <- function(OBJs, var = "Len_age", n_age_plot, yr_plot, sim) {
 hist_growth_I<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=1)
 hist_growth_II<-function(OBJs)  plot('Growth', OBJs$MSEhist, plot.num=2)
 hist_spatial<-function(OBJs)  plot('Spatial', OBJs$MSEhist)
-hist_sel<-function(OBJs)  plot('Selectivity', OBJs$MSEhist)
+hist_sel <- function(OBJs, yr_sel) {
+  MSEhist <- OBJs$MSEhist
+  yind <- yr_sel - MSEhist@OM@CurrentYr + MSEhist@OM@nyears # Length 2 vector
 
-
-hist_exp <-function(OBJs, yr_FMSY) {
-  MSEhist<-OBJs$MSEhist
-  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
-
-  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+  par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
   cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
-  # Total removals
-  if(sum(MSEhist@TSdata$Discards)) {
-    tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
-    tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
-  } else {
-    tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Removals", cols=cols)
+  for(y in 1:length(yind)) {
+    # Selectivity
+    tsplot(MSEhist@SampPars$Fleet$V[, , yind[y]],yrs=0:MSEhist@OM@maxage,
+           xlab="",ylab="Vulnerability",cols = cols, zeroyint=F, ymax = 1.1)
+    mtext(paste("Year", yr_sel[y]), 3, line = 1, font = 2)
+
+    # Retention
+    tsplot(MSEhist@SampPars$Fleet$retA_real[, , yind[y]],yrs=0:MSEhist@OM@maxage,
+           xlab="",ylab="Retention",cols = cols, zeroyint=F, ymax = 1.1)
+
+    # Realized Selectivity
+    tsplot(MSEhist@SampPars$Fleet$V_real[, , yind[y]],yrs=0:MSEhist@OM@maxage,
+           xlab="",ylab="Realized Selectivity",cols = cols, zeroyint=F, ymax = 1.1)
   }
-
-  # Apical F index
-  Find <-  MSEhist@SampPars$Fleet$qs * MSEhist@TSdata$Find
-  tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
-
-  # Year specific FMSY
-  FMSY <- MSEhist@Ref$ByYear$FMSY[, 1:MSEhist@OM@nyears]
-  tsplot(FMSY, yrs, xlab = "Year", ylab = expression(Year-specific~F[MSY]), cols=cols)
-
-  # F/FMSY
-  tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
+  mtext("Age", 1, outer = TRUE, line = 2)
 }
 
 
 
+hist_YieldCurve <- function(OBJs, YC_type = 1, exp_type = c("F", "SPR"), yr_bio, yr_sel, F_range) {
+  #YC_type <- match.arg(YC_type, choices = c(1, 2))
+  exp_type <- match.arg(exp_type)
+
+  Hist <- OBJs$MSEhist
+  StockPars <- Hist@SampPars$Stock
+  FleetPars <- Hist@SampPars$Fleet
+
+  if(missing(yr_bio)) {
+    yr_bio <- Hist@OM@nyears
+  } else {
+    yr_bio <- max(1, yr_bio - Hist@OM@CurrentYr + Hist@OM@nyears)
+  }
+  if(missing(yr_sel)) {
+    yr_sel <- Hist@OM@nyears
+  } else {
+    yr_sel <- max(1, yr_sel - Hist@OM@CurrentYr + Hist@OM@nyears)
+  }
+
+  M <- StockPars$M_ageArray[, , yr_bio]
+  Mat_age <- StockPars$Mat_age[, , yr_bio]
+  Wt_age <- StockPars$Wt_age[, , yr_bio]
+  Fec_age <- StockPars$Fec_Age[, , yr_bio]
+  V <- FleetPars$V[, , yr_sel]
+
+  if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
+  F_search <- seq(min(F_range), max(F_range), length.out = 50)
+
+  if(YC_type == 1) {  # Constant R0/h
+    YC <- lapply(1:Hist@OM@nsim, function(x) {
+      vapply(log(F_search), function(y) {
+        MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                           Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                           V_at_Age = V[x, ], maxage = StockPars$maxage,
+                           R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                           opt = 2, plusgroup = StockPars$plusgroup)
+      }, numeric(11))
+    })
+  } else { # Constant alpha, beta
+    YC <- lapply(1:Hist@OM@nsim, function(x) {
+      vapply(log(F_search), function(y) {
+        RPC:::MSYCalcs2(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                        Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                        V_at_Age = V[x, ], maxage = StockPars$maxage,
+                        R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                        opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])
+      }, numeric(11))
+    })
+  }
+
+  Yield <- sapply(YC, function(x) x[1, ])
+  SSB <- sapply(YC, function(x) x[3, ])
+
+  par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+  cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+  if(exp_type == "SPR") {
+    SPR_F <- vapply(1:Hist@OM@nsim, function(x) {
+      vapply(F_search, function(y) {
+        MSEtool:::Ref_int_cpp(y, M_at_Age = M[x, ],
+                              Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                              V_at_Age = V[x, ], StockPars$SRrel[x], maxage = StockPars$maxage,
+                              plusgroup = StockPars$plusgroup)[2, ]
+      }, numeric(1))
+    }, numeric(length(F_search)))
+
+    tsplot(t(Yield),yrs=t(SPR_F),xlab="SPR",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+  } else {
+    tsplot(t(Yield),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+  }
+  tsplot(t(Yield),yrs=t(SSB),xlab="Spawning biomass",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+
+}
 
