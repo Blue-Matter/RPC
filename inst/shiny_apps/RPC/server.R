@@ -441,10 +441,16 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$Build_MS,{
-    make_RPC_MP(input)
-    updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
-    MPsSpec(1)
 
+    if(!nchar(input$MS_HCR_Label)) {
+      shinyalert("No name for the MP was provided.", type = "error")
+    } else if(input$MS_HCR_Label %in% MPs$Sel) {
+      AM(paste0("Error: ", input$MS_HCR_Label, " MP already selected. Choose another name."))
+    } else {
+      make_RPC_MP(input)
+      updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+      MPsSpec(1)
+    }
   })
 
   observeEvent(input$Build_MS_DLM, {
@@ -485,7 +491,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$MS_Clear_Last, {
-    if(length(MPs$Sel) > 1) {
+    if(any(length(MPs$Sel) != "No_Fishing")) {
       AM(paste0(MPs$Sel[length(MPs$Sel)], " MP removed"))
       MPs$Sel <<- MPs$Sel[-length(MPs$Sel)]
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)

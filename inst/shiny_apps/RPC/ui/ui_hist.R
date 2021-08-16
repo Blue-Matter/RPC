@@ -158,7 +158,12 @@ tabsetPanel(id="HistRes1", selected=1,
                                           ),
                                           value = 2),
                                  tabPanel(h5("Probability"),
-                                          HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>MSY</sub>.</p>"),
+                                          conditionalPanel("input.exp_type == 'F'",
+                                                           HTML("<p>Report the annual probability that the fishing mortality does not exceed some percentage of F<sub>MSY</sub>.</p>")
+                                          ),
+                                          conditionalPanel("input.exp_type == 'SPR'",
+                                                           p("Report the annual probability that the SPR exceeds some proportion.")
+                                          ),
                                           column(12,
                                                  column(3,
                                                         radioButtons("exp_type", "Exploitation type", choiceNames = c("Instantaneous F", "Equilibrium SPR"),

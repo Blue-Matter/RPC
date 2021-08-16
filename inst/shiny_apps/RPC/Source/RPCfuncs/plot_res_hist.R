@@ -574,22 +574,22 @@ hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
         tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
         tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
       } else {
-        tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Removals", cols=cols)
+        tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Catch", cols=cols)
       }
       tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
       tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
       tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
     } else {
-      pvec <- apply(Find/FMSY > prob_ratio, 2, mean)
+      pvec <- apply(Find/FMSY < prob_ratio, 2, mean)
 
       plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[MSY]>", prob_ratio)))
+           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[MSY]<", prob_ratio)))
     }
   } else {
     if(is.na(prob_ratio)) {
       make_df(Find, yrs)
     } else {
-      pvec <- apply(Find/FMSY > prob_ratio, 2, mean)
+      pvec <- apply(Find/FMSY < prob_ratio, 2, mean)
       structure(matrix(pvec, ncol = 1),
                 dimnames = list(yrs, c("Probability")))
     }

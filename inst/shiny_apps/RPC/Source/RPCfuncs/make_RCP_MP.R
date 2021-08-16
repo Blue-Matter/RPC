@@ -60,20 +60,21 @@ make_RPC_MP<-function(input) {
     TOCP=input$CP_2_y
   }
 
-  if(input$MS_Label==""){
-    MPstr_prefix<-"MP"
-  }else{
-    MPstr_prefix<-input$MS_Label
-  }
+  #if(input$MS_Label==""){
+  #  MPstr_prefix<-"MP"
+  #}else{
+  #  MPstr_prefix<-input$MS_Label
+  #}
 
-  MPstr_temp<-paste(MPstr_prefix,"1",sep="_")
+  #MPstr_temp<-paste(MPstr_prefix,"1",sep="_")
 
-  while(MPstr_prefix %in% MPs$Sel){
-    ind<-as.numeric(strsplit(MPstr_temp,"_")[[1]][2])+1
-    MPstr_temp<-paste(MPstr_prefix,ind,sep="_")
-  }
+  #while(MPstr_prefix %in% MPs$Sel){
+  #  ind<-as.numeric(strsplit(MPstr_temp,"_")[[1]][2])+1
+  #  MPstr_temp<-paste(MPstr_prefix,ind,sep="_")
+  #}
+  MPstr_temp <- input$MS_HCR_Label
 
-  MPs$All<<-c(MPs$All,MPstr_temp)
+  MPs$All <<- c(MPs$All, MPstr_temp)
 
   if(MPs$Sel[1]==""){
     MPs$Sel<<-MPstr_temp

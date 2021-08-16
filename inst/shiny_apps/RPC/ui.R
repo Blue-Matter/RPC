@@ -147,8 +147,13 @@ fluidPage(
                                               div(style="display: inline-block;vertical-align:top; width: 1100px;",
                                                   selectInput("HS_sel",label="Selected Management procedures:",choices="No_Fishing",selected="No_Fishing",multiple=TRUE,width='1000px')),
                                               div(style="display: inline-block; width: 300px;", br(),
-                                                  actionButton("MS_Clear_Last",label = "Clear Last",style="color:red;",width='150px',height='20px'),
-                                                  actionButton("MS_Clear_All",label = "Clear All",style="color:red;",width='150px',height='20px')),
+                                                  actionGroupButtons(
+                                                    inputIds = c("MS_Clear_Last", "MS_Clear_All"),
+                                                    labels = c("Clear Last", "Clear All")
+                                                  )
+                                              )
+                                                  #actionButton("MS_Clear_Last",label = "Clear Last",style="color:red;",width='150px',height='20px'),
+                                                  #actionButton("MS_Clear_All",label = "Clear All",style="color:red;",width='150px',height='20px')),
                                         )
                        )
                     ), # end of column 12
