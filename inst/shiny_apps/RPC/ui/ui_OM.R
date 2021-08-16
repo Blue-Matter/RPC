@@ -61,18 +61,16 @@ tabsetPanel(id="OM_hist", selected=1,
                                                  ),
                                           value = 2)
                      ),
-                     value=2),
+                     value=2)
 
-            tabPanel(h5("Management Quantities"),
-                     tabsetPanel(id="OM_hist_RP", selected=1,
-
-                                 tabPanel(h5("SSB"),
-                                          plotOutput("plot_hist_SSB",height=540),
-                                          # add table of probabililites & slider
-                                          value=1)
-
-                     ),
-                     #plotOutput("plot_hist_RPs",height=540),
-                     value=3)
+            #tabPanel(h5("Management Quantities"),
+            #         tabsetPanel(id="OM_hist_RP", selected=1,
+            #                     tabPanel(h5("SSB"),
+            #                              plotOutput("plot_hist_SSB",height=540),
+            #                              # add table of probabililites & slider
+            #                              value=1)
+            #         ),
+            #         #plotOutput("plot_hist_RPs",height=540),
+            #         value=3)
 
 ) # tabsetpanel

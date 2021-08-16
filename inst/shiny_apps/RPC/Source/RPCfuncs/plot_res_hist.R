@@ -512,35 +512,16 @@ stock_recruit_int <- function(Hist) {
 
 
 
-hist_SPR <- function(OBJs, SR = FALSE) {
+hist_SPR <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
-  MSEhist<-OBJs$MSEhist
+  MSEhist <- OBJs$MSEhist
+  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
-  if(!is.null(MSEhist@TSdata$SPR)) {
-    yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
+  Fmed <- MSEhist@Ref$ByYear$Fmed
+  StockPars <- MSEhist@SampPars$Stock
 
-    Fmed <- MSEhist@Ref$ByYear$Fmed
-    StockPars <- MSEhist@SampPars$Stock
-    #SPR_med <- vapply(1:MSEhist@OM@nsim, function(x) {
-    #  vapply(1:MSEhist@OM@nyears, function(y) {
-    #    MSEtool:::Ref_int_cpp(Fmed[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
-    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
-    #                          plusgroup = StockPars$plusgroup)[2, ]
-    #  }, numeric(1))
-    #}, numeric(MSEhist@OM@nyears))
-
-    if(SR) {
-      R <- apply(MSEhist@AtAge$Number[, 1, , ], 1:2, sum)
-      SSB <- apply(MSEhist@TSdata$SBiomass, 1:2, sum)
-
-      RpS <- apply(R/SSB, 1, median)
-      hist_R(OBJs, figure = TRUE, SR_only = TRUE)
-      lapply(RpS, function(x) abline(a = 0, b = x, col = "blue"))
-      abline(h = 0, b = median(RpS), lty = 2, col = "blue")
-
-    } else {
+  if(figure) {
+    if(is.na(prob_ratio)) {
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
@@ -556,85 +537,91 @@ hist_SPR <- function(OBJs, SR = FALSE) {
       # SPR/SPRcrash
       tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - SPR_crash), yrs, xlab="Year",
              ylab=expression((1-SPR[eq])/(1-SPR[crash])), cols=cols)
+    } else {
+      pvec <- apply(MSEhist@TSdata$SPR$Equilibrium > prob_ratio, 2, mean)
 
-      # SPR replacement
-      #tsplot(t(SPR_med), yrs, xlab="Year", ylab=expression(SPR[med]), cols=cols)
-
-      # SPR/SPR replacement
-      #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_med)), yrs, xlab="Year",
-      #       ylab=expression((1-SPR[eq])/(1-SPR[med])), cols=cols)
+      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
+           xlab = "Year", ylab = parse(text = paste0("Probability~SPR[eq]>", prob_ratio)))
     }
-
-    # SPR MSY
-    #FMSY <- MSEhist@Ref$ByYear$FMSY
-    #StockPars <- MSEhist@SampPars$Stock
-    #SPR_MSY <- vapply(1:MSEhist@OM@nsim, function(x) {
-    #  vapply(1:MSEhist@OM@nyears, function(y) {
-    #    MSEtool:::Ref_int_cpp(FMSY[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
-    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
-    #                          plusgroup = StockPars$plusgroup)[2, ]
-    #  }, numeric(1))
-    #}, numeric(MSEhist@OM@nyears))
-    #tsplot(t(SPR_MSY), yrs, xlab="Year", ylab=expression(SPR[MSY]), cols=cols)
-#
-    ## SPR/SPR MSY
-    #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_MSY)), yrs, xlab="Year",
-    #       ylab=expression((1-SPR[eq])/(1-SPR[MSY])), cols=cols)
+  } else {
+    if(is.na(prob_ratio)) {
+      make_df(MSEhist@TSdata$SPR$Equilibrium, yrs)
+    } else {
+      pvec <- apply(MSEhist@TSdata$SPR$Equilibrium > prob_ratio, 2, mean)
+      structure(matrix(pvec, ncol = 1),
+                dimnames = list(yrs, c("Probability")))
+    }
   }
-
 }
 
-hist_exp <-function(OBJs) {
+hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   MSEhist<-OBJs$MSEhist
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
-  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
-  cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
-
-  # Total removals
-  if(sum(MSEhist@TSdata$Discards)) {
-    tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
-    tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
-  } else {
-    tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Removals", cols=cols)
-  }
-
   # Apical F index
   Find <-  MSEhist@SampPars$Fleet$qs * MSEhist@TSdata$Find
-  tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
 
   # Year specific FMSY (constant R0, h)
   FMSY <- MSEhist@Ref$ByYear$FMSY[, 1:MSEhist@OM@nyears]
 
-  if(all(apply(FMSY, 1, function(x) all(!diff(x))))) {
-    tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
-    tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
+  if(figure) {
+    if(is.na(prob_ratio)) {
+      par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+      cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+      # Total removals
+      if(sum(MSEhist@TSdata$Discards)) {
+        tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
+        tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
+      } else {
+        tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Removals", cols=cols)
+      }
+      tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
+      tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
+      tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
+    } else {
+      pvec <- apply(Find/FMSY > prob_ratio, 2, mean)
+
+      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
+           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[MSY]>", prob_ratio)))
+    }
   } else {
-    # Year-specific FMSY (constant R0/h)
-    tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]~"(constant"~R[0]~h~")"), cols=cols)
-
-    # Year specific FMSY (constant alpha, beta)
-    StockPars <- MSEhist@SampPars$Stock
-    FleetPars <- MSEhist@SampPars$Fleet
-    FMSY2 <- sapply(1:MSEhist@OM@nsim, function(x) {
-      sapply(1:MSEhist@OM@nyears, function(y) {
-        optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
-                 Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-                 Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
-                 R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                 opt = 1, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])$minimum %>% exp()
-      })
-    }) %>% t()
-    tsplot(FMSY2, yrs, xlab = "Year", ylab = expression(F[MSY]~"(constant"~alpha~beta~")"), cols=cols)
-
-    # F/FMSY (constant R0, h)
-    tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]~"(constant"~R[0]~h~")"), cols=cols)
-
-    # F/FMSY (constant alpha, beta)
-    tsplot(Find/FMSY2, yrs, xlab = "Year", ylab = expression(F/F[MSY]~"(constant"~alpha~beta~")"), cols=cols)
+    if(is.na(prob_ratio)) {
+      make_df(Find, yrs)
+    } else {
+      pvec <- apply(Find/FMSY > prob_ratio, 2, mean)
+      structure(matrix(pvec, ncol = 1),
+                dimnames = list(yrs, c("Probability")))
+    }
   }
+
+  #if(all(apply(FMSY, 1, function(x) all(!diff(x))))) {
+  #  tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
+  #  tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
+  #} else {
+  #  # Year-specific FMSY (constant R0/h)
+  #  tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]~"(constant"~R[0]~h~")"), cols=cols)
+#
+  #  # Year specific FMSY (constant alpha, beta)
+  #  StockPars <- MSEhist@SampPars$Stock
+  #  FleetPars <- MSEhist@SampPars$Fleet
+  #  FMSY2 <- sapply(1:MSEhist@OM@nsim, function(x) {
+  #    sapply(1:MSEhist@OM@nyears, function(y) {
+  #      optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
+  #               Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+  #               Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
+  #               R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+  #               opt = 1, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])$minimum %>% exp()
+  #    })
+  #  }) %>% t()
+  #  tsplot(FMSY2, yrs, xlab = "Year", ylab = expression(F[MSY]~"(constant"~alpha~beta~")"), cols=cols)
+#
+  #  # F/FMSY (constant R0, h)
+  #  tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]~"(constant"~R[0]~h~")"), cols=cols)
+#
+  #  # F/FMSY (constant alpha, beta)
+  #  tsplot(Find/FMSY2, yrs, xlab = "Year", ylab = expression(F/F[MSY]~"(constant"~alpha~beta~")"), cols=cols)
+  #}
 
 }
 

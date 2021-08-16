@@ -255,7 +255,33 @@ server <- function(input, output, session) {
   output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 2)
 
   output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
+  output$hist_exp2 <- renderTable(hist_exp(OBJs, figure = FALSE), rownames = TRUE)
   output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
+  output$hist_SPR2 <- renderTable(hist_SPR(OBJs, figure = FALSE), rownames = TRUE)
+
+  # Probability
+  observeEvent({
+    input$exp_type
+    input$FMSY_prob
+    input$SPR_prob
+    input$exp_yrange
+  }, {
+    if(input$exp_type == "F") {
+      output$hist_exp_prob <- renderPlot(hist_exp(OBJs, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_table_label <- renderText({
+        paste0("Annual probability that F/FMSY > ", 100 * input$FMSY_prob, "%.")
+      })
+      output$hist_exp_table <- renderTable(hist_exp(OBJs, figure = FALSE, prob_ratio = input$FMSY_prob),
+                                           rownames = TRUE)
+    } else {
+      output$hist_exp_prob <- renderPlot(hist_SPR(OBJs, prob_ratio = input$SPR_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_table_label <- renderText({
+        paste0("Annual probability that equilibrium SPR > ", input$SPR_prob)
+      })
+      output$hist_exp_table <- renderTable(hist_SPR(OBJs, figure = FALSE, prob_ratio = input$SPR_prob),
+                                           rownames = TRUE)
+    }
+  })
 
   observeEvent({
     input$HistRes1
@@ -545,7 +571,10 @@ server <- function(input, output, session) {
 
 
   # OM panel --------------------------------------------------
-  observeEvent(input$OM_hist, {
+  observeEvent({
+    input$OM_hist
+    input$OM_hist_bio
+  }, {
     req(inherits(OBJs$MSEhist, "Hist"))
     MSEhist <- OBJs$MSEhist
     yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
@@ -556,8 +585,6 @@ server <- function(input, output, session) {
     updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
                       value = MSEhist@OM@maxage+1, step = 1)
 
-    output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
-
     Frange_max <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash) %>% round(2)
     updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
     updateSliderInput(session, "YC_y_bio", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
@@ -566,6 +593,8 @@ server <- function(input, output, session) {
     updateSliderInput(session, "sel_y", min = min(yr_cal), max = max(yr_cal),
                       value = c(min(yr_cal), MSEhist@OM@CurrentYr))
   })
+
+  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
 
   output$bio_year_text <- renderText({
     paste0("Right figure: year", ifelse(inherits(OBJs$MSEhist, "Hist"),
@@ -586,6 +615,8 @@ server <- function(input, output, session) {
   })
 
   observeEvent({
+    input$OM_hist
+    input$OM_hist_exp
     input$bio_schedule
     input$bio_schedule_sim
     input$bio_schedule_year

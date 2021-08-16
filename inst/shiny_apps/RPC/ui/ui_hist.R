@@ -113,6 +113,80 @@ tabsetPanel(id="HistRes1", selected=1,
                      ),
                      value = 1),
 
+            tabPanel(h5("Exploitation"),
+                     tabsetPanel(id = "Exploit", selected = 1,
+                                 tabPanel(h5("Fishing mortality"),
+                                          div(style = "overflow-y:scroll; height:520px",
+                                              HTML("<p>Time series of catches (landings and discards, or total removals only if no discards are modeled) with instantaneous fishing mortality (F) and F<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
+                                               annual F<sub>MSY</sub> is calculated from constant R<sub>0</sub> and steepness and annual unfished spawners per recruit."),
+                                              tabsetPanel(id = "exp_hist", selected = 1,
+                                                          tabPanel(h5("Figure"),
+                                                                   plotOutput("hist_exp",height=540),
+                                                                   value = 1),
+                                                          tabPanel(h5("Table"),
+                                                                   tableOutput("hist_exp2"),
+                                                                   value = 2)
+                                              ),
+                                          ),
+                                          value = 1),
+                                 tabPanel(h5("Spawning potential ratio (SPR)"),
+                                          div(style = "overflow-y:scroll; height:520px",
+                                              p("It can be difficult to adequately define a single annual value for fishing mortality in complex operating models
+                                          (i.e., multiple areas, multiple fleets with very different selectivity at age). In such cases, spawning potential ratio (SPR),
+                                          the reduction in spawning output relative to unfished conditions, is more robust in accounting for all these processes."),
+                                              HTML("Several SPR time series are reported here:
+                                          <ul>
+                                          <li><strong>Equilibrium SPR</strong> (top left) is the SPR calculated from year-specific biological parameters and fishing pressure. Equilibrium SPR = 1 implies no fishing in that year.</li>
+                                          <li><strong>Dynamic SPR</strong> (bottom left) is the SPR calculated using the cumulative survival experienced by the cohorts present in that year. Whereas equilibrium SPR is instantaneous, dynamic SPR accounts
+                                          for prior fishing mortality in previous years. Thus, dynamic SPR will lag equilibrium SPR (<a href=\"https://doi.org/10.1016/j.fishres.2014.12.018\">Hordyk et al. 2015</a>).</li>
+                                          <li><strong>SPR<sub>crash</sub></strong> (top right) is the SPR associated with the stock-recruit &lpha; parameter (also see Stock-recruit panel). This value is constant With a fixed stock-recruit curve.
+                                          SPR<sub>crash</sub> is the threshold for long-term extinction, i.e., fishing pressure in the long-term that reduces equilibrium SPR below SPR<sub>crash</sub> is expected to lead to extinction.
+                                          Thus, serious harm is implied to occur at some SPR above SPR<sub>crash</sub> (<a href=\"https://www.dfo-mpo.gc.ca/csas-sccs/publications/resdocs-docrech/2002/2002_084-eng.htm\">Shelton and Rice 2002</a>). </li>
+                                          <li><strong>(1 - SPR<sub>eq</sub>)/(1 - SPR<sub>crash</sub>)</strong> (bottom right) is a relative SPR metric used to compare equilibrium SPR relative to SPR<sub>crash</sub>. The relative SPR is transformed such that
+                                          long-term extinction is implied when the y-axis is greater than 1.</li>
+                                               </ul>"),
+                                              tabsetPanel(id = "SPR_hist", selected = 1,
+                                                          tabPanel(h5("Figure"),
+                                                                   plotOutput("hist_SPR", height = 520),
+                                                                   value = 1),
+                                                          tabPanel(h5("Table"),
+                                                                   tableOutput("hist_SPR2"),
+                                                                   value = 2)
+                                              ),
+                                          ),
+                                          value = 2),
+                                 tabPanel(h5("Probability"),
+                                          HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>MSY</sub>.</p>"),
+                                          column(12,
+                                                 column(3,
+                                                        radioButtons("exp_type", "Exploitation type", choiceNames = c("Instantaneous F", "Equilibrium SPR"),
+                                                                     choiceValues = c("F", "SPR")),
+                                                        conditionalPanel("input.exp_type == 'F'",
+                                                                         sliderInput("FMSY_prob", HTML("F/F<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01)
+                                                        ),
+                                                        conditionalPanel("input.exp_type == 'SPR'",
+                                                                         sliderInput("SPR_prob", "SPR threshold", min = 0, max = 1, value = 0.4, step = 0.01)
+                                                        ),
+                                                        sliderInput("exp_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                        ),
+                                                 column(9,
+                                                        tabsetPanel(id = "exp_histprob", selected = 1,
+                                                                    tabPanel(h5("Figure"),
+                                                                             plotOutput("hist_exp_prob", height = 520),
+                                                                             value = 1),
+                                                                    tabPanel(h5("Table"),
+                                                                             div(style = "overflow-y:scroll; height:520px",
+                                                                                 textOutput("hist_exp_table_label"),
+                                                                                 tableOutput("hist_exp_table")
+                                                                             ),
+                                                                             value = 2)
+                                                        )
+                                                 )
+                                          ),
+                                          value = 3)
+                     ),
+                     value = 2),
+
             tabPanel(h5("Recruitment"),
                      tabsetPanel(id="Recruithist", selected=1,
                                  tabPanel(h5("Time series"),
@@ -125,39 +199,8 @@ tabsetPanel(id="HistRes1", selected=1,
                                  tabPanel(h5("Table"),
                                           div(style = "overflow-y:scroll; height:520px",
                                               tableOutput("hist_R_table")
-                                              ),
+                                          ),
                                           value = 2)
-                     ),
-                     value = 2),
-
-            tabPanel(h5("Exploitation"),
-                     tabsetPanel(id = "Exploit", selected = 1,
-                                 tabPanel(h5("Fishing mortality"),
-                                          plotOutput("hist_exp",height=540),
-                                          value = 1),
-                                 tabPanel(h5("Spawning potential ratio (SPR)"),
-                                          div(style = "overflow-y:scroll; height:520px",
-                                              p("It can be difficult to adequately define a single annual value for fishing mortality in complex operating models
-                                          (i.e., multiple areas, multiple fleets with very different selectivity at age). In such cases, spawning potential ratio (SPR),
-                                          the reduction in spawning output relative to unfished conditions, is more robust in accounting for all these processes."),
-
-                                              HTML("Several SPR time series are reported here:
-                                          <ul>
-                                          <li><strong>Equilibrium SPR</strong> (top left) is the SPR calculated from year-specific biological parameters and fishing pressure. Equilibrium SPR = 1 implies no fishing in that year.</li>
-                                          <li><strong>Dynamic SPR</strong> (bottom left) is the SPR calculated using the cumulative survival experienced by the cohorts present in that year. Whereas equilibrium SPR is instantaneous, dynamic SPR accounts
-                                          for prior fishing mortality in previous years. Thus, dynamic SPR will lag equilibrium SPR (<a href=\"https://doi.org/10.1016/j.fishres.2014.12.018\">Hordyk et al. 2015</a>).</li>
-                                          <li><strong>SPR<sub>crash</sub></strong> (top right) is the SPR associated with the stock-recruit &lpha; parameter (also see Stock-recruit panel). This value is constant With a fixed stock-recruit curve.
-                                          SPR<sub>crash</sub> is the threshold for long-term extinction, i.e., fishing pressure in the long-term that reduces equilibrium SPR below SPR<sub>crash</sub> is expected to lead to extinction.
-                                          Thus, serious harm is implied to occur at some SPR above SPR<sub>crash</sub> (<a href=\"https://www.dfo-mpo.gc.ca/csas-sccs/publications/resdocs-docrech/2002/2002_084-eng.htm\">Shelton and Rice 2002</a>). </li>
-                                          <li><strong>(1 - SPR<sub>eq</sub>)/(1 - SPR<sub>crash</sub>)</strong> (bottom right) is a relative SPR metric used to compare equilibrium SPR relative to SPR<sub>crash</sub>. The relative SPR is transformed such that
-                                          long-term extinction is implied when the y-axis is greater than 1.</li>
-                                               </ul>"),
-                                              plotOutput("hist_SPR", height = 520)
-                                              ),
-                                          value = 2),
-                                 tabPanel(h5("Probability"),
-                                          p("Additional figures and tables TBD"),
-                                          value = 3)
                      ),
                      value = 3),
 
