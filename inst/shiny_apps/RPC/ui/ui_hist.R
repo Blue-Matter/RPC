@@ -83,6 +83,8 @@ tabsetPanel(id="HistRes1", selected=1,
                                  tabPanel(HTML("<h5>SSB<sub>MSY</sub></h5>"),
                                           tabsetPanel(id="SSBMSYhist", selected=1,
                                                       tabPanel(h5("Time series"),
+                                                               HTML("<p>Time series of SSB and SSB<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
+                                               annual SSB<sub>MSY</sub> is calculated from constant R<sub>0</sub> and steepness and annual unfished spawners per recruit."),
                                                                plotOutput("hist_SSBMSY_plot", height = 520),
                                                                value=1),
 

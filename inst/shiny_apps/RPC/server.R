@@ -198,7 +198,11 @@ server <- function(input, output, session) {
 
 
   # Historical results panel -----------------------------------------------------
-  observeEvent(input$HistRes1, {
+  observeEvent({
+    input$HistRes1
+    input$SSB
+    input$SSBhist
+  }, {
     req(inherits(OBJs$MSEhist, "Hist"))
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
     R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
@@ -639,10 +643,10 @@ server <- function(input, output, session) {
     input$YC_Frange
     input$YC_y_bio
     input$YC_y_sel
-    input$YC_calc
+    #input$YC_calc
   }, {
 
-    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, YC_type = input$YC_calc,
+    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, #YC_type = input$YC_calc,
                                                       yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
                                                       F_range = input$YC_Frange),
                                       res = plotres)

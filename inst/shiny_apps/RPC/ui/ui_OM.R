@@ -39,10 +39,10 @@ tabsetPanel(id="OM_hist", selected=1,
                                                  column(3,
                                                         sliderInput("YC_Frange", "Fishing mortality range", min = 0, max = 3, value = c(0, 3), step = 0.01),
                                                         sliderInput("YC_y_bio", textOutput("YC_bio_text"), min = 0, max = 0, value = 0, step = 1, sep = ""),
-                                                        sliderInput("YC_y_sel", "Year for selectivity", min = 0, max = 0, value = 0, step = 1, sep = ""),
-                                                        radioButtons("YC_calc", "Calculation type",
-                                                                     choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")),
-                                                                     choiceValues = 1:2)
+                                                        sliderInput("YC_y_sel", "Year for selectivity", min = 0, max = 0, value = 0, step = 1, sep = "")
+                                                        #radioButtons("YC_calc", "Calculation type",
+                                                        #             choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")),
+                                                        #             choiceValues = 1:2)
                                                  ),
 
                                                  column(9,

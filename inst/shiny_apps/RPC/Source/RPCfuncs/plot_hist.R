@@ -153,8 +153,9 @@ hist_sel <- function(OBJs, yr, maturity = TRUE) {
 
 
 
-hist_YieldCurve <- function(OBJs, YC_type = 1, yr_bio, yr_sel, F_range) {
-  YC_type <- match.arg(YC_type, choices = c(1, 2))
+hist_YieldCurve <- function(OBJs, yr_bio, yr_sel, F_range) {
+  #YC_type <- match.arg(YC_type, choices = c(1, 2))
+  YC_type <- 1
 
   Hist <- OBJs$MSEhist
   StockPars <- Hist@SampPars$Stock
