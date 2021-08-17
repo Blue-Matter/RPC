@@ -9,9 +9,8 @@ library(shinydashboard)
 library(MSEtool)
 library(SAMtool)
 library(DLMtool)
-if(!requireNamespace("MSEextra", quietly = TRUE)) {
-  MSEtool::MSEextra()
-}
+if(!requireNamespace("MSEextra", quietly = TRUE)) MSEtool::MSEextra()
+if(!requireNamespace("ggspider", quietly = TRUE)) devtools::install_github("pbs-assess/ggspider")
 library(MSEextra)
 library(shinyalert)
 
@@ -37,6 +36,7 @@ DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
 OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'])
 
 nsim<<-24 # Default value to start, user can adjust with sliders in app
+PMenv <- new.env() # Performance metrics
 
 # Load MERA stuff
 source("global_MERA.R", local = TRUE)

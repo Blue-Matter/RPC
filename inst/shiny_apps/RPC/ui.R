@@ -143,17 +143,15 @@ fluidPage(
                                         source(file.path("ui", "ui_MP.R"), local = TRUE)$value,
                                         column(12, style="padding-left:0px; height:150px",
                                               hr(),
-                                              #uiOutput("SelectedHS"),
-                                              div(style="display: inline-block;vertical-align:top; width: 1100px;",
-                                                  selectInput("HS_sel",label="Selected Management procedures:",choices="No_Fishing",selected="No_Fishing",multiple=TRUE,width='1000px')),
-                                              div(style="display: inline-block; width: 300px;", br(),
+                                              HTML("<h5><strong>Selected management procedures:</strong></h5>"),
+                                              div(style="display: inline-block; vertical-align:top; width: 1000px;",
+                                                  selectInput("HS_sel",label=NULL,choices="No_Fishing",selected="No_Fishing",multiple=TRUE,width='1000px')),
+                                              div(style="display: inline-block; vertical-align:top; width: 300px;",
                                                   actionGroupButtons(
                                                     inputIds = c("MS_Clear_Last", "MS_Clear_All"),
-                                                    labels = c("Clear Last", "Clear All")
+                                                    labels = c("Remove Last", "Remove All")
                                                   )
                                               )
-                                                  #actionButton("MS_Clear_Last",label = "Clear Last",style="color:red;",width='150px',height='20px'),
-                                                  #actionButton("MS_Clear_All",label = "Clear All",style="color:red;",width='150px',height='20px')),
                                         )
                        )
                     ), # end of column 12
@@ -175,7 +173,7 @@ fluidPage(
 
                               }),
 
-                              column(12, HTML('<br>'),
+                              column(12, br(),
 
                                      conditionalPanel('output.MSErun==0',{
                                        h5("Please run an MSE simulation test to see results",style="color:darkgrey")

@@ -1,91 +1,145 @@
 tabsetPanel(id="Res", selected=1,
 
-            tabPanel(HTML("<h5>SSB<sub>0</sub></h5>"),
-
-                     tabsetPanel(id="SSB0", selected=1,
-                                 tabPanel(h5("Median time series"),
-                                          plotOutput("B_proj_plot",height=520),
-                                          value=1),
-                                 tabPanel(h5("Stochastic projection"),
-                                          column(12,
-                                                 column(3,
-                                                        selectInput("SMP1","First management procedure",choices="",selected=""),
-                                                        selectInput("SMP2","Second management procedure",choices="",selected=""),
-                                                        sliderInput("SSB0_MSE_quantile", "Quantile", min = 0.01, max = 0.99, value = 0.9, step = 0.01)
-                                                 ),
-                                                 column(9, plotOutput("B_stoch_plot",height=520),
-                                                 )
-                                          ),
-                                          value=2),
-                                 tabPanel(h5("Individual Simulations"),
-                                          column(2,
-                                                 selectInput("StochMP","Management procedure:",choices="",selected=""),
-                                                 sliderInput('nsim_hist_SSB',"Number of simulations to plot:",min=1,max=3,value=1,step=1),
-                                                 actionButton("StochB_resample","Resample")),
-                                          column(10,plotOutput("plot_hist_SSB_sim",height=520)),
-                                          value=3),
-
-                                 tabPanel(h5("Probability"),
-                                          column(12,
-                                                 column(3,
-                                                        sliderInput("SSB0_MSE_prob", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01),
-                                                        sliderInput("SSB0_MSE_yrange", "Figure y-axis range", min = 0, max = 1.1, value = c(0, 1), step = 0.01),
-                                                        sliderInput("SSB0_MSE_xrange", "Projection year range", min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
-                                                 ),
-                                                 column(9, tabsetPanel(id = "SSB0_Prob", selected = 1,
-                                                                       tabPanel("Figure",
-                                                                                plotOutput("B_prob_plot",height=520),
-                                                                                value = 1),
-                                                                       tabPanel("Table",
-                                                                                textOutput("B_prob_table_label"),
-                                                                                tableOutput("B_prob_table"),
-                                                                                value = 2)
-                                                 )
-                                                 )
-                                          ),
-                                          value=4)
-                     ),
+            tabPanel(h5("Median time series"),
+                     column(12,
+                            column(3,
+                                   radioGroupButtons("proj_type", "Output type",
+                                                     choiceNames = list(HTML("SSB<sub>0</sub>"), HTML("SSB<sub>MSY</sub>"), "Fishing mortality", "SPR", "Catch"),
+                                                     choiceValues = c("SSB0", "SSBMSY", "F", "SPR", "Catch"), direction = "vertical")
+                                   ),
+                            column(9,
+                                   plotOutput("proj_plot",height=520),
+                                   )
+                            ),
                      value=1),
 
-            tabPanel(h5("BMSY"),
-
-                     tabsetPanel(id="SSBMSY", selected=1,
-                                 tabPanel(h5("Median time series"),
-                                          h5("COMING SOON: Median SSBMSY SSB time series plots to go here",style = "color:black"),
-                                          value=1),
-                                 tabPanel(h5("Probability of exceeding RPs"),
-                                          h5("COMING SOON: Probability of exceeding SSBMSY fractions to go here",style = "color:black"),
-                                          value=2),
-                                 tabPanel(h5("Stochastic projection"),
-                                          h5("COMING SOON: SSB relative to SSBMSY Stochastic projection plot to go here",style = "color:black"),
-                                          value=3),
-                                 tabPanel(h5("By Simulation"),
-                                          h5("COMING SOON:SSB relative to SSBMSY by simulation plot to go here",style = "color:black"),
-                                          value=4),
-                                 tabPanel(h5("Table"),
-                                          h5("COMING SOON:SSB relative to SSBMSY datatable to go here",style = "color:black"),
-                                          value=5)
+            tabPanel(h5("Stochastic projection"),
+                     column(12,
+                            column(3,
+                                   radioGroupButtons("stoch_type", "Output type",
+                                                     choiceNames = list(HTML("SSB<sub>0</sub>"), HTML("SSB<sub>MSY</sub>"), "Fishing mortality", "SPR", "Catch"),
+                                                     choiceValues = c("SSB0", "SSBMSY", "F", "SPR", "Catch"), direction = "vertical"),
+                                   selectInput("SMP1","First management procedure",choices="",selected=""),
+                                   selectInput("SMP2","Second management procedure",choices="",selected=""),
+                                   sliderInput("stoch_quantile", "Quantile", min = 0, max = 1, value = 0.9, step = 0.01)
+                            ),
+                            column(9, plotOutput("stoch_plot",height=520),
+                            )
                      ),
                      value=2),
 
-            tabPanel(h5("FMSY"),
-                     h5("COMING SOON: Tableset panel with outputs for F relative FMSY",style = "color:black"),
-                     plotOutput("plot_FMSY",height=540),
+            tabPanel(h5("Individual Simulations"),
+                     column(2,
+                            radioGroupButtons("sim_type", "Output type",
+                                              choiceNames = list(HTML("SSB<sub>0</sub>"), HTML("SSB<sub>MSY</sub>"), "Fishing mortality", "SPR", "Catch"),
+                                              choiceValues = c("SSB0", "SSBMSY", "F", "SPR", "Catch"), direction = "vertical"),
+                            selectInput("StochMP","Management procedure:",choices="",selected=""),
+                            sliderInput('nsim_hist',"Number of simulations to plot:",min=1,max=3,value=1,step=1),
+                            actionButton("StochB_resample","Resample")),
+                     column(10,plotOutput("plot_hist_sim",height=520)),
                      value=3),
 
-            tabPanel(h5("MSY"),
-                     h5("COMING SOON: Tableset panel with catch relative to MSY",style = "color:black"),
-                     plotOutput("plot_MSY",height=540),
+            tabPanel(h5("Probability"),
+                     column(12,
+                            column(3,
+                                   radioGroupButtons("prob_type", "Output type",
+                                                     choiceNames = list("Historical SSB", HTML("SSB<sub>0</sub>"), HTML("SSB<sub>MSY</sub>"), "Fishing mortality", "SPR", "Catch"),
+                                                     choiceValues = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"), direction = "vertical"),
+                                   conditionalPanel("input.prob_type == 'SSB'",
+                                                    sliderInput("SSBhist_yr", "Reference year for historical SSB", min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                                    sliderInput("SSBhist_thresh", "Historical SSB threshold", min = 0, max = 5, value = 1, step = 0.05)
+                                   ),
+                                   conditionalPanel("input.prob_type == 'SSB0'",
+                                                    selectInput("SSB0_type", label = HTML("SSB<sub>0</sub> Type"),
+                                                                choices = list("Asymptotic", "Initial", "Dynamic"),
+                                                                selectize = FALSE, size = 1),
+                                                    sliderInput("SSB0_thresh", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01)
+                                   ),
+                                   conditionalPanel("input.prob_type == 'SSBMSY'",
+                                                    sliderInput("SSBMSY_thresh", HTML("SSB/SSB<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01)
+                                   ),
+                                   conditionalPanel("input.prob_type == 'F'",
+                                                    sliderInput("FMSY_thresh", HTML("F/F<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01)
+                                   ),
+                                   conditionalPanel("input.prob_type == 'SPR'",
+                                                    sliderInput("SPR_thresh", "SPR threshold", min = 0, max = 1, value = 0.4, step = 0.01)
+                                   ),
+                                   conditionalPanel("input.prob_type == 'Catch'",
+                                                    sliderInput("Chist_yr", "Reference year for historical catch", min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                                    sliderInput("Chist_thresh", "Catch threshold", min = 0, max = 3, value = 1, step = 0.01)
+                                   ),
+                                   sliderInput("prob_range", "Figure y-axis range", min = 0, max = 1.1, value = c(0, 1), step = 0.01),
+                                   sliderInput("prob_yrange", "Projection year range", min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
+                            ),
+                            column(9,
+                                   p("Use this panel to develop performance metrics (PMs) for the Summary panel."),
+                                   tabsetPanel(id = "prob_output", selected = 1,
+                                               tabPanel("Figure",
+                                                        plotOutput("prob_plot",height=460),
+                                                        value = 1),
+                                               tabPanel("Table",
+                                                        div(style = "height:460px",
+                                                            textOutput("prob_table_label"),
+                                                            tableOutput("prob_table")
+                                                            ),
+                                                        value = 2)
+                                   ),
+                                   hr(),
+                                   HTML("<h5><strong>Name of performance metric:</strong></h5>"),
+                                   div(style="display: inline-block;vertical-align:top; width: 250px;",
+                                       textInput("PM_name", label = NULL)),
+                                   div(style="display: inline-block;vertical-align:top; width: 250px;",
+                                       actionButton("PM_add", "Add to Summary", icon = icon("plus"), style = "color:red"))
+                            )
+                     ),
                      value=4),
 
             tabPanel(h5("Summary"),
-                     h5("COMING SOON: summary plots / Tables",style = "color:black"),
-                     plotOutput("plot_summary",height=540),
-                     value=5),
-
-            tabPanel(h5("Trade-offs"),
-                     h5("COMING SOON: SSB0 RP, SSBMSY RP, FMSY RP & MSY RP trade-offs",style = "color:black"),
-                     plotOutput("plot_TO",height=540),
-                     value=6)
+                     conditionalPanel("output.PMs.length == 0",
+                                      p("Add performance metrics (PMs) in the Probability tab to view Summary.")
+                     ),
+                     conditionalPanel("output.PMs.length > 0",
+                                      div(style = "overflow-y:scroll; height:520px",
+                                          tabsetPanel(id = "Res_summary", selected = 1,
+                                                      tabPanel(h5("Table"),
+                                                               tableOutput("PM_table"),
+                                                               tableOutput("PM_table2"),
+                                                               value = 1),
+                                                      tabPanel(h5("Figure"),
+                                                               plotOutput("PM_lollipop"),
+                                                               value = 2),
+                                                      tabPanel(h5("Radar"),
+                                                               conditionalPanel("output.PMs.length < 3",
+                                                                                p("At least three performance measures are needed for the radar plot.")
+                                                                                ),
+                                                               conditionalPanel("output.PMs.length > 2",
+                                                                                plotOutput("PM_radar")
+                                                                                ),
+                                                               value = 3),
+                                                      tabPanel(h5("Tradeoff"),
+                                                               column(12,
+                                                                      column(3,
+                                                                             selectInput("PM1", "First performance metric", choices = ""),
+                                                                             selectInput("PM2", "Second performance metric", choices = "")
+                                                                      ),
+                                                                      column(9,
+                                                                             plotOutput("PM_tradeoff")
+                                                                      )
+                                                               ),
+                                                               value = 4)
+                                          )
+                                          ),
+                                      hr(),
+                                      HTML("<h5><strong>Performance metrics:</strong></h5>"),
+                                      div(style="display: inline-block;vertical-align:top; width: 1000px;",
+                                          selectInput("PM_display", label = NULL, choices = "", width='1000px')),
+                                      div(style="display: inline-block;vertical-align:top; width: 300px;",
+                                          actionGroupButtons(
+                                            inputIds = c("PM_Clear", "PM_Clear_All"),
+                                            labels = c("Remove Selected", "Remove All")
+                                          )
+                                          )
+                     ),
+                     value=5)
 
 ) # tabsetpanel

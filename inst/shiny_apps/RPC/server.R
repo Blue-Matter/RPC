@@ -20,7 +20,7 @@ server <- function(input, output, session) {
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
 
-  MPsSpec<-reactiveVal(0)
+  MPsSpec<-reactiveVal(1)
   output$MPsSpec <- reactive({MPsSpec()})
   outputOptions(output, "MPsSpec",suspendWhenHidden=FALSE)
 
@@ -36,6 +36,11 @@ server <- function(input, output, session) {
   #updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
   OBJs<<-reactiveValues(MSEhist="",MSEproj="")
+
+  PMs <<- reactiveValues(names = character(0))
+  output$PMs <- reactive({ PMs$names })
+  outputOptions(output, "PMs", suspendWhenHidden = FALSE)
+
 
   for (fl in list.files("./Source/MERA")) source(file.path("./Source/MERA", fl), local = TRUE)
 
@@ -91,11 +96,24 @@ server <- function(input, output, session) {
       if(!is.null(prev_session$MPs)) {
         MPs$All <<- prev_session$MPs$All
         MPs$Sel <<- prev_session$MPs$Sel
+        updateSelectInput(session, "HS_sel", choices = MPs$All, selected = MPs$Sel)
+        AM(paste("MPs loaded from previous session:", paste(MPs$Sel, collapse = ", ")))
       }
       if(is.environment(prev_session$MPs_save) && length(ls(envir = prev_session$MPs_save))) {
         MP_out <- ls(envir = prev_session$MPs_save)
-        lapply(ls(envir = prev_session$MPs_save),
-               function(x) assign(x, get(x, envir = prev_session$MPs_save), envir = .GlobalEnv))
+        lapply(MP_out, function(x) assign(x, get(x, envir = prev_session$MPs_save), envir = .GlobalEnv))
+      }
+      if(is.environment(prev_session$PMs_save)) {
+        PM <- ls(envir = prev_session$PMs_save)
+        if(length(PM)) {
+          lapply(PM, function(x) assign(x, get(x, envir = prev_session$PMs_save), envir = PMenv))
+          PMs$names <<- PM
+          updateSelectInput(session, "PM_display", choices = PM)
+          updateSelectInput(session, "PM1", choices = PM, selected = PM[1])
+          updateSelectInput(session, "PM2", choices = PM, selected = PM[length(PM)])
+
+          AM(paste("Performance metrics loaded from previous session:", paste(PM, collapse = ", ")))
+        }
       }
     },
 
@@ -117,8 +135,13 @@ server <- function(input, output, session) {
         lapply(names(MPs_globalenv)[MPs_globalenv],
                function(x) assign(x, value = get(x, envir = .GlobalEnv), envir = MPs_save))
       }
+      PMs_save <- new.env()
+      if(length(PMs$names)) {
+        lapply(PMs$names, function(x) assign(x, value = get(x, envir = PMenv), envir = PMs_save))
+      }
+
       saveRDS(list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj,
-                   MPs = list(All = MPs$All, Sel = MPs$Sel), MPs_env = MPs_save),
+                   MPs = list(All = MPs$All, Sel = MPs$Sel), MPs_env = MPs_save, PMs_save = PMs_save),
               file = file)
     }
   )
@@ -214,7 +237,6 @@ server <- function(input, output, session) {
     updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
     updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
     updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
-
   })
 
   output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs), res = plotres)
@@ -273,7 +295,7 @@ server <- function(input, output, session) {
     if(input$exp_type == "F") {
       output$hist_exp_prob <- renderPlot(hist_exp(OBJs, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
-        paste0("Annual probability that F/FMSY > ", 100 * input$FMSY_prob, "%.")
+        paste0("Annual probability that F/FMSY < ", 100 * input$FMSY_prob, "%.")
       })
       output$hist_exp_table <- renderTable(hist_exp(OBJs, figure = FALSE, prob_ratio = input$FMSY_prob),
                                            rownames = TRUE)
@@ -394,15 +416,15 @@ server <- function(input, output, session) {
 
   })
 
-  observeEvent(input$HS_sel, {
-    if(MPs$Sel[1]==""){
-      MPs$Sel<<-"No_Fishing"
-    }else{
-      MPs$Sel<<-c(MPs$Sel,input$HS_sel)
-    }
-    MPsSpec(1)
-    updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
-  })
+  #observeEvent(input$HS_sel, {
+  #  if(MPs$Sel[1]==""){
+  #    MPs$Sel<<-"No_Fishing"
+  #  }else{
+  #    MPs$Sel<<-c(MPs$Sel,input$HS_sel)
+  #  }
+  #  MPsSpec(1)
+  #  updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
+  #})
 
   observeEvent(input$Build_MS_FixF, {
     if(!nchar(input$MS_FixF_Label)) {
@@ -491,8 +513,8 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$MS_Clear_Last, {
-    if(any(length(MPs$Sel) != "No_Fishing")) {
-      AM(paste0(MPs$Sel[length(MPs$Sel)], " MP removed"))
+    if(any(MPs$Sel != "No_Fishing")) {
+      AM(paste(MPs$Sel[length(MPs$Sel)], "MP removed"))
       MPs$Sel <<- MPs$Sel[-length(MPs$Sel)]
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
     }
@@ -526,59 +548,217 @@ server <- function(input, output, session) {
     )
   })
 
-  output$B_proj_plot <- renderPlot(B_proj_plot(OBJs),res=plotres)
+  output$proj_plot <- renderPlot(proj_plot(OBJs),res=plotres)
+  observeEvent({
+    input$Res
+    input$proj_type
+  }, {
+    req(inherits(OBJs$MSEproj, "MSE"))
+    output$proj_plot <- renderPlot(proj_plot(OBJs, type = input$proj_type),res=plotres)
+  })
 
   observeEvent({
     input$Res
-    input$SSB0
   }, {
     req(inherits(OBJs$MSEproj, "MSE"))
-    updateSliderInput(session, "SSB0_MSE_xrange",
-                      min = OBJs$MSEproj@OM$CurrentYr[1] + 1,
-                      max = OBJs$MSEproj@OM$CurrentYr[1] + OBJs$MSEproj@proyears,
-                      value = OBJs$MSEproj@OM$CurrentYr[1] + c(1, OBJs$MSEproj@proyears))
 
     updateSelectInput(session, "SMP1", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[1])
     updateSelectInput(session, "SMP2", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[OBJs$MSEproj@nMPs])
     updateSelectInput(session, "StochMP", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[1])
+
+    updateSliderInput(session, "prob_yrange",
+                      min = OBJs$MSEproj@OM$CurrentYr[1] + 1,
+                      max = OBJs$MSEproj@OM$CurrentYr[1] + OBJs$MSEproj@proyears,
+                      value = OBJs$MSEproj@OM$CurrentYr[1] + c(1, OBJs$MSEproj@proyears))
+
+    updateSliderInput(session, "SSBhist_yr",
+                      min = OBJs$MSEproj@OM$CurrentYr[1] - OBJs$MSEproj@nyears + 1,
+                      max = OBJs$MSEproj@OM$CurrentYr[1],
+                      value = OBJs$MSEproj@OM$CurrentYr[1])
+
+    updateSliderInput(session, "Chist_yr",
+                      min = OBJs$MSEproj@OM$CurrentYr[1] - OBJs$MSEproj@nyears + 1,
+                      max = OBJs$MSEproj@OM$CurrentYr[1],
+                      value = OBJs$MSEproj@OM$CurrentYr[1])
   })
 
   observeEvent({
-    input$SSB0_MSE_prob
-    input$SSB0_MSE_yrange
-    input$SSB0_MSE_xrange
-  }, {
-    req(inherits(OBJs$MSEproj, "MSE"))
-    output$B_prob_table_label <- renderText({
-      paste0("Probability that SSB exceeds ", 100*input$SSB0_MSE_prob, "% SSB0 during ",
-             paste0(input$SSB0_MSE_xrange, collapse = " - "))
-    })
-    output$B_prob_plot <- renderPlot(B_prob_plot(OBJs, frac = input$SSB0_MSE_prob,
-                                                 xlim = input$SSB0_MSE_xrange, ylim = input$SSB0_MSE_yrange),
-                                     res=plotres)
-    output$B_prob_table <- renderTable(B_prob_plot(OBJs, frac = input$SSB0_MSE_prob,
-                                                   xlim = input$SSB0_MSE_xrange, figure = FALSE),
-                                       rownames = TRUE)
-  })
-
-  observeEvent({
+    input$stoch_type
     input$SMP1
     input$SMP2
-    input$SSB0_MSE_quantile
+    input$stoch_quantile
   }, {
-    output$B_stoch_plot <- renderPlot(B_stoch_plot(OBJs, c(input$SMP1, input$SMP2), qval = input$SSB0_MSE_quantile), res=plotres)
+    output$stoch_plot <- renderPlot(stoch_plot(OBJs, c(input$SMP1, input$SMP2), qval = input$stoch_quantile,
+                                               type = input$stoch_type), res=plotres)
   })
 
   observeEvent({
+    input$sim_type
     input$StochB_resample
     input$StochMP
   }, {
     req(inherits(OBJs$MSEproj, "MSE"))
-    sims <- sample(1:OBJs$MSEproj@nsim, 3, replace = FALSE)[1:input$nsim_hist_SSB]
-    output$plot_hist_SSB_sim <- renderPlot(hist_SSB_sim(OBJs, input$StochMP, sims),res=plotres)
+    sims <- sample(1:OBJs$MSEproj@nsim, 3, replace = FALSE)[1:input$nsim_hist]
+    output$plot_hist_sim <- renderPlot(hist_sim(OBJs, input$StochMP, sims, type = input$sim_type),res=plotres)
   })
 
+  # Performance metrics panel ------------------------------------------------
 
+  observeEvent({
+    input$prob_type
+    input$prob_range
+    input$prob_yrange
+
+    input$SSBhist_thresh
+    input$SSBhist_yr
+    input$SSB0_thresh
+    input$SSB0_type
+    input$SSBMSY_thresh
+    input$FMSY_thresh
+    input$SPR_thresh
+    input$Chist_thresh
+    input$Chist_yr
+  }, {
+    req(inherits(OBJs$MSEproj, "MSE"))
+
+    PM_name <- switch(input$prob_type,
+                      "SSB" = paste0(100 * input$SSBhist_thresh, "%SSB", input$SSBhist_yr),
+                      "SSB0" = paste0(100 * input$SSB0_thresh, "%B0_", input$SSB0_type),
+                      "SSBMSY" = paste0(100 * input$SSBMSY_thresh, "%BMSY"),
+                      "F" = paste0(100 * input$FMSY_thresh, "%FMSY"),
+                      "SPR" = paste0(100 * input$SPR_thresh, "%SPR"),
+                      "Catch" = paste0(100 * input$Chist_thresh, "%C", input$Chist_yr)) %>%
+      paste0("_", paste(input$prob_yrange, collapse = "-"))
+    updateTextInput(session, "PM_name", value = PM_name)
+
+    label <- local({
+      out_type <- ifelse(grepl("SSB", input$prob_type), "SSB", input$prob_type)
+      out_thresh <- switch(input$prob_type,
+                           "SSB" = paste0(100 * input$SSBhist_thresh, "% of ", input$SSBhist_yr, " SSB"),
+                           "SSB0" = paste0(100 * input$SSB0_thresh, "% of ", input$SSB0_type, " SSB0"),
+                           "SSBMSY" = paste0(100 * input$SSBMSY_thresh, "% SSBMSY"),
+                           "F" = paste0(100 * input$FMSY_thresh, "% FMSY"),
+                           "SPR" = paste0(100 * input$SPR_thresh, "% SPR"),
+                           "Catch" = paste0(100 * input$Chist_thresh, "% of ", input$Chist_yr, " catch")
+      )
+      paste0("Probability that ", out_type, ifelse(input$prob_type == "F", " does not exceed ", " exceeds "),
+             out_thresh, " during ", paste0(input$prob_yrange, collapse = " - "))
+    })
+    output$prob_table_label <- renderText(label)
+
+    PMobj <- make_PMobj(OBJs, type = input$prob_type,
+                        frac = switch(input$prob_type,
+                                      "SSB" = input$SSBhist_thresh,
+                                      "SSB0" = input$SSB0_thresh,
+                                      "SSBMSY" = input$SSBMSY_thresh,
+                                      "F" = input$FMSY_thresh,
+                                      "SPR" = input$SPR_thresh,
+                                      "Catch" = input$Chist_thresh),
+                        year_range = input$prob_yrange, label = label,
+                        SSBhist_yr = input$SSBhist_yr,
+                        SSB0_type = input$SSB0_type,
+                        Chist_yr = input$Chist_yr)
+    attr(PMobj, "label") <- label
+    assign("PM_temp", PMobj, envir = PMenv)
+
+    output$prob_plot <- renderPlot(prob_plot(OBJs, PM_list = list(PMobj),
+                                             xlim = input$prob_yrange, ylim = input$prob_range),
+                                   res=plotres)
+    output$prob_table <- renderTable(prob_plot(OBJs, PM_list = list(PMobj), figure = FALSE),
+                                     rownames = TRUE)
+  })
+
+  observeEvent(input$PM_add, {
+    if(!nchar(input$PM_add)) {
+      shinyalert("No name for the performance metric was provided.", type = "error")
+    } else if(length(PMs$names) && any(input$PM_name == PMs$names)) {
+      shinyalert("PM name is already being used. Re-name this performance metric.", type = "error")
+    } else {
+      PM_temp <- get("PM_temp", envir = PMenv, inherits = FALSE)
+      assign(input$PM_name, PM_temp, envir = PMenv)
+      PMs$names <<- c(PMs$names, input$PM_name)
+      AM(paste("New performance metric (PM) has been added:", input$PM_name))
+
+      updateSelectInput(session, "PM1", choices = PMs$names, selected = PMs$names[1])
+      updateSelectInput(session, "PM2", choices = PMs$names, selected = PMs$names[length(PMs$names)])
+      updateSelectInput(session, "PM_display", choices = PMs$names)
+    }
+  })
+
+  observeEvent({
+    input$PM_add
+    input$PM_Clear
+    input$PM_Clear_All
+    input$Res_summary
+    input$PM1
+    input$PM2
+  }, {
+    req(length(PMs$names) > 0)
+    PM_list <- lapply(PMs$names, function(x) get(x, envir = PMenv, inherits = FALSE)) %>%
+      structure(names = PMs$names)
+    output$PM_table <- renderTable({
+      prob_plot(OBJs, PM_list = PM_list, figure = FALSE) %>%
+        structure(dimnames = list(PM_list[[1]]@MPs, PMs$names))
+    }, rownames = TRUE)
+
+    output$PM_table2 <- renderTable({
+      data.frame(Name = PMs$names, Description = sapply(PM_list, attr, "label"))
+    })
+
+    probs <- Map(function(x, y) {
+      out <- data.frame(MP = x@MPs)
+      out[[y]] <- x@Mean
+      return(out)
+    }, x = PM_list, y = PMs$names) %>% Reduce(left_join, .)
+    probs$MP <- factor(probs$MP, levels = OBJs$MSEproj@MPs)
+    custom_pal <- rainbow(OBJs$MSEproj@nMPs, start = 0.2, end = 1) %>%
+      structure(names = OBJs$MSEproj@MPs)
+
+    output$PM_radar <- renderPlot(radar_plot(probs, custom_pal = custom_pal), res = plotres)
+
+    #output$PM_ts <- renderPlot({
+    #  prob_plot(OBJs, PM_list = list(PM_list[[input$PM1]], PM_list[[input$PM2]]))
+    #}, res = plotres)
+
+    #output$PM_tradeoff <- renderPlot({
+    #  ggmse::plot_tradeoff(list(probs) %>% structure(names = "Tradeoff plot"), xvar = input$PM1, yvar = input$PM2,
+    #                       custom_pal = custom_pal)
+    #}, res = plotres)
+
+    output$PM_tradeoff <- renderPlot({
+      tradeoff_plot(OBJs, PM_list[[input$PM1]], PM_list[[input$PM2]], input$PM1, input$PM2)
+    }, res = plotres)
+  })
+
+  observeEvent(input$PM_Clear, {
+    nPM <- length(PMs$names)
+    if(nPM) {
+      AM(paste("Removing performance metric:", input$PM_display))
+      PMs$names <<- PMs$names[input$PM_display != PMs$names]
+
+      nPM2 <- length(PMs$names)
+      if(nPM2) {
+        updateSelectInput(session, "PM1", choices = PMs$names, selected = PMs$names[1])
+        updateSelectInput(session, "PM2", choices = PMs$names, selected = PMs$names[length(PMs$names)])
+        updateSelectInput(session, "PM_display", choices = PMs$names)
+      } else {
+        updateSelectInput(session, "PM1", choices = "")
+        updateSelectInput(session, "PM2", choices = "")
+        updateSelectInput(session, "PM_display", choices = "")
+        AM("All performance metrics have been removed.")
+      }
+    }
+  })
+
+  observeEvent(input$PM_Clear_All, {
+    if(length(PMs$names)) {
+      PMs$names <<- character(0)
+      AM("All performance metrics have been removed.")
+      updateSelectInput(session, "PM1", choices = "")
+      updateSelectInput(session, "PM2", choices = "")
+      updateSelectInput(session, "PM_display", choices = "")
+    }
+  })
 
   # OM panel --------------------------------------------------
   observeEvent({
