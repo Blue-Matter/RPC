@@ -97,16 +97,20 @@ server <- function(input, output, session) {
         MPs$All <<- prev_session$MPs$All
         MPs$Sel <<- prev_session$MPs$Sel
         updateSelectInput(session, "HS_sel", choices = MPs$All, selected = MPs$Sel)
+
+        lapply(MPs$Sel, function(x) {
+          assign(x, get(x, envir = prev_session$MPs_env), envir = .GlobalEnv)
+          assign(x, get(x, envir = prev_session$MPdesc), envir = MPdesc)
+          assign(x, get(x, envir = prev_session$MPinterval), envir = MPinterval)
+        })
+
         AM(paste("MPs loaded from previous session:", paste(MPs$Sel, collapse = ", ")))
       }
-      if(is.environment(prev_session$MPs_save) && length(ls(envir = prev_session$MPs_save))) {
-        MP_out <- ls(envir = prev_session$MPs_save)
-        lapply(MP_out, function(x) assign(x, get(x, envir = prev_session$MPs_save), envir = .GlobalEnv))
-      }
-      if(is.environment(prev_session$PMs_save)) {
-        PM <- ls(envir = prev_session$PMs_save)
+
+      if(is.environment(prev_session$PMs)) {
+        PM <- ls(envir = prev_session$PMs)
         if(length(PM)) {
-          lapply(PM, function(x) assign(x, get(x, envir = prev_session$PMs_save), envir = PMenv))
+          lapply(PM, function(x) assign(x, get(x, envir = prev_session$PMenv), envir = PMenv))
           PMs$names <<- PM
           updateSelectInput(session, "PM_display", choices = PM)
           updateSelectInput(session, "PM1", choices = PM, selected = PM[1])
@@ -129,20 +133,27 @@ server <- function(input, output, session) {
   output$Save_session <- downloadHandler(
     filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
     content = function(file) {
+      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, MPs = list(All = MPs$All, Sel = MPs$Sel))
+      out$MPs_env <- new.env()
+      out$MPdesc <- new.env()
+      out$MPinterval <- new.env()
+      out$PMenv <- new.env()
+
       MPs_globalenv <- sapply(ls(envir = .GlobalEnv), function(x) inherits(get(x, envir = .GlobalEnv), "MP"))
-      MPs_save <- new.env()
       if(sum(MPs_globalenv)) {
         lapply(names(MPs_globalenv)[MPs_globalenv],
-               function(x) assign(x, value = get(x, envir = .GlobalEnv), envir = MPs_save))
-      }
-      PMs_save <- new.env()
-      if(length(PMs$names)) {
-        lapply(PMs$names, function(x) assign(x, value = get(x, envir = PMenv), envir = PMs_save))
+               function(x) {
+                 assign(x, value = get(x, envir = .GlobalEnv), envir = out$MPs_env)
+                 assign(x, value = get(x, envir = MPdesc), envir = out$MPdesc)
+                 assign(x, value = get(x, envir = MPinterval), envir = out$MPinterval)
+               })
       }
 
-      saveRDS(list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj,
-                   MPs = list(All = MPs$All, Sel = MPs$Sel), MPs_env = MPs_save, PMs_save = PMs_save),
-              file = file)
+      if(length(PMs$names)) {
+        lapply(PMs$names, function(x) assign(x, value = get(x, envir = PMenv), envir = out$PMenv))
+      }
+
+      saveRDS(out, file = file)
     }
   )
 
@@ -170,7 +181,6 @@ server <- function(input, output, session) {
   observeEvent(input$Load_OMprelim,{
     filey <- input$Load_OMprelim
     tryCatch({
-
       OM_temp <- readRDS(file=filey$datapath)
       stopifnot(inherits(OM_temp, "OM"))
 
@@ -316,7 +326,6 @@ server <- function(input, output, session) {
     input$SR_yrange
     input$SR_y_RPS0
   }, {
-    #y_RPS0 <- input$SR_y_RPS0 - OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@nyears
     y_RPS0 <- input$SR_y_RPS0
 
     output$hist_SR_plot <- renderPlot(hist_R(OBJs, SR_only = TRUE,
@@ -338,6 +347,8 @@ server <- function(input, output, session) {
   output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
 
   # Management Strategy Panel -----------------------------------------------------
+
+  # MP setup -----------------------------------------------------
   output$MS_FixF_ratio_label <- renderText(paste0("Ratio of F relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
   observeEvent(input$MS_FixF_ratio, {
     updateTextInput(session, "MS_FixF_Label", value = paste0("CurF_", 100 * input$MS_FixF_ratio))
@@ -359,33 +370,21 @@ server <- function(input, output, session) {
     input$CP_2_x
     input$CP_2_y
   }, {
-
-    mod_name <- switch(input$MS_Origin, "Perfect" = "Perf", "SCA_Pope" = "Assess", "Shortcut2" = "Short")
-    output_name <- switch(input$MS_DVar, "1" = "FMSY", "2" = "F01", "3" = "Fmax", "4" = "FSPR")
-
-    if(input$MS_control == 1) {
-      output_val <- input$CP_yint * 100
-      MS_Name <- paste0(mod_name, "_", output_val, output_name)
-    } else {
-      output_val <- paste0(100 * input$CP_2_y, "/", 100 * input$CP_1_y)
-
-      OCP_name <- switch(input$MS_IVar, "1" = "SSBMSY", "2" = "iSSB0", "3" = "dSSB0",
-                         "4" = "FMSY", "5" = "F01", "6" = "FSPR")
-      OCP_val <- paste0(100 * input$CP_2_x, "/", 100 * input$CP_1_x)
-      MS_Name <- paste0(mod_name, "_", output_val, output_name, "_", OCP_val, OCP_name)
-    }
-
-    updateTextInput(session, "MS_HCR_Label", value = MS_Name)
+    updateTextInput(session, "MS_HCR_Label", value = make_HCR_name(input))
   })
 
-  output$DLM_URL <- renderText("")
   observeEvent(input$MS_DLM, {
-    output$DLM_URL <- renderText(paste0("https://dlmtool.openmse.com/reference/", input$MS_DLM, ".html"))
+    page_name <- help(input$MS_DLM) %>% as.character() %>% strsplit("/") %>% getElement(1)
+    url <- paste0("https://dlmtool.openmse.com/reference/", page_name[length(page_name)], ".html")
+    output$DLM_iframe <- renderUI(tags$iframe(src = url, width = "100%", height = "460px", style = "overflow-y:scroll"))
   })
 
   observeEvent(input$MS_Import_file, {
     filey <- input$MS_Import_file
-    updateTextInput(session, "MS_Import_Label", value = filey$name)
+    updateTextInput(session, "MS_Import_Label", value = local({
+      name <- filey$name %>% strsplit("[.]") %>% getElement(1)
+      paste(name[-length(name)], collapse = ".")
+    }))
 
     tryCatch({
       MP_out <- readRDS(file = filey$datapath)
@@ -398,7 +397,7 @@ server <- function(input, output, session) {
     })
   })
 
-  output$HSplot <- renderPlot(HCR_plot(input))
+  output$HSplot <- renderPlot(HCR_plot(input), res = plotres)
 
   observeEvent(input$CP_1_x,{
 
@@ -426,6 +425,7 @@ server <- function(input, output, session) {
   #  updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
   #})
 
+  # MP create and save -----------------------------------------------------
   observeEvent(input$Build_MS_FixF, {
     if(!nchar(input$MS_FixF_Label)) {
       shinyalert("No name for the MP was provided.", type = "error")
@@ -437,7 +437,13 @@ server <- function(input, output, session) {
 
       MP_out <- CurF
       formals(MP_out)$val <- input$MS_FixF_ratio
-      assign(input$MS_FixF_Label, structure(MP_out, class = "MP"), envir = .GlobalEnv)
+      assign(input$MS_FixF_Label, make_FixF_MP(input$MS_FixF_ratio), envir = .GlobalEnv)
+
+      MP_txt <- paste0("Set constant F at ", 100*input$MS_FixF_ratio, "% F from last historical year (",
+                       OBJs$MSEhist@OM@CurrentYr, ")")
+      assign(input$MS_FixF_Label, MP_txt, envir = MPdesc)
+
+      assign(input$MS_FixF_Label, expression(OBJs$MSEhist@OM@proyears + 1), envir = MPinterval)
 
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
@@ -453,9 +459,13 @@ server <- function(input, output, session) {
       MPs$All <<- c(MPs$All, input$MS_FixC_Label)
       MPs$Sel <<- c(MPs$Sel, input$MS_FixC_Label)
 
-      MP_out <- CurC
-      formals(MP_out)$val <- input$MS_FixC_ratio
-      assign(input$MS_FixC_Label, structure(MP_out, class = "MP"), envir = .GlobalEnv)
+      assign(input$MS_FixC_Label, make_FixC_MP(input$MS_FixC_ratio), envir = .GlobalEnv)
+
+      MP_txt <- paste0("Set constant catch at ", 100*input$MS_FixF_ratio, "% catch from last historical year (",
+                       OBJs$MSEhist@OM@CurrentYr, ")")
+      assign(input$MS_FixC_Label, MP_txt, envir = MPdesc)
+
+      assign(input$MS_FixC_Label, expression(OBJs$MSEhist@OM@proyears + 1), envir = MPinterval)
 
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
@@ -463,13 +473,22 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$Build_MS,{
-
     if(!nchar(input$MS_HCR_Label)) {
       shinyalert("No name for the MP was provided.", type = "error")
     } else if(input$MS_HCR_Label %in% MPs$Sel) {
       AM(paste0("Error: ", input$MS_HCR_Label, " MP already selected. Choose another name."))
     } else {
-      make_RPC_MP(input)
+      MPs$All <<- c(MPs$All, input$MS_HCR_Label)
+      MPs$Sel <<- c(MPs$Sel, input$MS_HCR_Label)
+
+      MP_out <- make_RPC_MP(input)
+      assign(input$MS_HCR_Label, MP_out, envir = .GlobalEnv)
+
+      MP_txt <- make_HCR_name(input, "description")
+      assign(input$MS_HCR_Label, MP_txt, envir = MPdesc)
+
+      assign(input$MS_HCR_Label, input$MS_interval, envir = MPinterval)
+
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
     }
@@ -478,6 +497,15 @@ server <- function(input, output, session) {
   observeEvent(input$Build_MS_DLM, {
     if(!input$MS_DLM %in% MPs$Sel) {
       MPs$Sel <<- c(MPs$Sel, input$MS_DLM)
+
+      page_name <- help(input$MS_DLM) %>% as.character() %>% strsplit("/") %>% getElement(1)
+      url <- paste0("https://dlmtool.openmse.com/reference/", page_name[length(page_name)], ".html")
+
+      MP_txt <- paste("DLMtool MP with update interval of", input$MS_DLM_interval, "years, see", url)
+      assign(input$MS_DLM, MP_txt, envir = MPdesc)
+
+      assign(input$MS_DLM, input$MS_DLM_interval, envir = MPinterval)
+
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
     }
@@ -501,6 +529,15 @@ server <- function(input, output, session) {
         MPs$All <<- c(MPs$All, input$MS_Import_Label)
         MPs$Sel <<- c(MPs$Sel, input$MS_Import_Label)
 
+        if(nchar(input$MS_Import_Description)) {
+          MP_txt <- input$MS_Import_Description
+        } else {
+          MP_txt <- "Imported MP. No description provided."
+        }
+        assign(input$MS_Import_Label, MP_txt, envir = MPdesc)
+
+        assign(input$MS_Import_Label, input$MS_Import_interval, envir = MPinterval)
+
         updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
         MPsSpec(1)
       }
@@ -521,11 +558,30 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$MS_Clear_All, {
-    AM("MP selection cleared")
+    AM("Removing all MPs except 'No_Fishing'")
     MPs$Sel <<- "No_Fishing"
     updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
     #MPsSpec(1)
   })
+
+  output$MS_summary <- renderTable(
+    data.frame(MP = MPs$Sel, Description = sapply(MPs$Sel, get, envir = MPdesc, inherits = FALSE))
+  )
+
+  output$Save_MS_FixF <- downloadHandler(
+    filename = paste0(input$MS_FixF_Label, ".rds"),
+    content = function(file) saveRDS(make_FixF_MP(input$MS_FixF_ratio), file = file)
+  )
+
+  output$Save_MS_FixC <- downloadHandler(
+    filename = paste0(input$MS_FixC_Label, ".rds"),
+    content = function(file) saveRDS(make_FixC_MP(input$MS_FixC_ratio), file = file)
+  )
+
+  output$Save_MS <- downloadHandler(
+    filename = paste0(input$MS_HCR_Label, ".rds"),
+    content = function(file) saveRDS(make_RPC_MP(input, FALSE), file = file)
+  )
 
 
   # Results panel ------------------------------------------------
@@ -534,8 +590,9 @@ server <- function(input, output, session) {
     tryCatch(
       {
         withProgress(message="Running MSE Simulation test:", {
-          MSEproj <- Project(OBJs$MSEhist, MPs=unique(MPs$Sel), extended = TRUE)
-          OBJs$MSEproj <<- MSEproj
+          OBJs$MSEhist@OM@interval <<-
+            sapply(MPs$Sel, function(x) get(x, envir = MPinterval, inherits = FALSE) %>% eval())
+          OBJs$MSEproj <<- Project(OBJs$MSEhist, MPs = MPs$Sel, extended = TRUE)
           MSErun(1)
           #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
         })
@@ -638,7 +695,7 @@ server <- function(input, output, session) {
                            "SSB0" = paste0(100 * input$SSB0_thresh, "% of ", input$SSB0_type, " SSB0"),
                            "SSBMSY" = paste0(100 * input$SSBMSY_thresh, "% SSBMSY"),
                            "F" = paste0(100 * input$FMSY_thresh, "% FMSY"),
-                           "SPR" = paste0(100 * input$SPR_thresh, "% SPR"),
+                           "SPR" = paste0(100 * input$SPR_thresh, "%"),
                            "Catch" = paste0(100 * input$Chist_thresh, "% of ", input$Chist_yr, " catch")
       )
       paste0("Probability that ", out_type, ifelse(input$prob_type == "F", " does not exceed ", " exceeds "),
@@ -686,10 +743,6 @@ server <- function(input, output, session) {
   })
 
   observeEvent({
-    input$PM_add
-    input$PM_Clear
-    input$PM_Clear_All
-    input$Res_summary
     input$PM1
     input$PM2
   }, {

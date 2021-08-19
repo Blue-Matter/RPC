@@ -68,11 +68,11 @@ tabsetPanel(id="Res", selected=1,
                                                     sliderInput("Chist_yr", "Reference year for historical catch", min = 0, max = 0, value = 0, step = 1, sep = ""),
                                                     sliderInput("Chist_thresh", "Catch threshold", min = 0, max = 3, value = 1, step = 0.01)
                                    ),
-                                   sliderInput("prob_range", "Figure y-axis range", min = 0, max = 1.1, value = c(0, 1), step = 0.01),
-                                   sliderInput("prob_yrange", "Projection year range", min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
+                                   sliderInput("prob_yrange", "Projection year range", min = 0, max = 0, value = c(0, 0), step = 1, sep = ""),
+                                   sliderInput("prob_range", "Figure y-axis range", min = 0, max = 1.1, value = c(0, 1), step = 0.01)
                             ),
                             column(9,
-                                   p("Use this panel to develop performance metrics (PMs) for the Summary panel."),
+                                   p("Use this panel to develop performance metrics (PMs) for the Summary panel. Identify the output to be measured, the threshold against which the output is measured, and the future time interval during which to calculate the performance measure."),
                                    tabsetPanel(id = "prob_output", selected = 1,
                                                tabPanel("Figure",
                                                         plotOutput("prob_plot",height=460),
@@ -119,11 +119,11 @@ tabsetPanel(id="Res", selected=1,
                                                       tabPanel(h5("Tradeoff"),
                                                                column(12,
                                                                       column(3,
-                                                                             selectInput("PM1", "First performance metric", choices = ""),
-                                                                             selectInput("PM2", "Second performance metric", choices = "")
+                                                                             selectInput("PM1", "First performance metric (x-axis)", choices = ""),
+                                                                             selectInput("PM2", "Second performance metric (y-axis)", choices = "")
                                                                       ),
                                                                       column(9,
-                                                                             plotOutput("PM_tradeoff")
+                                                                             plotOutput("PM_tradeoff", height = "400px", width = "600px")
                                                                       )
                                                                ),
                                                                value = 4)

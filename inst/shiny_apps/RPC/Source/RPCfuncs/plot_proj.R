@@ -469,17 +469,28 @@ tradeoff_plot <- function(OBJs, PMx, PMy, xlab, ylab) {
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1, alpha = 0.5)
 
-  layout(matrix(1:2, nrow = 1), widths = c(0.7, 0.3))
+  out <- data.frame(x = PMx@Mean, y = PMy@Mean, MP = factor(MSEproj@MPs, levels = MSEproj@MPs))
 
-  plot(NULL, NULL, xlim = c(0, 1.05), ylim = c(0, 1.05), xlab = xlab, ylab = ylab)
-  abline(h = seq(0, 1, 0.2), col = "grey")
-  abline(v = seq(0, 1, 0.2), col = "grey")
-  abline(a = 0, b = 1, lty = 3)
-  points(PMx@Mean, PMy@Mean, col = MPcols, cex = 1, pch = 16)
+  ggplot2::ggplot(out, aes(x, y)) +
+    ggplot2::geom_abline(intercept = 0, slope = 1, linetype = 3) +
+    ggplot2::geom_point(size = 4, shape = 21, aes(fill = MP)) +
+    ggrepel::geom_text_repel(aes(label = MP)) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(x = xlab, y = ylab) +
+    ggplot2::coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
+    ggplot2::scale_fill_manual(values = structure(MPcols, names = MSEproj@MPs))
 
-  plot(1, 1, typ = "n",axes=F,xlab="",ylab="")
-  legend("left", legend = MSEproj@MPs, col = MPcols, pch = 16, bty='n',title="MPs", pt.cex = 1)
+  #layout(matrix(1:2, nrow = 1), widths = c(0.7, 0.3))
 
+  #plot(NULL, NULL, xlim = c(0, 1.05), ylim = c(0, 1.05), xlab = xlab, ylab = ylab)
+  #abline(h = seq(0, 1, 0.2), col = "grey")
+  #abline(v = seq(0, 1, 0.2), col = "grey")
+  #abline(a = 0, b = 1, lty = 3)
+  #points(PMx@Mean, PMy@Mean, pch = 21, bg = MPcols, cex = 2)
+
+  #par(mar = c(0, 0, 0, 0))
+  #plot(1, 1, typ = "n",axes=F,xlab="",ylab="")
+  #legend("left", legend = MSEproj@MPs, pch = 21, bty='n',title="MPs", pt.bg = MPcols, pt.cex = 2)
 }
 
 radar_plot <- function(pm_df, palette = "Set2", custom_pal = NULL, ...) {
