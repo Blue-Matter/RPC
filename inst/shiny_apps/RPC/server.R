@@ -107,8 +107,8 @@ server <- function(input, output, session) {
         AM(paste("MPs loaded from previous session:", paste(MPs$Sel, collapse = ", ")))
       }
 
-      if(is.environment(prev_session$PMs)) {
-        PM <- ls(envir = prev_session$PMs)
+      if(is.environment(prev_session$PMenv)) {
+        PM <- ls(envir = prev_session$PMenv)
         if(length(PM)) {
           lapply(PM, function(x) assign(x, get(x, envir = prev_session$PMenv), envir = PMenv))
           PMs$names <<- PM
