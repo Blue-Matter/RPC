@@ -2,7 +2,7 @@ Package: RPC
 Type: Package
 Title: Reference Point Calculator
 Version: 0.1.0
-Date: 2021-07-07
+Date: 2021-08-20
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
@@ -17,6 +17,9 @@ Imports:
     MSEtool,
     SAMtool,
     DT,
+    ggplot2,
+    ggpubr,
+    ggrepel,
     shinyalert,
     shinyBS,
     shinydashboard,

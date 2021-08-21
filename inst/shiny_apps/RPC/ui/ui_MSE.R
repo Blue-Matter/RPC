@@ -39,7 +39,7 @@ tabsetPanel(id="Res", selected=1,
                      column(10,plotOutput("plot_hist_sim",height=520)),
                      value=3),
 
-            tabPanel(h5("Probability"),
+            tabPanel(h5("Performance Metrics"),
                      column(12,
                             column(3,
                                    radioGroupButtons("prob_type", "Output type",
@@ -106,11 +106,11 @@ tabsetPanel(id="Res", selected=1,
                                                                tableOutput("PM_table2"),
                                                                value = 1),
                                                       tabPanel(h5("Figure"),
-                                                               plotOutput("PM_lollipop"),
+                                                               plotOutput("PM_lollipop", height = "400px"),
                                                                value = 2),
                                                       tabPanel(h5("Radar"),
                                                                conditionalPanel("output.PMs.length < 3",
-                                                                                p("At least three performance measures are needed for the radar plot.")
+                                                                                p("At least three performance metrics are needed for the radar plot. Otherwise, use the Tradeoff plot.")
                                                                                 ),
                                                                conditionalPanel("output.PMs.length > 2",
                                                                                 plotOutput("PM_radar")

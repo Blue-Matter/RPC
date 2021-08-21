@@ -67,6 +67,22 @@ hist_bio<-function(OBJs){
 
 }
 
+hist_future_recruit <- function(OBJs) {
+  MSEhist<-OBJs$MSEhist
+  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
+  par(mfcol=c(1,2),mai=c(0.3,1,0.2,0.1),omi=c(0.6,0,0,0))
+
+  yrs_rec_dev <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
+  tsplot(x=log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]), yrs_rec_dev,
+         xlab="Historical Year", ylab="Historical recruitment strength", zeroyint=F)
+  abline(h = 0, lty = 3)
+
+  tsplot(x=log(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))]),
+         MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears,
+         xlab="Projection Year", ylab="Future recruitment strength", zeroyint=F)
+  abline(h = 0, lty = 3)
+}
+
 
 hist_bio_schedule <- function(OBJs, var = "Len_age", n_age_plot, yr_plot, sim) {
 

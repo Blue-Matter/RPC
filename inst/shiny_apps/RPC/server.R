@@ -98,10 +98,14 @@ server <- function(input, output, session) {
         MPs$Sel <<- prev_session$MPs$Sel
         updateSelectInput(session, "HS_sel", choices = MPs$All, selected = MPs$Sel)
 
+        MPs_to_add <- ls(envir = prev_session$MPs_env)
+        if(length(MPs_to_add)) {
+          lapply(MPs_to_add, function(x) assign(x, get(x, envir = prev_session$MPs_env), envir = .GlobalEnv))
+        }
+
         lapply(MPs$Sel, function(x) {
-          assign(x, get(x, envir = prev_session$MPs_env), envir = .GlobalEnv)
-          assign(x, get(x, envir = prev_session$MPdesc), envir = MPdesc)
-          assign(x, get(x, envir = prev_session$MPinterval), envir = MPinterval)
+          MPdesc[[x]] <- prev_session$MPdesc[[x]]
+          MPinterval[[x]] <- prev_session$MPinterval[[x]]
         })
 
         AM(paste("MPs loaded from previous session:", paste(MPs$Sel, collapse = ", ")))
@@ -110,7 +114,7 @@ server <- function(input, output, session) {
       if(is.environment(prev_session$PMenv)) {
         PM <- ls(envir = prev_session$PMenv)
         if(length(PM)) {
-          lapply(PM, function(x) assign(x, get(x, envir = prev_session$PMenv), envir = PMenv))
+          lapply(PM, function(x) PMenv[[x]] <- prev_session$PMenv[[x]])
           PMs$names <<- PM
           updateSelectInput(session, "PM_display", choices = PM)
           updateSelectInput(session, "PM1", choices = PM, selected = PM[1])
@@ -139,19 +143,24 @@ server <- function(input, output, session) {
       out$MPinterval <- new.env()
       out$PMenv <- new.env()
 
+      # Only grabs MPs that are 'custom' made i.e. not in openMSE packages
       MPs_globalenv <- sapply(ls(envir = .GlobalEnv), function(x) inherits(get(x, envir = .GlobalEnv), "MP"))
       if(sum(MPs_globalenv)) {
         lapply(names(MPs_globalenv)[MPs_globalenv],
                function(x) {
-                 assign(x, value = get(x, envir = .GlobalEnv), envir = out$MPs_env)
-                 assign(x, value = get(x, envir = MPdesc), envir = out$MPdesc)
-                 assign(x, value = get(x, envir = MPinterval), envir = out$MPinterval)
+                 MP <- get(x, envir = .GlobalEnv)
+                 if(environmentName(environment(MP)) == "R_GlobalEnv") {
+                   out$MPs_env[[x]] <- MP
+                 }
                })
       }
-
-      if(length(PMs$names)) {
-        lapply(PMs$names, function(x) assign(x, value = get(x, envir = PMenv), envir = out$PMenv))
+      if(length(MPs$Sel)) {
+        lapply(MPs$Sel, function(x) {
+          out$MPdesc[[x]] <- MPdesc[[x]]
+          out$MPinterval[[x]] <- MPinterval[[x]]
+        })
       }
+      if(length(PMs$names)) lapply(PMs$names, function(x) out$PMenv[[x]] <- PMenv[[x]])
 
       saveRDS(out, file = file)
     }
@@ -565,7 +574,7 @@ server <- function(input, output, session) {
   })
 
   output$MS_summary <- renderTable(
-    data.frame(MP = MPs$Sel, Description = sapply(MPs$Sel, get, envir = MPdesc, inherits = FALSE))
+    data.frame(MP = MPs$Sel, Description = vapply(MPs$Sel, get, character(1), envir = MPdesc, inherits = FALSE))
   )
 
   output$Save_MS_FixF <- downloadHandler(
@@ -758,25 +767,19 @@ server <- function(input, output, session) {
       data.frame(Name = PMs$names, Description = sapply(PM_list, attr, "label"))
     })
 
-    probs <- Map(function(x, y) {
-      out <- data.frame(MP = x@MPs)
-      out[[y]] <- x@Mean
-      return(out)
-    }, x = PM_list, y = PMs$names) %>% Reduce(left_join, .)
-    probs$MP <- factor(probs$MP, levels = OBJs$MSEproj@MPs)
-    custom_pal <- rainbow(OBJs$MSEproj@nMPs, start = 0.2, end = 1) %>%
-      structure(names = OBJs$MSEproj@MPs)
+    output$PM_lollipop <- renderPlot(lollipop_plot(OBJs, PM_list), res = plotres)
 
-    output$PM_radar <- renderPlot(radar_plot(probs, custom_pal = custom_pal), res = plotres)
-
-    #output$PM_ts <- renderPlot({
-    #  prob_plot(OBJs, PM_list = list(PM_list[[input$PM1]], PM_list[[input$PM2]]))
-    #}, res = plotres)
-
-    #output$PM_tradeoff <- renderPlot({
-    #  ggmse::plot_tradeoff(list(probs) %>% structure(names = "Tradeoff plot"), xvar = input$PM1, yvar = input$PM2,
-    #                       custom_pal = custom_pal)
-    #}, res = plotres)
+    output$PM_radar <- renderPlot({
+      probs <- Map(function(x, y) {
+        out <- data.frame(MP = x@MPs)
+        out[[y]] <- x@Mean
+        return(out)
+      }, x = PM_list, y = names(PM_list)) %>% Reduce(left_join, .)
+      probs$MP <- factor(probs$MP, levels = OBJs$MSEproj@MPs)
+      custom_pal <- rainbow(OBJs$MSEproj@nMPs, start = 0.2, end = 1) %>%
+        structure(names = OBJs$MSEproj@MPs)
+      radar_plot(probs, custom_pal = custom_pal)
+    }, res = plotres)
 
     output$PM_tradeoff <- renderPlot({
       tradeoff_plot(OBJs, PM_list[[input$PM1]], PM_list[[input$PM2]], input$PM1, input$PM2)
@@ -877,6 +880,8 @@ server <- function(input, output, session) {
   output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
 
   output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
+
+  output$plot_future_recruit <- renderPlot(hist_future_recruit(OBJs), res = plotres)
 
   observeEvent({
     input$YC_Frange
