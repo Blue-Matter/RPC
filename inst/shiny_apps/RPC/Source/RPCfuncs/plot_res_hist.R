@@ -566,7 +566,7 @@ hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
 
   if(figure) {
     if(is.na(prob_ratio)) {
-      par(mfcol=c(2,2),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
       # Total removals
@@ -631,46 +631,45 @@ hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
 
 
 
-hist_Frep <- function(OBJs, yr_SPRcrash) {
+hist_Fmed <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   MSEhist<-OBJs$MSEhist
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
-  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
-  cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+  # Apical F index
+  Find <-  MSEhist@SampPars$Fleet$qs * MSEhist@TSdata$Find
 
+  # Year specific FMSY (constant R0, h)
+  Fmed <- MSEhist@Ref$ByYear$Fmed[, 1:MSEhist@OM@nyears]
 
-  if(!is.null(MSEhist@TSdata$SPR)) {
+  if(figure) {
+    if(is.na(prob_ratio)) {
+      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
+      cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
-    # Equilibrium and dynamic SPR
-    tsplot(MSEhist@TSdata$SPR$Equilibrium, yrs, xlab="Year", ylab="Equilibrium SPR", cols=cols, ymax = 1.05)
-    tsplot(MSEhist@TSdata$SPR$Dynamic, yrs, xlab="Year", ylab="Dynamic SPR", cols=cols, ymax = 1.05)
+      # Total removals
+      if(sum(MSEhist@TSdata$Discards)) {
+        tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
+        tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
+      } else {
+        tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Catch", cols=cols)
+      }
+      tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
+      tsplot(Fmed, yrs, xlab = "Year", ylab = expression(F[med]), cols=cols)
+      tsplot(Find/Fmed, yrs, xlab = "Year", ylab = expression(F/F[med]), cols=cols)
+    } else {
+      pvec <- apply(Find/Fmed < prob_ratio, 2, mean)
 
-    # SPRcrash
-    tsplot(MSEhist@Ref$ByYear$SPRcrash[, 1:length(yrs)], yrs, xlab="Year", ylab=expression(SPR[crash]), cols=cols)
-
-    # SPR/SPRcrash
-    if(missing(yr_SPRcrash)) yr_SPRcrash <- MSEhist@OM@nyears
-    SPR_crash <- MSEhist@Ref$ByYear$SPRcrash[, yr_SPRcrash]
-    tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - SPR_crash), yrs, xlab="Year",
-           ylab=expression((1-SPR[eq])/(1-SPR[crash])), cols=cols)
-
-    # SPR MSY
-    #FMSY <- MSEhist@Ref$ByYear$FMSY
-    #StockPars <- MSEhist@SampPars$Stock
-    #SPR_MSY <- vapply(1:MSEhist@OM@nsim, function(x) {
-    #  vapply(1:MSEhist@OM@nyears, function(y) {
-    #    MSEtool:::Ref_int_cpp(FMSY[x, y], M_at_Age = StockPars$M_ageArray[x, , y],
-    #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-    #                          V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-    #                          StockPars$SRrel[x], maxage = StockPars$maxage,
-    #                          plusgroup = StockPars$plusgroup)[2, ]
-    #  }, numeric(1))
-    #}, numeric(MSEhist@OM@nyears))
-    #tsplot(t(SPR_MSY), yrs, xlab="Year", ylab=expression(SPR[MSY]), cols=cols)
-#
-    ## SPR/SPR MSY
-    #tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - t(SPR_MSY)), yrs, xlab="Year",
-    #       ylab=expression((1-SPR[eq])/(1-SPR[MSY])), cols=cols)
+      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
+           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[med]<", prob_ratio)))
+    }
+  } else {
+    if(is.na(prob_ratio)) {
+      make_df(Find/Fmed, yrs)
+    } else {
+      pvec <- apply(Find/Fmed < prob_ratio, 2, mean)
+      structure(matrix(pvec, ncol = 1),
+                dimnames = list(yrs, c("Probability")))
+    }
   }
-
 }
+

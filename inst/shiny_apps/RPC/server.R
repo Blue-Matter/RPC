@@ -35,7 +35,7 @@ server <- function(input, output, session) {
   outputOptions(output,"Sel",suspendWhenHidden=FALSE)
   #updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
-  OBJs<<-reactiveValues(MSEhist="",MSEproj="")
+  OBJs <<- reactiveValues(MSEhist = "", MSEproj = "", name = "")
 
   PMs <<- reactiveValues(names = character(0))
   output$PMs <- reactive({ PMs$names })
@@ -76,6 +76,7 @@ server <- function(input, output, session) {
 
       OBJs$MSEhist <<- prev_session$MSEhist
       OBJs$MSEproj <<- prev_session$MSEproj
+      OJBs$name <<- prev_session$name
 
       if(inherits(prev_session$MSEproj, "MSE")) {
         AM(paste("MSE results loaded:", filey$name))
@@ -137,7 +138,7 @@ server <- function(input, output, session) {
   output$Save_session <- downloadHandler(
     filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
     content = function(file) {
-      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, MPs = list(All = MPs$All, Sel = MPs$Sel))
+      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, name = OBJs$name, MPs = list(All = MPs$All, Sel = MPs$Sel))
       out$MPs_env <- new.env()
       out$MPdesc <- new.env()
       out$MPinterval <- new.env()
@@ -180,6 +181,7 @@ server <- function(input, output, session) {
   observeEvent(input$SelectOM,{
     OM <- modOM(get(input$SelectOMDD), input$Custom_nsim, input$Custom_proyears)
     OBJs$MSEhist <<- runMSEhist(OM)
+    OBJs$name <<- input$SelectOMDD
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -211,13 +213,29 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$Load_OM,{
-    OM_temp <- readRDS(file = input$Load_OMprelim$datapath)
-    OM <- modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
-    OBJs$MSEhist <<- runMSEhist(OM)
+    tryCatch({
+      filey <- input$Load_OMprelim
+      OM_temp <- readRDS(file = filey$datapath)
+      stopifnot(inherits(OM_temp, "OM"))
 
-    OM_L(1)
-    MSErun(0)
-    updateVerticalTabsetPanel(session,'Main',selected=3)
+      OM <- modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
+      OBJs$MSEhist <<- runMSEhist(OM)
+      OBJs$name <<- local({
+        name <- filey$name %>% as.character() %>% strsplit("[.]") %>% getElement(1)
+        paste(name[-length(name)], collapse = ".")
+      })
+      OM_L(1)
+      MSErun(0)
+      updateVerticalTabsetPanel(session,'Main',selected=3)
+    },
+    error = function(e) {
+
+      AM(paste0(e,"\n"))
+      shinyalert("File read error", "This does not appear to be a MSEtool OM object, saved by saveRDS()", type = "error")
+      AM(paste0("Operating model failed to load: ", filey$name))
+      return(0)
+
+    })
   })
 
   observeEvent(input$BuildOM,{
@@ -231,6 +249,7 @@ server <- function(input, output, session) {
     }
 
     OBJs$MSEhist <<- runMSEhist(OM)
+    OBJs$name <<- "Operating model built from MERA"
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -240,11 +259,15 @@ server <- function(input, output, session) {
 
 
   # Historical results panel -----------------------------------------------------
+  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
+
   observeEvent({
     input$HistRes1
     input$SSB
     input$SSBhist
   }, {
+    output$OM_name <- renderUI(HTML(paste0("<p><strong>Name of operating model: </strong>", OBJs$name, "</p>")))
+
     req(inherits(OBJs$MSEhist, "Hist"))
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
     R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
@@ -301,6 +324,10 @@ server <- function(input, output, session) {
 
   output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
   output$hist_exp2 <- renderTable(hist_exp(OBJs, figure = FALSE), rownames = TRUE)
+
+  output$hist_Fmed <- renderPlot(hist_Fmed(OBJs), res = plotres)
+  output$hist_Fmed2 <- renderTable(hist_Fmed(OBJs, figure = FALSE), rownames = TRUE)
+
   output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
   output$hist_SPR2 <- renderTable(hist_SPR(OBJs, figure = FALSE), rownames = TRUE)
 
@@ -819,7 +846,6 @@ server <- function(input, output, session) {
   # OM panel --------------------------------------------------
   observeEvent({
     input$OM_hist
-    input$OM_hist_bio
   }, {
     req(inherits(OBJs$MSEhist, "Hist"))
     MSEhist <- OBJs$MSEhist
@@ -839,8 +865,6 @@ server <- function(input, output, session) {
     updateSliderInput(session, "sel_y", min = min(yr_cal), max = max(yr_cal),
                       value = c(min(yr_cal), MSEhist@OM@CurrentYr))
   })
-
-  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
 
   output$bio_year_text <- renderText({
     paste0("Right figure: year", ifelse(inherits(OBJs$MSEhist, "Hist"),

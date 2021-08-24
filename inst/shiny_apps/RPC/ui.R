@@ -11,7 +11,6 @@ fluidPage(
     tags$style(".fa-cogs {color:red}"),
     tags$style(HTML("
                     #SessionID{font-size:12px;}
-                    #Load_OM{height: 150px}
                     ")),
     tags$style(HTML("
         /* https://fonts.google.com/?preview.text=SLICK&preview.text_type=custom */
@@ -67,7 +66,7 @@ fluidPage(
 
       verticalTabPanel(id="Fishery",value=2,
                        h5(strong('Step 1. Specify Operating Model')),
-                       column(12, style='height:800px; padding-left:10px',
+                       column(12, style='height:800px; padding-left:10px; overflow-y:scroll"',
                               h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
                                  compatible openMSE operating model or sketching the fishery dynamics using the MERA system."),
                               h5("Alternatively, load a previously saved RPC session (Select 'File' in upper right)."),
@@ -87,12 +86,13 @@ fluidPage(
                               conditionalPanel("input.Select==2",
                                                h5("Load an openMSE compatible operating model object from file"),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
+
+
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
-                                                          tipify(
-                                                            fileInput("Load_OMprelim", label=NULL,
-                                                                      buttonLabel=h5('Browse',style='color:red; padding:0px;height:14px')),
-                                                            title = "File name"
-                                                          )
+                                                          #tipify(
+                                                            fileInput("Load_OMprelim", label = NULL, buttonLabel = div('Browse',style='color:red')) #,
+                                                            #title = "File name"
+                                                          #)
                                                       ),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           actionButton("Load_OM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
@@ -107,7 +107,7 @@ fluidPage(
 
       verticalTabPanel(id="HistResults", value=3,
                        h5(strong("Step 2. Examine Historical Fishery")),
-                       column(12, style='height:800px',
+                       column(12, style='height:800px; overflow-y:scroll',
                               conditionalPanel('output.OM_L==0',{
                                 h5("Please select, load or sketch an operating model in step 1 above.")
                               }),
@@ -126,7 +126,7 @@ fluidPage(
 
       verticalTabPanel(id="MS",value=4,
                     h5(strong("Step 3. Define Management Procedures")),
-                    column(12, style='height:800px',
+                    column(12, style='height:800px;',
                        column(12, style='padding-left:0px',
                               h5("Once an operating model is specified you can define management procedures (MPs) that make management recommendations
                                  based on estimates of stock status and exploitation rates. When all desired MPs are chosen, proceed to Step 4."),
@@ -159,7 +159,7 @@ fluidPage(
 
       verticalTabPanel(id="Results", value=5,
                        h5(strong("Step 4. Management Outcomes")),
-                       column(12, style='height:800px',
+                       column(12, style='height:800px; overflow-y:scroll',
 
                               conditionalPanel('output.MPsSpec==0',{
                                 h5("Please select at least one management procedure in Step 3 above",style="color:darkgrey")
@@ -189,7 +189,7 @@ fluidPage(
 
       verticalTabPanel(id="Hist", value=6,
                        h5("Detailed Operating Model Info"),
-                       column(12, style='height:800px',
+                       column(12, style='height:800px; overflow-y:scroll',
                               h5("This panel provides a complete description of the parameters and dynamics of the operating model used in testing."),
                               hr(),
 
