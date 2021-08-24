@@ -14,115 +14,65 @@ tabsetPanel(id="HistRes1", selected=1,
                                                                HTML("<p>Historical spawning biomass from a certain year may be used as a limit reference point if it reflects an undesirable low biomass state that should be avoided
                                                                     (e.g., <a href=\"https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2020/2020_070-eng.html\">Forrest et al. 2020</a>). Also see text in the <strong>Stock-recruit</strong> panel for methods of identifying candidate historical biomass levels using stock-recruit values.</p>"),
                                                                plotOutput("hist_SSB_plot",height=520),
-                                                               value=1),
-
-                                                      tabPanel(h5("Probability"),
-                                                               p("Report the annual probability that the spawning biomass has exceeded some historical value"),
-                                                               column(12,
-                                                                      column(3,
-                                                                             sliderInput("SSB_y", "Year", min = 0, max = 0, value = 0, step = 1, sep = ""),
-                                                                             sliderInput("SSB_prob", "Threshold", min = 0, max = 2, value = 1, step = 0.01),
-                                                                             sliderInput("SSB_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
-                                                                      ),
-                                                                      column(9,
-                                                                             tabsetPanel(id = "SSBhistprob", selected = 1,
-                                                                                         tabPanel(h5("Figure"),
-                                                                                                  plotOutput("hist_SSB_prob", height = 520),
-                                                                                                  value = 1),
-                                                                                         tabPanel(h5("Table"),
-                                                                                                  div(style = "overflow-y:scroll; height:520px",
-                                                                                                      textOutput("hist_SSB_prob_table_label"),
-                                                                                                      tableOutput("hist_SSB_prob_table")
-                                                                                                  ),
-                                                                                                  value = 2)
-                                                                             )
-                                                                      )
-                                                               ),
-                                                               value = 2),
+                                                               value = 1),
 
                                                       tabPanel(h5("Table"),
                                                                p("Median and interquartile range of historical spawning biomass."),
                                                                div(style = "overflow-y:scroll; height:520px",
                                                                    tableOutput("hist_SSB_table")
                                                                ),
-                                                               value = 4)
+                                                               value = 2)
                                                       ),
                                           value = 1),
                                  tabPanel(HTML("<h5>SSB<sub>0</sub></h5>"),
-                                          tabsetPanel(id="SSB0hist", selected=1,
-                                                      tabPanel(h5("Time series"),
-                                                               HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
+                                          HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
                                                                                <ul>
                                                                                <li><strong>Asymptotic SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with constant steepness and R</sub>0</sub>.</li>
                                                                                <li><strong>Initial SSB<sub>0</sub></strong> is the spawning biomass in the first year of the operating model</li>
                                                                                <li><strong>Dynamic SSB<sub>0</sub></strong> is the annual value calculated from reconstructing the model with zero catches and preserving the magnitude of the recruitment deviations. This is intended to characterize the natural temporal variability of the population in the absence of fishing.</li>
                                                                                </ul>
                                                                                </p>"),
-                                                               HTML("<p>Twenty to thirty percent (20-30%) SSB<sub>0</sub> has been suggested as a limit reference point that would avoid recruitment overfishing, with higher thresholds needed for lower productivity stocks (Beddington and Cooke 1983, as cited in <a href=\"https://doi.org/10.1139/f94-013\">Mace (1994)</a>; <a href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). These
+                                          HTML("<p>Twenty to thirty percent (20-30%) SSB<sub>0</sub> has been suggested as a limit reference point that would avoid recruitment overfishing, with higher thresholds needed for lower productivity stocks (Beddington and Cooke 1983, as cited in <a href=\"https://doi.org/10.1139/f94-013\">Mace (1994)</a>; <a href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). These
                                                                     recommendations have ostensibly been developed in the absence of time-varying parameters, which would correspond to the asymptotic SSB<sub>0</sub> presented here.</p>"),
-                                                               plotOutput("hist_SSB0_plot",height=520),
-                                                               value=1),
-
-                                                      tabPanel(h5("Probability"),
-                                                               HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>0</sub>.</p>"),
-                                                               column(12,
-                                                                      column(3,
-                                                                             sliderInput("SSB0_prob", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01),
-                                                                             sliderInput("SSB0_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
-                                                                      ),
-                                                                      column(9,
-                                                                             tabsetPanel(id = "SSB0histprob", selected = 1,
-                                                                                         tabPanel(h5("Figure"),
-                                                                                                  plotOutput("hist_SSB0_prob", height = 520),
-                                                                                                  value = 1),
-                                                                                         tabPanel(h5("Table"),
-                                                                                                  div(style = "overflow-y:scroll; height:520px",
-                                                                                                      textOutput("hist_SSB0_table_label"),
-                                                                                                      tableOutput("hist_SSB0_table")
-                                                                                                  ),
-                                                                                                  value = 2)
-                                                                             )
-                                                                      )
-                                                               ),
-                                                               value = 2)
-                                          ),
+                                          plotOutput("hist_SSB0_plot",height=520),
                                           value = 2),
 
                                  tabPanel(HTML("<h5>SSB<sub>MSY</sub></h5>"),
-                                          tabsetPanel(id="SSBMSYhist", selected=1,
-                                                      tabPanel(h5("Time series"),
-                                                               HTML("<p>Time series of SSB and SSB<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
+                                          HTML("<p>Time series of SSB and SSB<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
                                                annual SSB<sub>MSY</sub> is calculated from constant R<sub>0</sub> and steepness and annual unfished spawners per recruit."),
-                                                               HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
+                                          HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
                                                                     the limit reference point is set below SSB<sub>MSY</sub>, e.g., 0.5 SSB<sub>MSY</sub> or (1-M) SSB<sub>MSY</sub> in recognition that the population will naturally fluctuate above and below
                                                                     SSB<sub>MSY</sub> when fishing at F<sub>MSY</sub> (<a href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>).</p>"),
-                                                               plotOutput("hist_SSBMSY_plot", height = 520),
-                                                               value=1),
+                                          plotOutput("hist_SSBMSY_plot", height = 520),
+                                          value = 3),
 
-                                                      tabPanel(h5("Probability"),
-                                                               HTML("<p>Report the annual probability that the spawning biomass has exceeded some percentage of SSB<sub>MSY</sub>.</p>"),
-                                                               column(12,
-                                                                      column(3,
-                                                                             sliderInput("SSBMSY_prob", HTML("SSB/SSB<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01),
-                                                                             sliderInput("SSBMSY_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
-                                                                      ),
-                                                                      column(9,
-                                                                             tabsetPanel(id = "SSBMSYhistprob", selected = 1,
-                                                                                         tabPanel(h5("Figure"),
-                                                                                                  plotOutput("hist_SSBMSY_prob", height = 520),
-                                                                                                  value = 1),
-                                                                                         tabPanel(h5("Table"),
-                                                                                                  div(style = "overflow-y:scroll; height:520px",
-                                                                                                      textOutput("hist_SSBMSY_table_label"),
-                                                                                                      tableOutput("hist_SSBMSY_table")
-                                                                                                  ),
-                                                                                                  value = 2)
-                                                                             )
-                                                                      )
-                                                               ),
-                                                               value = 2)
+                                 tabPanel(h5("Probability"),
+                                          column(12,
+                                                 column(3,
+                                                        radioButtons("SSB_prob_type", "SSB type",
+                                                                     choiceNames = list("Historical SSB", HTML("SSB<sub>0</sub>"), HTML("SSB<sub>MSY</sub>")),
+                                                                     choiceValues = 1:3),
+                                                        conditionalPanel("input.SSB_prob_type == 1",
+                                                                         sliderInput("SSB_y", "Year", min = 0, max = 0, value = 0, step = 1, sep = "")
+                                                                         ),
+                                                        sliderInput("SSB_prob", uiOutput("SSB_threshold_label"), min = 0, max = 2, value = 1, step = 0.01),
+                                                        sliderInput("SSB_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                 ),
+                                                 column(9,
+                                                        tabsetPanel(id = "SSB_prob_output", selected = 1,
+                                                                    tabPanel(h5("Figure"),
+                                                                             plotOutput("hist_SSB_prob", height = 520),
+                                                                             value = 1),
+                                                                    tabPanel(h5("Table"),
+                                                                             div(style = "overflow-y:scroll; height:520px",
+                                                                                 uiOutput("hist_SSB_prob_table_label"),
+                                                                                 tableOutput("hist_SSB_prob_table")
+                                                                             ),
+                                                                             value = 2)
+                                                        )
+                                                 )
                                           ),
-                                          value = 3)
+                                          value = 4)
                      ),
                      value = 2),
 
@@ -152,7 +102,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                               HTML("<p>Here, the fishing mortality corresponding to this replacement line is F<sub>med</sub>, which produces the recruits per spawner (R/S) corresponding to the median historical value. When there are time-varying parameters (biological and selectivity parameters), annual F<sub>med</sub> is calculated from the median historical R/S and annual unfished spawners per recruit."),
                                               HTML("<p>See also the <strong>Stock-recruit</strong> panel that plots the median historical R/S.</p>"),
                                               HTML("The utility of F<sub>med</sub> is dependent on the fishing history. If the fishing mortality has been high, then the lack of recruitment compensation could imply that the stock is near the origin of the stock-recruit relationship. Thus, F<sub>med</sub> could be a proxy for F<sub>crash</sub> (<a href=\"Mace_Sissenwine_1993_HowMuchSPR.pdf\">Mace and Sissenwine 1993</a>).
-                                                   On the other hand, if the stock has been near MSY, then F<sub>med</sub> could be reflective of FMSY (<a href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>)."),
+                                                   Otherwise, F<sub>med</sub> should be more conservative than F<sub>crash</sub>. If the stock has been near MSY, then F<sub>med</sub> could be reflective of FMSY (<a href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>)."),
                                               tabsetPanel(id = "exp_Fmed", selected = 1,
                                                           tabPanel(h5("Figure"),
                                                                    plotOutput("hist_Fmed",height=540),
@@ -193,7 +143,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           ),
                                           value = 3),
                                  tabPanel(h5("Probability"),
-                                          conditionalPanel("input.exp_type == 'F'",
+                                          conditionalPanel("input.exp_type == 'FMSY'",
                                                            HTML("<p>Report the annual probability that the fishing mortality does not exceed some percentage of F<sub>MSY</sub>.</p>")
                                           ),
                                           conditionalPanel("input.exp_type == 'SPR'",
@@ -201,8 +151,8 @@ tabsetPanel(id="HistRes1", selected=1,
                                           ),
                                           column(12,
                                                  column(3,
-                                                        radioButtons("exp_type", "Exploitation type", choiceNames = c("Instantaneous F", "Equilibrium SPR"),
-                                                                     choiceValues = c("F", "SPR")),
+                                                        radioButtons("exp_type", "Exploitation type", choiceNames = list(HTML("F<sub>MSY</sub>"), "Equilibrium SPR"),
+                                                                     choiceValues = c("FMSY", "SPR")),
                                                         conditionalPanel("input.exp_type == 'F'",
                                                                          sliderInput("FMSY_prob", HTML("F/F<sub>MSY</sub> threshold"), min = 0, max = 1.5, value = 1, step = 0.01)
                                                         ),

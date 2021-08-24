@@ -11,10 +11,13 @@ hist_SSB <- function(OBJs, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim
     if(is.na(prob_ratio)) {
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
     } else {
-      pvec <- apply(SSB > prob_ratio * SSB[, yind], 2, mean)
-
-      plot(hy, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[", SSB_y, "]>", prob_ratio)))
+      data.frame(Year = hy, pvec = apply(SSB > prob_ratio * SSB[, yind], 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y = parse(text = paste0("Probability~SSB/SSB[", SSB_y, "]>", prob_ratio)))
     }
 
   } else {
@@ -78,10 +81,13 @@ hist_SSBMSY <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1
       #  tsplot(SSB/SSBMSY, hy, xlab = "Year", ylab = expression(SSB/SSB[MSY]~"(constant"~alpha~beta~")"))
       #}
     } else {
-      pvec <- apply(SSB/SSBMSY > prob_ratio, 2, mean)
-
-      plot(hy, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[MSY]>", prob_ratio)))
+      data.frame(Year = hy, pvec = apply(SSB/SSBMSY > prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y = parse(text = paste0("Probability~SSB/SSB[MSY]>", prob_ratio)))
     }
 
   } else {
@@ -120,14 +126,17 @@ hist_SSB0 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
       tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Asymptotic~SSB[0]))
       tsplot(x=SSBrd,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Dynamic~SSB[0]))
     } else {
-      pmat <- sapply(list(SSBrh, SSBra, SSBrd), function(x) apply(x > prob_ratio, 2, mean))
-
-      matplot(hy,pmat,type='o', lty = 1:3, ylim = prob_ylim, col = "black", lwd = 1.75,
-              pch = c(16, 1, 4),
-              xlab = "Year", ylab = parse(text = paste0("Probability~SSB/SSB[0]>", prob_ratio)))
-
-      legend('bottomleft',legend=c("Initial", "Asymptotic", "Dynamic"), lwd = 1.75,
-             pch = c(16, 1, 4), lty = 1:3, title = expression(SSB[0]~Type), bty='n',cex=1)
+      pmat <- sapply(list(SSBra, SSBrh, SSBrd), function(x) apply(x > prob_ratio, 2, mean)) %>%
+        structure(dimnames = list(NULL, c("Asymptotic~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]")))
+      data.frame(Year = hy) %>% cbind(pmat) %>% reshape2::melt(id.vars = "Year") %>%
+        ggplot(aes(Year, value, linetype = variable, shape = variable)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y = parse(text = paste0("Probability~SSB/SSB[0]>", prob_ratio))) +
+        scale_shape_manual(name = expression(SSB[0]~Type), values = c(21, 16, 4), labels = scales::label_parse()) +
+        scale_linetype_manual(name = expression(SSB[0]~Type), values = c(2, 1, 3), labels = scales::label_parse())
     }
 
   } else {
@@ -538,10 +547,13 @@ hist_SPR <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
       tsplot((1 - MSEhist@TSdata$SPR$Equilibrium)/(1 - SPR_crash), yrs, xlab="Year",
              ylab=expression((1-SPR[eq])/(1-SPR[crash])), cols=cols)
     } else {
-      pvec <- apply(MSEhist@TSdata$SPR$Equilibrium > prob_ratio, 2, mean)
-
-      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~SPR[eq]>", prob_ratio)))
+      data.frame(Year = yrs, pvec = apply(MSEhist@TSdata$SPR$Equilibrium > prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y =  parse(text = paste0("Probability~SPR[eq]>", prob_ratio)))
     }
   } else {
     if(is.na(prob_ratio)) {
@@ -580,10 +592,15 @@ hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
       tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
       tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
     } else {
-      pvec <- apply(Find/FMSY < prob_ratio, 2, mean)
 
-      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[MSY]<", prob_ratio)))
+      data.frame(Year = yrs, pvec = apply(Find/FMSY < prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y =  parse(text = paste0("Probability~F/F[MSY]<", prob_ratio)))
+
     }
   } else {
     if(is.na(prob_ratio)) {
@@ -657,10 +674,15 @@ hist_Fmed <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
       tsplot(Fmed, yrs, xlab = "Year", ylab = expression(F[med]), cols=cols)
       tsplot(Find/Fmed, yrs, xlab = "Year", ylab = expression(F/F[med]), cols=cols)
     } else {
-      pvec <- apply(Find/Fmed < prob_ratio, 2, mean)
 
-      plot(yrs, pvec, type = 'o', ylim = prob_ylim, col = "black", lwd = 1.75,
-           xlab = "Year", ylab = parse(text = paste0("Probability~F/F[med]<", prob_ratio)))
+      data.frame(Year = yrs, pvec = apply(Find/Fmed < prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y =  parse(text = paste0("Probability~F/F[med]<", prob_ratio)))
+
     }
   } else {
     if(is.na(prob_ratio)) {

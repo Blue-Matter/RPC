@@ -284,39 +284,45 @@ server <- function(input, output, session) {
   output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs), res = plotres)
   output$hist_SSB_table <- renderTable(hist_SSB(OBJs, figure = FALSE), rownames = TRUE)
 
+  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs),res=plotres)
+  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs), res = plotres)
+
   observeEvent({
+    input$SSB_prob_type
     input$SSB_y
     input$SSB_prob
     input$SSB_yrange
   }, {
-    output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs, prob_ratio = input$SSB_prob,
-                                                SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
-                                        res = plotres)
-    output$hist_SSB_prob_table_label <- renderText(paste("Annual probability that SSB has exceeded", 100 * input$SSB0_prob, "% SSB in", input$SSB_y))
-    output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs, figure = FALSE, prob_ratio = input$SSB_prob,
-                                                       SSB_y = input$SSB_y), rownames = TRUE)
-  })
+    if(input$SSB_prob_type == 1) {
+      updateSliderInput(session, "SSB_prob", max = 2)
+      output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
+                                         res = plotres)
+      output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs, figure = FALSE, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y),
+                                                rownames = TRUE)
+      output$SSB_threshold_label <- renderUI("Historical SSB threshold")
+    } else if(input$SSB_prob_type == 2) {
+      updateSliderInput(session, "SSB_prob", max = 1)
+      output$hist_SSB_prob <- renderPlot(hist_SSB0(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+                                         res = plotres)
+      output$hist_SSB_table <- renderTable(hist_SSB0(OBJs, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
+      output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>0</sub> threshold</p>"))
+    } else {
+      updateSliderInput(session, "SSB_prob", max = 2)
+      output$hist_SSB_prob <- renderPlot(hist_SSBMSY(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+                                            res = plotres)
+      output$hist_SSB_table <- renderTable(hist_SSBMSY(OBJs, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
+      output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>MSY</sub> threshold</p>"))
+    }
 
-  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs),res=plotres)
-  observeEvent({
-    input$SSB0_prob
-    input$SSB0_yrange
-  }, {
-    output$hist_SSB0_prob <- renderPlot(hist_SSB0(OBJs, prob_ratio = input$SSB0_prob, prob_ylim = input$SSB0_yrange),
-                                        res = plotres)
-    output$hist_SSB0_table_label <- renderText(paste0("Annual probability that SSB/SSB0 > ", input$SSB0_prob))
-    output$hist_SSB0_table <- renderTable(hist_SSB0(OBJs, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
-  })
+    output$hist_SSB_prob_table_label <- renderUI({
+      SSB_prob_type <- switch(input$SSB_prob_type,
+                              "1" = paste("SSB in ", input$SSB_y),
+                              "2" = "SSB<sub>MSY</sub>",
+                              "3" = "SSB<sub>0</sub>"
+      )
+      HTML(paste0("<p>Annual probability that SSB has exceeded ", 100 * input$SSB_prob, "% ", SSB_prob_type, "</p>"))
+    })
 
-  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs), res = plotres)
-  observeEvent({
-    input$SSBMSY_prob
-    input$SSBMSY_yrange
-  }, {
-    output$hist_SSBMSY_prob <- renderPlot(hist_SSBMSY(OBJs, prob_ratio = input$SSBMSY_prob, prob_ylim = input$SSBMSY_yrange),
-                                          res = plotres)
-    output$hist_SSBMSY_table_label <- renderText(paste0("Annual probability that SSB/SSBMSY > ", input$SSBMSY_prob))
-    output$hist_SSBMSY_table <- renderTable(hist_SSBMSY(OBJs, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
   })
 
   output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
@@ -338,7 +344,7 @@ server <- function(input, output, session) {
     input$SPR_prob
     input$exp_yrange
   }, {
-    if(input$exp_type == "F") {
+    if(input$exp_type == "FMSY") {
       output$hist_exp_prob <- renderPlot(hist_exp(OBJs, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
         paste0("Annual probability that F/FMSY < ", 100 * input$FMSY_prob, "%.")
