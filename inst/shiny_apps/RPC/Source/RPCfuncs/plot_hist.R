@@ -4,7 +4,6 @@
 
 
 plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue", col50='light blue', col90='#60859925'), addline=T, ablines=NA){
-
   x[x==Inf]<-NA
   qs <- apply(x, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
   qsi <- apply(x, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
@@ -19,8 +18,8 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
     polygon(c(qsi_yr[1, ], qsi_yr[2, ny:1]), c(qsi[1,], qsi[2,ny:1]),border = NA,col = cols$col50)
 
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
-
     if(addline) for(i in 1:2)lines(yrs[i, ],x[i,],col='black',lty=i)
+
     lines(apply(yrs, 2, median, na.rm = TRUE), apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
 
   } else {
@@ -28,43 +27,102 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
     polygon(c(yrs,yrs[ny:1]),c(qs[1,],qs[2,ny:1]),border=NA,col=cols$col90)
     polygon(c(yrs,yrs[ny:1]),c(qsi[1,],qsi[2,ny:1]),border=NA,col=cols$col50)
-
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
-
     if(addline) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
     lines(yrs, apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
+
+  }
+}
+
+plotquant2 <- function(x, p = c(0.05,0.25,0.75,0.95), yrs) {
+
+  x[x==Inf]<-NA
+  qs <- apply(x, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
+  qsi <- apply(x, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
+
+  if(is.matrix(yrs)) {
+    ny <- ncol(yrs)
+
+    qs_yr <- apply(yrs, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
+    qsi_yr <- apply(yrs, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
+
+    poly_outer <- data.frame(x = c(qs_yr[1, ], qs_yr[2, ny:1]), y = c(qs[1,], qs[2,ny:1]),
+                             Quantile = paste0(100 * (p[4]-p[1]), "th percentile"))
+    poly_inner <- data.frame(x = c(qsi_yr[1, ], qsi_yr[2, ny:1]), y = c(qsi[1,], qsi[2,ny:1]),
+                             Quantile = paste0(100 * (p[3]-p[2]), "th percentile"))
+
+    #polygon(c(qs_yr[1, ], qs_yr[2, ny:1]), c(qs[1,], qs[2,ny:1]), border = NA, col = cols$col90)
+    #polygon(c(qsi_yr[1, ], qsi_yr[2, ny:1]), c(qsi[1,], qsi[2,ny:1]),border = NA,col = cols$col50)
+
+    #if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
+    #if(addline) for(i in 1:2)lines(yrs[i, ],x[i,],col='black',lty=i)
+
+    #lines(apply(yrs, 2, median, na.rm = TRUE), , lwd = 2, col = cols$colm)
+
+    med = data.frame(x = apply(yrs, 2, median, na.rm = TRUE), y = apply(x, 2, median, na.rm = TRUE))
+
+  } else {
+    ny<-length(yrs)
+
+    #polygon(c(yrs,yrs[ny:1]),c(qs[1,],qs[2,ny:1]),border=NA,col=cols$col90)
+    #polygon(c(yrs,yrs[ny:1]),c(qsi[1,],qsi[2,ny:1]),border=NA,col=cols$col50)
+
+    poly_outer <- data.frame(x = c(yrs, yrs[ny:1]), y = c(qs[1,], qs[2,ny:1]),
+                             Quantile = paste0(100 * (p[4]-p[1]), "th percentile"))
+    poly_inner <- data.frame(x = c(yrs, yrs[ny:1]), y = c(qsi[1,], qsi[2,ny:1]),
+                             Quantile = paste0(100 * (p[3]-p[2]), "th percentile"))
+
+    #if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
+
+    #if(addline) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
+    #lines(yrs, apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
+    med = data.frame(x = yrs, y = apply(x, 2, median, na.rm = TRUE))
+
   }
 
+  list(med = med, poly_outer = poly_outer, poly_inner = poly_inner)
 }
 
 tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue", col50='light blue', col90='#60859925'),
-                 ymax = NULL){
+                 ymax = NULL) {
 
   ymin <- ifelse(zeroyint, 0, quantile(x, 0.01))
   if(is.null(ymax)) ymax <- quantile(x, 0.99)
-  plot(range(yrs), c(ymin, ymax), typ = "n",xlab=xlab,ylab=ylab,yaxs='i')
-  abline(h=pretty(seq(from=ymin,to=max(x)*1.25,length.out=20)),col="light grey")
-  plotquant(x,yrs=yrs,cols=cols)
 
+  polydf <- plotquant2(x, yrs = yrs)
+  ggplot(polydf$poly_outer, aes(x, y, fill = Quantile)) +
+    geom_polygon() + geom_polygon(data = polydf$poly_inner) +
+    geom_line(data = polydf$med, aes(x = x, y = y), inherit.aes = FALSE, colour = cols$colm) +
+    theme_bw() +
+    labs(x = xlab, y = ylab) +
+    coord_cartesian(ylim = c(ymin, ymax)) +
+    scale_fill_manual(values = c(cols$col90, cols$col50))
 }
 
-hist_bio<-function(OBJs){
+hist_bio <- function(OBJs) {
 
   MSEhist<-OBJs$MSEhist
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
-  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
-  tsplot(x=apply(MSEhist@TSdata$SBiomass,1:2,sum), yrs, xlab="Historical Year", ylab="Spawning biomass")
-  tsplot(apply(MSEhist@TSdata$Biomass,1:2,sum), yrs, xlab="Historical Year", ylab="Biomass")
-  tsplot(apply(MSEhist@TSdata$Number,1:2,sum), yrs, xlab="Historical Year", ylab="Numbers")
-  tsplot(apply(MSEhist@TSdata$VBiomass,1:2,sum), yrs, xlab="Historical Year", ylab="Vulnerable Biomass")
+  x_out <- list("Spawning biomass" = apply(MSEhist@TSdata$SBiomass,1:2,sum),
+                "Total biomass" = apply(MSEhist@TSdata$Biomass,1:2,sum),
+                "Numbers" = apply(MSEhist@TSdata$Number,1:2,sum),
+                "Vulnerable biomass" = apply(MSEhist@TSdata$VBiomass,1:2,sum),
+                "Recruitment deviations" = log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
+                "Recruitment" = apply(MSEhist@AtAge$Number[,1,,],1:2,sum))
 
   yrs_rec_dev <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
-  tsplot(x=log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]), yrs_rec_dev,
-         xlab="Historical Year", ylab="Recruitment strength", zeroyint=F)
-  abline(h = 0, lty = 3)
-  tsplot(apply(MSEhist@AtAge$Number[,1,,],1:2,sum), yrs, xlab="Historical Year", ylab="Recruitment")
+  y <- list(yrs, yrs, yrs, yrs, yrs_rec_dev, yrs)
 
+  g <- lapply(1:length(x_out), function(x) tsplot(x = x_out[[x]], yrs = y[[x]], xlab = "Historical Year", ylab = names(x_out)[x],
+                                                  zeroyint = x != 5))
+  g[[5]] <- g[[5]] + geom_hline(yintercept = 0, linetype = 3)
+  g$ncol <- 3
+  g$nrow <- 2
+  g$common.legend <- TRUE
+  g$legend <- "right"
+
+  do.call(ggpubr::ggarrange, g)
 }
 
 hist_future_recruit <- function(OBJs) {
