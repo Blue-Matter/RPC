@@ -2,7 +2,7 @@ Package: RPC
 Type: Package
 Title: Reference Point Calculator
 Version: 0.1.0
-Date: 2021-08-20
+Date: 2021-08-25
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
@@ -26,6 +26,9 @@ Imports:
     shinyWidgets,
     stats,
     utils
+Suggests: knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+VignetteBuilder: knitr, rmarkdown
+URL: https://github.com/Blue-Matter/RPC
