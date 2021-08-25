@@ -196,7 +196,6 @@ hist_BvsSP<-function(OBJs, figure = TRUE){
   }
 }
 
-
 hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
 
   Hist <- OBJs$MSEhist
@@ -216,28 +215,36 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
       if(missing(SR_ylim)) SR_ylim <- c(0, max(out$R))
       if(missing(SR_y_RPS0)) {
         SR_y_RPS0 <- Hist@OM@nyears
-      } else if(SR_y_RPS0 > Hist@OM@nyears) { # convert calendar year to matrix column
-        SR_y_RPS0 <- max(1, SR_y_RPS0 - Hist@OM@CurrentYr + Hist@OM@nyears)
+      } else { #if(SR_y_RPS0 > Hist@OM@nyears) { # convert calendar year to matrix column
+        SR_y_RPS0 <- try(max(1, SR_y_RPS0 - Hist@OM@CurrentYr + Hist@OM@nyears), silent = TRUE)
+        if(is.character(SR_y_RPS0)) SR_y_RPS0 <- Hist@OM@nyears
       }
 
-      matplot(out$SSB, out$R, typ = "n", xlim = SR_xlim, ylim = SR_ylim,
-              xlab = "Spawning biomass", ylab = "Recruitment")
-      leg <- leg.text.col <- leg.pch <- leg.lty <- leg.lwd <- NULL
+      dat_out <- data.frame(R = as.numeric(out$R), SSB = as.numeric(out$SSB), Type = "All sims")
+
+      g <- ggplot(dat_out, aes(SSB, R, shape = Type)) +
+        geom_blank() +
+        theme_bw() +
+        coord_cartesian(xlim = SR_xlim, ylim = SR_ylim) +
+        labs(x = "Spawning biomass", y = "Recruitment")
 
       if(any(SR_include == 2)) { # Plot SR curve
-        plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
+        SR_curve <- plotquant2(out$predR, yrs = out$predSSB)
+        g <- g + geom_polygon(data = SR_curve$poly_outer, aes(x, y, fill = Quantile), inherit.aes = FALSE) +
+          geom_polygon(data = SR_curve$poly_inner, aes(x, y, fill = Quantile), inherit.aes = FALSE) +
+          geom_line(data = SR_curve$med, aes(x, y), inherit.aes = FALSE, colour = "darkblue") +
+          scale_fill_manual(values = c("50th Percentile" = "light blue", "90th Percentile" = "#60859925")) +
+          guides(fill = "none")
+
       }
       if(any(SR_include == 1)) { # Plot individual S-R pairs
-        matpoints(out$SSB, out$R, pch = 16, col = "#99999920")
-        points(medSSB, medR, pch = 19)
+        meds <- data.frame(Year = out$yrs, SSB = medSSB, R = medR, Type = "Median")
 
-        leg <- c(leg, "Median", "All sims")
-        leg.text.col <- c(leg.text.col, "black", "dark grey")
-        leg.pch <- c(leg.pch, 16, 16)
-        leg.lty <- c(leg.lty, NA, NA)
-        leg.lwd <- c(NA, NA)
+        g <- g + geom_point(colour = "#99999920") +
+          geom_point(data = meds) +
+          ggrepel::geom_text_repel(data = meds, aes(label = Year)) +
+          scale_shape_manual(name = "Stock-recruit values", values = c("All sims" = 4, "Median" = 16))
       }
-      abline(h = 0, col = "grey")
 
       if(any(SR_include == 3)) { # Plot recruits per spawner lines
         StockPars <- Hist@SampPars$Stock
@@ -256,22 +263,16 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
 
         RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
 
-        abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")
-        abline(a = 0, b = RpS_med, lty = 2, lwd = 2)
-        abline(a = 0, b = RpS_crash, lty = 2, lwd = 2, col = "red")
+        ablines <- data.frame(b = c(RpS_0, RpS_med, RpS_crash), a = 0,
+                              Type = c(paste0("Unfished~(", SR_y_RPS0 + Hist@OM@CurrentYr - Hist@OM@nyears, ")~R/S"),
+                                       "Median~hist.~R/S", "Maximum~R/S"))
 
-        leg <- c(leg, paste0("Unfished (", SR_y_RPS0 + Hist@OM@CurrentYr - Hist@OM@nyears, ") R/S"),
-                 "Median hist. R/S", "Maximum R/S")
-        leg.text.col <- c(leg.text.col, "blue", "black", "red")
-        leg.pch <- c(leg.pch, NA, NA, NA)
-        leg.lty <- c(leg.lty, 2, 2, 2)
-        leg.lwd <- c(leg.lty, 2, 2, 2)
-      }
+        g <- g + geom_abline(data = ablines, aes(slope = b, colour = Type, intercept = a), linetype = 2) +
+          scale_colour_manual(name = "R/S", values = c("blue", "black", "red"), labels = scales::label_parse())
 
-      if(!is.null(leg)) {
-        legend("topright", legend = leg, #text.col = leg.text.col,
-               col = leg.text.col, pch = leg.pch, lty = leg.lty, lwd = leg.lwd, bty = "n")
       }
+      return(g)
+
     } else {
 
       par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
@@ -308,6 +309,7 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
 
   invisible()
 }
+
 
 
 hist_RpS <- function(OBJs, figure = TRUE) {

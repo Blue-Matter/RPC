@@ -37,6 +37,39 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
 }
 
+plotquant2 <- function(x, p = c(0.05,0.25,0.75,0.95), yrs) { # For ggplot
+
+  x[x==Inf]<-NA
+  qs <- apply(x, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
+  qsi <- apply(x, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
+
+  if(is.matrix(yrs)) {
+    ny <- ncol(yrs)
+
+    qs_yr <- apply(yrs, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
+    qsi_yr <- apply(yrs, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
+
+    poly_outer <- data.frame(x = c(qs_yr[1, ], qs_yr[2, ny:1]), y = c(qs[1,], qs[2,ny:1]),
+                             Quantile = paste0(100 * (p[4]-p[1]), "th percentile"))
+    poly_inner <- data.frame(x = c(qsi_yr[1, ], qsi_yr[2, ny:1]), y = c(qsi[1,], qsi[2,ny:1]),
+                             Quantile = paste0(100 * (p[3]-p[2]), "th percentile"))
+
+    med = data.frame(x = apply(yrs, 2, median, na.rm = TRUE), y = apply(x, 2, median, na.rm = TRUE))
+
+  } else {
+    ny<-length(yrs)
+    poly_outer <- data.frame(x = c(yrs, yrs[ny:1]), y = c(qs[1,], qs[2,ny:1]),
+                             Quantile = paste0(100 * (p[4]-p[1]), "th percentile"))
+    poly_inner <- data.frame(x = c(yrs, yrs[ny:1]), y = c(qsi[1,], qsi[2,ny:1]),
+                             Quantile = paste0(100 * (p[3]-p[2]), "th percentile"))
+
+    med = data.frame(x = yrs, y = apply(x, 2, median, na.rm = TRUE))
+  }
+
+  list(med = med, poly_outer = poly_outer, poly_inner = poly_inner)
+}
+
+
 tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue", col50='light blue', col90='#60859925'),
                  ymax = NULL){
 
