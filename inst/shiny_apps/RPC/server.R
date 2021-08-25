@@ -16,6 +16,10 @@ server <- function(input, output, session) {
 
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
+  OM_upload <- reactiveVal(0)
+  output$OM_upload <- reactive(OM_upload())
+  outputOptions(output, "OM_upload", suspendWhenHidden = FALSE)
+
   OM_L<-reactiveVal(0)
   output$OM_L <- reactive({ OM_L()})
   outputOptions(output,"OM_L",suspendWhenHidden=FALSE)
@@ -195,11 +199,19 @@ server <- function(input, output, session) {
       OM_temp <- readRDS(file=filey$datapath)
       stopifnot(inherits(OM_temp, "OM"))
 
+      updateTextInput(session, "Load_OMname",
+                      value = local({
+                        name <- filey$name %>% as.character() %>% strsplit("[.]") %>% getElement(1)
+                        paste(name[-length(name)], collapse = ".")
+                      }))
+
       updateSliderInput(session, "Custom_nsim_load",
                         min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
       updateSliderInput(session, "Custom_proyears_load",
                         min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
       AM(paste0("Operating model loaded: ", filey$name))
+      OM_upload(1)
+
     },
 
     error = function(e){
@@ -216,14 +228,16 @@ server <- function(input, output, session) {
     tryCatch({
       filey <- input$Load_OMprelim
       OM_temp <- readRDS(file = filey$datapath)
-      stopifnot(inherits(OM_temp, "OM"))
 
       OM <- modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
       OBJs$MSEhist <<- runMSEhist(OM)
-      OBJs$name <<- local({
-        name <- filey$name %>% as.character() %>% strsplit("[.]") %>% getElement(1)
-        paste(name[-length(name)], collapse = ".")
-      })
+
+      if(nchar(input$Load_OMname)) {
+        OBJs$name <<- input$Load_OMname
+      } else {
+        OBJs$name <<- "Operating model uploaded from file."
+      }
+
       OM_L(1)
       MSErun(0)
       updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -266,7 +280,15 @@ server <- function(input, output, session) {
     input$SSB
     input$SSBhist
   }, {
-    output$OM_name <- renderUI(HTML(paste0("<p><strong>Name of operating model: </strong>", OBJs$name, "</p>")))
+    output$OM_name <- renderTable({
+      x <- c("Name of operating model" = OBJs$name,
+             "Number of simulations" = OBJs$MSEhist@OM@nsim,
+             "Historical years" = paste0(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, "-", OBJs$MSEhist@OM@CurrentYr, " (",
+                                         OBJs$MSEhist@OM@nyears, " years)"),
+             "Projection years" = paste0(OBJs$MSEhist@OM@CurrentYr + 1, "-", OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@proyears, " (",
+                                         OBJs$MSEhist@OM@proyears, " years)"))
+      as.data.frame(x)
+    }, colnames = FALSE, rownames = TRUE)
 
     req(inherits(OBJs$MSEhist, "Hist"))
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()

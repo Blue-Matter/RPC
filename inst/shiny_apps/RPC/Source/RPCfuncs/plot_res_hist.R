@@ -66,7 +66,7 @@ hist_SSBMSY <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1
 
   if(figure) {
     if(is.na(prob_ratio)) {
-      par(mfrow=c(2,2),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+      par(mfrow=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
 
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
       tsplot(x=SSBMSY,yrs=hy,xlab="Year",ylab=expression(SSB[MSY]))
@@ -120,11 +120,12 @@ hist_SSB0 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
 
   if(figure) {
     if(is.na(prob_ratio)) {
-      par(mfcol=c(2,2),mai=c(0.3,0.8,0.2,0.1),omi=c(0.6,0,0,0))
+      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
       tsplot(x=SSBrh,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Initial~SSB[0]))
       tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Asymptotic~SSB[0]))
       tsplot(x=SSBrd,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Dynamic~SSB[0]))
+      mtext("Year", side = 1, outer = TRUE, line = 1)
     } else {
       pmat <- sapply(list(SSBra, SSBrh, SSBrd), function(x) apply(x > prob_ratio, 2, mean)) %>%
         structure(dimnames = list(NULL, c("Asymptotic~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]")))
@@ -163,7 +164,7 @@ hist_BvsSP<-function(OBJs, figure = TRUE){
   medSPB<-apply(SP/B[, ind1], 2, median)
 
   if(figure) {
-    par(mfcol=c(2,2),mai=c(0.9,0.6,0.2,0.1),omi=c(0,0,0,0))
+    par(mfcol=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
 
     tsplot(SP,yrs=hy[ind1],xlab="Year",ylab="Surplus production",zeroyint=F)
     abline(h = 0, lty = 3)
@@ -267,7 +268,7 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
                               Type = c(paste0("Unfished~(", SR_y_RPS0 + Hist@OM@CurrentYr - Hist@OM@nyears, ")~R/S"),
                                        "Median~hist.~R/S", "Maximum~R/S"))
 
-        g <- g + geom_abline(data = ablines, aes(slope = b, colour = Type, intercept = a), linetype = 2) +
+        g <- g + geom_abline(data = ablines, aes(slope = b, colour = Type, intercept = a), size = 0.75, linetype = 2) +
           scale_colour_manual(name = "R/S", values = c("blue", "black", "red"), labels = scales::label_parse())
 
       }

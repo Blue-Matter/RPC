@@ -1,8 +1,14 @@
 tabsetPanel(id="HistRes1", selected=1,
 
             tabPanel(h5("Overview"),
-                     uiOutput("OM_name"),
-                     plotOutput("plot_hist_bio",height=540),
+                     tabsetPanel(id = "Overview", selected = 1,
+                                 tabPanel(h5("Table"),
+                                          tableOutput("OM_name"),
+                                          value = 1),
+                                 tabPanel(h5("Figure"),
+                                          plotOutput("plot_hist_bio", height = 540),
+                                          value = 2)
+                                 ),
                      value = 1),
 
             tabPanel(h5("Spawning biomass"),

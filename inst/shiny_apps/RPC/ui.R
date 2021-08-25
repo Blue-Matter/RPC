@@ -95,10 +95,14 @@ fluidPage(
                                                           #)
                                                       ),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
-                                                          actionButton("Load_OM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
-                                                      sliderInput("Custom_nsim_load", "Number of simulations", min = 0, max = 0, value = 0, step = 1),
-                                                      sliderInput("Custom_proyears_load", "Number of projection years", min = 0, max = 0, value = 0, step = 1)
-                                               )
+                                                          actionButton("Load_OM",label = "Build",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
+
+                                                      conditionalPanel("output.OM_upload == 1",
+                                                                       textInput("Load_OMname", "Name of operating model", value = ""),
+                                                                       sliderInput("Custom_nsim_load", "Number of simulations", min = 0, max = 0, value = 0, step = 1),
+                                                                       sliderInput("Custom_proyears_load", "Number of projection years", min = 0, max = 0, value = 0, step = 1)
+                                                                       )
+                                                      )
                               ),
 
                               source(file.path("ui", "ui_MERA.R"), local = TRUE)$value # MERA
