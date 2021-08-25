@@ -501,7 +501,7 @@ tradeoff_plot <- function(OBJs, PMx, PMy, xlab, ylab) {
   ggplot(out, aes(x, y)) +
     geom_abline(intercept = 0, slope = 1, linetype = 3) +
     geom_point(size = 4, shape = 21, aes(fill = MP)) +
-    geom_text_repel(aes(label = MP)) +
+    ggrepel::geom_text_repel(aes(label = MP)) +
     theme_bw() +
     labs(x = xlab, y = ylab) +
     coord_cartesian(xlim = c(0, 1), ylim = c(0, 1)) +
