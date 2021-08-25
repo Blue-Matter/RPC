@@ -9,28 +9,38 @@ column(12,
               div(style = "display: inline-block;vertical-align:top;float:right;",
                   dropdownButton(inputId = "FPAT_File",
                                  column(12,
-                                        h5(tags$b("Glossary", style = "color:#347ab6")),
+                                        h5(tags$b("User Guide", style = "color:#347ab6")),
                                         column(12,
-                                               tabsetPanel(
-                                                 tabPanel(h5("RPC", style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'), value = 1),
-                                                 tabPanel(h5("MSE", style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'), value = 2),
-                                                 tabPanel(h5("MERA", style = "color:black"), HTML("<br>"), value=3)
-                                               ) # end of dropdownbutton CMP
-                                        ),
-                                        column(12, HTML("<br>")),
-
-                                        h5(tags$b("Contact", style = "color:#347ab6")),
+                                               h5(a("https://blue-matter.github.io/openMSE/RPC-User-Guide.html",
+                                                    href = "https://blue-matter.github.io/openMSE/RPC-User-Guide.html",
+                                                    target = "_blank"), style = "color:grey")
+                                               ),
+                                        #h5(tags$b("Glossary", style = "color:#347ab6")),
+                                        #column(12,
+                                        #       tabsetPanel(
+                                        #         tabPanel(h5("RPC", style = "color:black"), HTML("<br>"), DT::dataTableOutput('CMPhelp'), value = 1),
+                                        #         tabPanel(h5("MSE", style = "color:black"), HTML("<br>"), DT::dataTableOutput('PMhelp'), value = 2),
+                                        #         tabPanel(h5("MERA", style = "color:black"), HTML("<br>"), value=3)
+                                        #       ) # end of dropdownbutton CMP
+                                        #),
+                                        br(), br(),
+                                        h5(tags$b("Contact"), style = "color:#347ab6"),
                                         column(12,
-                                               h5("For technical questions or bug reports please contact ", a("tom@bluematterscience.com", href = "mailto:tom@bluematterscience.com", target = "_blank"), style = "color:grey")
+                                               h5("For technical questions or bug reports please contact ",
+                                                  a("tom@bluematterscience.com", href = "mailto:tom@bluematterscience.com", target = "_blank"), style = "color:grey")
                                         ),
+                                        br(), br(),
                                         h5(tags$b("Software", style = "color:#347ab6")),
                                         column(12,
-                                               h5(paste0("RPC v", packageVersion("RPC")), style = "color:grey"),
+                                               h5(paste0("RPC v", packageVersion("RPC"), ", powered by MSEtool v", packageVersion("MSEtool"),
+                                                         ", DLMtool v", packageVersion("DLMtool"), ", SAMtool v", packageVersion("SAMtool")),
+                                                  style = "color:grey"),
                                                tags$a(img(src = "openMSE.png", height = 35, width = 115),href="https://www.openmse.com", target = '_blank')
                                         ),
+                                        br(), br(),
                                         h5(tags$b("Acknowledgements", style = "color:#347ab6")),
                                         column(12,
-                                               h5("DFO, WG members")
+                                               h5("Fisheries and Oceans Canada, WG members")
                                         ),
                                         column(12, tags$a(img(src = "bluematter.png", height = 38, width = 80), href = "https://www.bluematterscience.com", target = '_blank'))
                                  ),
@@ -88,16 +98,14 @@ column(12,
               div(style = "display: inline-block;vertical-align:top; float:right;",
 
                   dropdownButton(
-                    column(12,
-                           tags$hr(style = "margin-top: 3px; margin-bottom: 3px"),
+                    column(12, style = "margin-bottom: 20px",
                            h5(tags$b("RPC Session", style = "color:#347ab6")),
-                           column(6,
-                                  h5("Load (.rpc)", style = "color:grey"),
-                                  tipify(fileInput("Load_session", label = NULL, accept = c("rpc", ".rpc")),
-                                         title = "Load a previous session including calculated results")
-                                  ),
-                           column(1),
-                           column(5, h5("Save (.rpc)", style = "color:grey"), downloadButton("Save_session", "", width = "200px"))
+                           h5("Load (.rpc)", style = "color:grey"),
+                           tipify(fileInput("Load_session", label = NULL, accept = c("rpc", ".rpc")),
+                                  title = "Load a previous session including calculated results"),
+                           h5("Save (.rpc)", style = "color:grey"),
+                           downloadButton("Save_session", "Save as..", width = "200px"),
+
                     ),
                     inputId = "DD_file",
                     label = "File",
