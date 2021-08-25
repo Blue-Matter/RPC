@@ -9,6 +9,9 @@ tabsetPanel(id="MP_select", selected = 1,
                                                       placeholder = "Name of management procedure")),
                                    sliderInput("MS_FixF_ratio", textOutput("MS_FixF_ratio_label"),
                                                min = 0, max = 5, value = 1, step = 0.05)
+                                   ),
+                            column(8,
+                                   plotOutput("MS_FixF_plot", height = 500)
                                    )
                             ),
                      actionButton("Build_MS_FixF","Build MP",style='color:red',icon=icon('cogs')),
@@ -24,7 +27,10 @@ tabsetPanel(id="MP_select", selected = 1,
                                                       placeholder = "Name of management procedure")),
                                    sliderInput("MS_FixC_ratio", textOutput("MS_FixC_ratio_label"),
                                                min = 0, max = 5, value = 1, step = 0.05)
-                            )
+                            ),
+                            column(8,
+                                   plotOutput("MS_FixC_plot", height = 500)
+                                   )
                      ),
                      actionButton("Build_MS_FixC","Build MP",style='color:red',icon=icon('cogs')),
                      downloadButton("Save_MS_FixC","Save MP",style='color:red'),

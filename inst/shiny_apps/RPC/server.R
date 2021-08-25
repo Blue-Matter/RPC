@@ -5,11 +5,6 @@ options(shiny.maxRequestSize=1000*1024^2)
 
 server <- function(input, output, session) {
 
-  #for (fl in list.files("./Source/Local")) source(file.path("./Source/Local", fl), local = TRUE)
-
-  #All_MPs<<-avail('MP')
-  #Sel_MPs<<-""
-
   plotres<-100
   OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'],
                c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
@@ -416,11 +411,13 @@ server <- function(input, output, session) {
   output$MS_FixF_ratio_label <- renderText(paste0("Ratio of F relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
   observeEvent(input$MS_FixF_ratio, {
     updateTextInput(session, "MS_FixF_Label", value = paste0("CurF_", 100 * input$MS_FixF_ratio))
+    output$MS_FixF_plot <- renderPlot(CurF_plot(OBJs, input$MS_FixF_ratio), res = plotres)
   })
 
   output$MS_FixC_ratio_label <- renderText(paste0("Ratio of catch relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
   observeEvent(input$MS_FixC_ratio, {
     updateTextInput(session, "MS_FixC_Label", value = paste0("CurC_", 100 * input$MS_FixC_ratio))
+    output$MS_FixC_plot <- renderPlot(CurC_plot(OBJs, input$MS_FixC_ratio), res = plotres)
   })
 
   observeEvent({

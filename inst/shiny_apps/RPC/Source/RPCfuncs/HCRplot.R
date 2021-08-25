@@ -63,3 +63,27 @@ HCR_plot<-function(input){
     text(xs[2:3]-(xlim[2]-xlim[1])/50,ys[2:3]+(ylim[2]-ylim[1])/20,c(1,2),col='orange',font=2,cex=1.25)
   }
 }
+
+CurF_plot <- function(OBJs, F_ratio = 1) {
+  MSEhist <- OBJs$MSEhist
+  yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
+
+  Find <- MSEhist@SampPars$Fleet$qs * MSEhist@SampPars$Fleet$Find
+  Find_pro <- F_ratio * matrix(Find[, MSEhist@OM@nyears], nrow(Find), MSEhist@OM@proyears)
+
+  tsplot(x = cbind(Find, Find_pro), yrs = yrs, xlab = "Year", ylab = "Fishing mortality")
+  abline(v =  MSEhist@OM@CurrentYr, lty = 2)
+}
+
+
+CurC_plot <- function(OBJs, C_ratio = 1) {
+  MSEhist <- OBJs$MSEhist
+  yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
+
+  Removals <- apply(MSEhist@TSdata$Removals, 1:2, sum)
+  Cpro <- C_ratio * matrix(Removals[, MSEhist@OM@nyears], nrow(Removals), MSEhist@OM@proyears)
+
+  tsplot(x = cbind(Removals, Cpro), yrs = yrs, xlab = "Year", ylab = "Catch")
+  abline(v =  MSEhist@OM@CurrentYr, lty = 2)
+}
+
