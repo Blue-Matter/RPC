@@ -99,7 +99,7 @@ tabsetPanel(id="MP_select", selected = 1,
 
             tabPanel(h5("Data-limited MPs"),
                      column(12, style="height:500px; padding-top:30px",
-                            HTML("<h5 style='font-weight:bold'>Select from a suite of data-limited MPs from <a href='https://dlmtool.openmse.com/reference/index.html'>DLMtool</a>:</h5>"),
+                            HTML("<h5 style='font-weight:bold'>Select from a suite of data-limited MPs from <a target='_blank' href='https://dlmtool.openmse.com/reference/index.html'>DLMtool</a>:</h5>"),
                             column(3,
                                    selectInput("MS_DLM", label = NULL,
                                                choices = MSEtool:::get_funcs("DLMtool", "MP", msg = FALSE),
