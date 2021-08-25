@@ -80,7 +80,7 @@ server <- function(input, output, session) {
 
       OBJs$MSEhist <<- prev_session$MSEhist
       OBJs$MSEproj <<- prev_session$MSEproj
-      OJBs$name <<- prev_session$name
+      OBJs$name <<- prev_session$name
 
       if(inherits(prev_session$MSEproj, "MSE")) {
         AM(paste("MSE results loaded:", filey$name))
