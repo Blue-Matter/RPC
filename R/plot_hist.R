@@ -34,17 +34,31 @@ hist_future_recruit <- function(x) {
   }
 
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
-  par(mfcol=c(1,2),mai=c(0.3,1,0.2,0.1),omi=c(0.6,0,0,0))
+  par(mfrow=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
 
   yrs_rec_dev <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
   tsplot(x=log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]), yrs_rec_dev,
-         xlab="Historical Year", ylab="Historical recruitment strength", zeroyint=F)
+         xlab="Historical Year", ylab="Log-recruitment deviation", zeroyint=F)
   abline(h = 0, lty = 3)
 
-  tsplot(x=log(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))]),
-         MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears,
-         xlab="Projection Year", ylab="Future recruitment strength", zeroyint=F)
+  yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
+  tsplot(x=log(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))]), yrs_proj,
+         xlab="Projection Year", ylab="Log-recruitment deviation", zeroyint=F)
   abline(h = 0, lty = 3)
+
+  hist_mean <- apply(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)], 2, mean)
+  plot(yrs_rec_dev, hist_mean,
+       xlab = "Historical Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
+       ylim = c(0, 1.1 * max(hist_mean)))
+  abline(h = 0, col = "grey")
+  abline(h = 1, lty = 3)
+
+  pro_mean <- apply(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))], 2, mean)
+  plot(yrs_proj, pro_mean,
+       xlab = "Projection Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
+       yli = c(0, 1.1 * max(pro_mean)))
+  abline(h = 0, col = "grey")
+  abline(h = 1, lty = 3)
 }
 
 

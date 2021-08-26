@@ -15,6 +15,17 @@ tabsetPanel(id="OM_hist", selected=1,
                      ),
                      value = 1),
 
+            tabPanel(h5("Selectivity"),
+                     column(12,
+                            column(3,
+                                   sliderInput("sel_y", textOutput("sel_y_text"), min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
+                            ),
+                            column(9,
+                                   plotOutput("plot_hist_sel",height=520)
+                            )
+                     ),
+                     value = 2),
+
             tabPanel(h5("Yield curve"),
                      column(12,
                             column(3,
@@ -30,33 +41,22 @@ tabsetPanel(id="OM_hist", selected=1,
                                    plotOutput("hist_YC_plot", height = 520)
                             )
                      ),
-                     value = 2),
-
-            tabPanel(h5("Selectivity"),
-                     column(12,
-                            column(3,
-                                   sliderInput("sel_y", textOutput("sel_y_text"), min = 0, max = 0, value = c(0, 0), step = 1, sep = "")
-                            ),
-                            column(9,
-                                   plotOutput("plot_hist_sel",height=520)
-                            )
-                     ),
                      value = 3),
-
-            tabPanel(h5("Growth Parameters I"),
-                     plotOutput("plot_hist_growth_I",height=540),
-                     value = 4),
-
-            tabPanel(h5("Growth Parameters II"),
-                     plotOutput("plot_hist_growth_II",height=540),
-                     value = 5),
-
-            tabPanel(h5("Spatial"),
-                     plotOutput("plot_hist_spatial",height=540),
-                     value = 6),
 
             tabPanel(h5("Future recruitment strength"),
                      plotOutput("plot_future_recruit", height = 540),
+                     value = 4),
+
+            tabPanel(h5("Growth Parameters I"),
+                     plotOutput("plot_hist_growth_I",height=540),
+                     value = 5),
+
+            tabPanel(h5("Growth Parameters II"),
+                     plotOutput("plot_hist_growth_II",height=540),
+                     value = 6),
+
+            tabPanel(h5("Spatial"),
+                     plotOutput("plot_hist_spatial",height=540),
                      value = 7)
 
 ) # tabsetpanel
