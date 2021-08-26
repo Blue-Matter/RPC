@@ -1,6 +1,13 @@
 
 #' @export
-proj_plot<-function(MSEproj, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+    MSEhist <- x$MSEhist
+  } else {
+    MSEproj <- x
+  }
+
   type <- match.arg(type)
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1)
@@ -120,10 +127,16 @@ proj_plot<-function(MSEproj, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Ca
 }
 
 #' @export
-make_PMobj <- function(MSEproj, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
+make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
                        frac = 0.4, year_range, label, ...) {
   type <- match.arg(type)
   dots <- list(...)
+
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+  } else {
+    MSEproj <- x
+  }
 
   CurrentYr <- MSEproj@OM$CurrentYr[1]
 
@@ -187,7 +200,12 @@ make_PMobj <- function(MSEproj, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "C
 }
 
 #' @export
-prob_plot <- function(MSEproj, PM_list = list(), xlim = NULL, ylim = NULL, figure = TRUE) {
+prob_plot <- function(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+  } else {
+    MSEproj <- x
+  }
 
   nMP<-MSEproj@nMPs
   CurrentYr <- MSEproj@OM$CurrentYr[1]
@@ -222,7 +240,12 @@ prob_plot <- function(MSEproj, PM_list = list(), xlim = NULL, ylim = NULL, figur
 }
 
 #' @export
-stoch_plot <- function(MSEproj, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+  } else {
+    MSEproj <- x
+  }
   type <- match.arg(type)
 
   qval <- max(0.01, qval)
@@ -329,7 +352,13 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
 }
 
 #' @export
-hist_sim <- function(MSEproj, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+    MSEhist <- x$MSEhist
+  } else {
+    MSEproj <- x
+  }
   type <- match.arg(type)
 
   if(missing(MP)) MP <- MSEproj@MPs[1]
@@ -463,7 +492,12 @@ hist_sim <- function(MSEproj, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F",
 }
 
 #' @export
-lollipop_plot <- function(MSEproj, PM_list) {
+lollipop_plot <- function(x, PM_list) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+  } else {
+    MSEproj <- x
+  }
   probs <- Map(function(x, y) {
     out <- data.frame(MP = x@MPs)
     out[["Probability"]] <- x@Mean
@@ -486,8 +520,13 @@ lollipop_plot <- function(MSEproj, PM_list) {
 }
 
 #' @export
-tradeoff_plot <- function(MSEproj, PMx, PMy, xlab, ylab) {
-
+tradeoff_plot <- function(x, PMx, PMy, xlab, ylab) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+    MSEhist <- x$MSEhist
+  } else {
+    MSEproj <- x
+  }
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1, alpha = 0.5)
 
@@ -504,8 +543,12 @@ tradeoff_plot <- function(MSEproj, PMx, PMy, xlab, ylab) {
 }
 
 #' @export
-radar_plot <- function(MSEproj, PM_list, ...) {
-
+radar_plot <- function(x, PM_list, ...) {
+  if(inherits(x, "reactivevalues")) {
+    MSEproj <- x$MSEproj
+  } else {
+    MSEproj <- x
+  }
   pm_df <- Map(function(x, y) {
     out <- data.frame(MP = x@MPs)
     out[[y]] <- x@Mean
@@ -522,17 +565,6 @@ radar_plot <- function(MSEproj, PM_list, ...) {
       scale_color_manual(name = "MP", values = custom_pal) +
       guides(linetype = "none")
   })
-
   return(g)
-
-  #if ("ggplot" %in% class(g)) {
-  #  g <- g + ggplot2::labs(color = "MP")
-  #}
-  #if (!is.null(custom_pal)) {
-  #  suppressMessages({
-  #    g <- g + ggplot2::scale_color_manual(values = custom_pal)
-  #  })
-  #}
-  #g + guides(linetype = "none")
 }
 

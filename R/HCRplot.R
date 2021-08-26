@@ -66,7 +66,12 @@ HCR_plot<-function(input){
 }
 
 #' @export
-CurF_plot <- function(MSEhist, F_ratio = 1) {
+CurF_plot <- function(x, F_ratio = 1) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
 
   Find <- MSEhist@SampPars$Fleet$qs * MSEhist@SampPars$Fleet$Find
@@ -77,7 +82,12 @@ CurF_plot <- function(MSEhist, F_ratio = 1) {
 }
 
 #' @export
-CurC_plot <- function(MSEhist, C_ratio = 1) {
+CurC_plot <- function(x, C_ratio = 1) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
 
   Removals <- apply(MSEhist@TSdata$Removals, 1:2, sum)

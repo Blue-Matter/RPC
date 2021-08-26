@@ -1,5 +1,10 @@
 #' @export
-hist_SSB <- function(MSEhist, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
+hist_SSB <- function(x, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
 
   nyh<-MSEhist@OM@nyears
 
@@ -34,8 +39,12 @@ hist_SSB <- function(MSEhist, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_y
 
 
 #' @export
-hist_SSBMSY <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
-
+hist_SSBMSY <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   nyh<-MSEhist@OM@nyears
 
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
@@ -102,8 +111,12 @@ hist_SSBMSY <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0
 }
 
 #' @export
-hist_SSB0 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-
+hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   nyh<-MSEhist@OM@nyears
 
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
@@ -147,8 +160,12 @@ hist_SSB0 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 
 }
 
 #' @export
-hist_BvsSP<-function(MSEhist, figure = TRUE){
-
+hist_BvsSP<-function(x, figure = TRUE){
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   nyh<-MSEhist@OM@nyears
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
   B<-apply(MSEhist@TSdata$Biomass,1:2,sum)
@@ -196,8 +213,12 @@ hist_BvsSP<-function(MSEhist, figure = TRUE){
 }
 
 #' @export
-hist_R <- function(MSEhist, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
-
+hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   out <- stock_recruit_int(MSEhist)
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)
@@ -311,7 +332,12 @@ hist_R <- function(MSEhist, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR
 
 
 #' @export
-hist_RpS <- function(MSEhist, figure = TRUE) {
+hist_RpS <- function(x, figure = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   out <- stock_recruit_int(MSEhist)
 
   medSSB <- apply(out$SSB, 2, median)
@@ -348,7 +374,12 @@ hist_RpS <- function(MSEhist, figure = TRUE) {
 
 
 #' @export
-hist_Rmax <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+hist_Rmax <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   out <- stock_recruit_int(MSEhist)
 
   if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50)
@@ -451,7 +482,12 @@ hist_Rmax <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 
 }
 
 #' @export
-hist_RpS90 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+hist_RpS90 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   out <- stock_recruit_int(MSEhist)
 
   medSSB <- apply(out$SSB, 2, median)
@@ -529,8 +565,12 @@ hist_RpS90 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0,
 
 
 #' @export
-hist_SPR <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-
+hist_SPR <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   Fmed <- MSEhist@Ref$ByYear$Fmed
@@ -574,7 +614,12 @@ hist_SPR <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1
 }
 
 #' @export
-hist_exp <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   # Apical F index
@@ -655,7 +700,12 @@ hist_exp <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1
 
 
 #' @export
-hist_Fmed <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+hist_Fmed <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   # Apical F index

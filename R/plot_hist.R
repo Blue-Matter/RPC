@@ -2,7 +2,12 @@
 
 
 #' @export
-hist_bio<-function(MSEhist){
+hist_bio<-function(x) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
 
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
@@ -21,7 +26,13 @@ hist_bio<-function(MSEhist){
 }
 
 #' @export
-hist_future_recruit <- function(MSEhist) {
+hist_future_recruit <- function(x) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
   par(mfcol=c(1,2),mai=c(0.3,1,0.2,0.1),omi=c(0.6,0,0,0))
 
@@ -38,8 +49,12 @@ hist_future_recruit <- function(MSEhist) {
 
 
 #' @export
-hist_bio_schedule <- function(MSEhist, var = "Len_age", n_age_plot, yr_plot, sim) {
-
+hist_bio_schedule <- function(x, var = "Len_age", n_age_plot, yr_plot, sim) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
   labs <- c(Len_age = "Mean Length at age", Wt_age = "Weight at age",
             Mat_age = "Maturity", M_ageArray = "Natural mortality")
   ylab <- labs[match(var, names(labs))]
@@ -85,16 +100,42 @@ hist_bio_schedule <- function(MSEhist, var = "Len_age", n_age_plot, yr_plot, sim
 
 
 #' @export
-hist_growth_I <- function(MSEhist)  plot('Growth', MSEhist, plot.num=1)
+hist_growth_I <- function(x) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
+  plot('Growth', MSEhist, plot.num=1)
+}
 
 #' @export
-hist_growth_II <- function(MSEhist)  plot('Growth', MSEhist, plot.num=2)
+hist_growth_II <- function(x) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
+  plot('Growth', MSEhist, plot.num=2)
+}
 
 #' @export
-hist_spatial <- function(MSEhist)  plot('Spatial', MSEhist)
+hist_spatial <- function(x) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
+  plot('Spatial', MSEhist)
+}
 
 #' @export
-hist_sel <- function(MSEhist, yr, maturity = TRUE) {
+hist_sel <- function(x, yr, maturity = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
   yind <- yr - MSEhist@OM@CurrentYr + MSEhist@OM@nyears # Length 2 vector
 
   #par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
@@ -128,7 +169,13 @@ hist_sel <- function(MSEhist, yr, maturity = TRUE) {
 
 
 #' @export
-hist_YieldCurve <- function(MSEhist, yr_bio, yr_sel, F_range) {
+hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- OBJs$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
   #YC_type <- match.arg(YC_type, choices = c(1, 2))
   YC_type <- 1
 

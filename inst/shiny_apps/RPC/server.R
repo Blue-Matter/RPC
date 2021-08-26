@@ -266,7 +266,7 @@ server <- function(input, output, session) {
 
 
   # Historical results panel -----------------------------------------------------
-  output$plot_hist_bio <- renderPlot(hist_bio(OBJs$MSEhist),res=plotres)
+  output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
 
   observeEvent({
     input$HistRes1
@@ -296,11 +296,11 @@ server <- function(input, output, session) {
     updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
   })
 
-  output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs$MSEhist), res = plotres)
-  output$hist_SSB_table <- renderTable(hist_SSB(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs), res = plotres)
+  output$hist_SSB_table <- renderTable(hist_SSB(OBJs, figure = FALSE), rownames = TRUE)
 
-  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs$MSEhist),res=plotres)
-  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs$MSEhist), res = plotres)
+  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs),res=plotres)
+  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs), res = plotres)
 
   observeEvent({
     input$SSB_prob_type
@@ -310,22 +310,22 @@ server <- function(input, output, session) {
   }, {
     if(input$SSB_prob_type == 1) {
       updateSliderInput(session, "SSB_prob", max = 2)
-      output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs$MSEhist, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
+      output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
                                          res = plotres)
-      output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs$MSEhist, figure = FALSE, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y),
+      output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs, figure = FALSE, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y),
                                                 rownames = TRUE)
       output$SSB_threshold_label <- renderUI("Historical SSB threshold")
     } else if(input$SSB_prob_type == 2) {
       updateSliderInput(session, "SSB_prob", max = 1)
-      output$hist_SSB_prob <- renderPlot(hist_SSB0(OBJs$MSEhist, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+      output$hist_SSB_prob <- renderPlot(hist_SSB0(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
                                          res = plotres)
-      output$hist_SSB_table <- renderTable(hist_SSB0(OBJs$MSEhist, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
+      output$hist_SSB_table <- renderTable(hist_SSB0(OBJs, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
       output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>0</sub> threshold</p>"))
     } else {
       updateSliderInput(session, "SSB_prob", max = 2)
-      output$hist_SSB_prob <- renderPlot(hist_SSBMSY(OBJs$MSEhist, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+      output$hist_SSB_prob <- renderPlot(hist_SSBMSY(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
                                             res = plotres)
-      output$hist_SSB_table <- renderTable(hist_SSBMSY(OBJs$MSEhist, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
+      output$hist_SSB_table <- renderTable(hist_SSBMSY(OBJs, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
       output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>MSY</sub> threshold</p>"))
     }
 
@@ -340,17 +340,17 @@ server <- function(input, output, session) {
 
   })
 
-  output$hist_R_plot<-renderPlot(hist_R(OBJs$MSEhist),res=plotres)
-  output$hist_R_table<-renderTable(hist_R(OBJs$MSEhist, figure = FALSE), rownames = TRUE, digits = 2)
+  output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
+  output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 2)
 
-  output$hist_exp <- renderPlot(hist_exp(OBJs$MSEhist),res=plotres)
-  output$hist_exp2 <- renderTable(hist_exp(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
+  output$hist_exp2 <- renderTable(hist_exp(OBJs, figure = FALSE), rownames = TRUE)
 
-  output$hist_Fmed <- renderPlot(hist_Fmed(OBJs$MSEhist), res = plotres)
-  output$hist_Fmed2 <- renderTable(hist_Fmed(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_Fmed <- renderPlot(hist_Fmed(OBJs), res = plotres)
+  output$hist_Fmed2 <- renderTable(hist_Fmed(OBJs, figure = FALSE), rownames = TRUE)
 
-  output$hist_SPR <- renderPlot(hist_SPR(OBJs$MSEhist),res=plotres)
-  output$hist_SPR2 <- renderTable(hist_SPR(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
+  output$hist_SPR2 <- renderTable(hist_SPR(OBJs, figure = FALSE), rownames = TRUE)
 
   # Probability
   observeEvent({
@@ -360,18 +360,18 @@ server <- function(input, output, session) {
     input$exp_yrange
   }, {
     if(input$exp_type == "FMSY") {
-      output$hist_exp_prob <- renderPlot(hist_exp(OBJs$MSEhist, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_prob <- renderPlot(hist_exp(OBJs, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
         paste0("Annual probability that F/FMSY < ", 100 * input$FMSY_prob, "%.")
       })
-      output$hist_exp_table <- renderTable(hist_exp(OBJs$MSEhist, figure = FALSE, prob_ratio = input$FMSY_prob),
+      output$hist_exp_table <- renderTable(hist_exp(OBJs, figure = FALSE, prob_ratio = input$FMSY_prob),
                                            rownames = TRUE)
     } else {
-      output$hist_exp_prob <- renderPlot(hist_SPR(OBJs$MSEhist, prob_ratio = input$SPR_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_prob <- renderPlot(hist_SPR(OBJs, prob_ratio = input$SPR_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
         paste0("Annual probability that equilibrium SPR > ", input$SPR_prob)
       })
-      output$hist_exp_table <- renderTable(hist_SPR(OBJs$MSEhist, figure = FALSE, prob_ratio = input$SPR_prob),
+      output$hist_exp_table <- renderTable(hist_SPR(OBJs, figure = FALSE, prob_ratio = input$SPR_prob),
                                            rownames = TRUE)
     }
   })
@@ -385,44 +385,44 @@ server <- function(input, output, session) {
   }, {
     y_RPS0 <- input$SR_y_RPS0
 
-    output$hist_SR_plot <- renderPlot(hist_R(OBJs$MSEhist, SR_only = TRUE,
+    output$hist_SR_plot <- renderPlot(hist_R(OBJs, SR_only = TRUE,
                                              SR_xlim = input$SR_xrange, SR_ylim = input$SR_yrange, SR_y_RPS0 = y_RPS0,
                                              SR_include = input$SR_plot_options),
                                       res = plotres)
   })
 
-  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP(OBJs$MSEhist),res=plotres)
-  output$hist_BvsSP_table<-renderTable(hist_BvsSP(OBJs$MSEhist, figure = FALSE), rownames = TRUE, digits = 0)
+  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP(OBJs),res=plotres)
+  output$hist_BvsSP_table<-renderTable(hist_BvsSP(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
 
-  output$hist_RpS_plot<-renderPlot(hist_RpS(OBJs$MSEhist),res=plotres)
-  output$hist_RpS_table<-renderTable(hist_RpS(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_RpS_plot<-renderPlot(hist_RpS(OBJs),res=plotres)
+  output$hist_RpS_table<-renderTable(hist_RpS(OBJs, figure = FALSE), rownames = TRUE)
 
-  output$hist_Rmax_plot<-renderPlot(hist_Rmax(OBJs$MSEhist),res=plotres)
-  output$hist_Rmax_table<-renderTable(hist_Rmax(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_Rmax_plot<-renderPlot(hist_Rmax(OBJs),res=plotres)
+  output$hist_Rmax_table<-renderTable(hist_Rmax(OBJs, figure = FALSE), rownames = TRUE)
 
   observeEvent({
     input$HistRes1
     input$Rmax_prob
     input$Rmax_yrange
   }, {
-    output$hist_Rmax_prob <- renderPlot(hist_Rmax(OBJs$MSEhist, prob_ratio = input$Rmax_prob, prob_ylim = input$Rmax_yrange), res = plotres)
-    output$hist_Rmax_prob_table <- renderTable(hist_Rmax(OBJs$MSEhist, figure = FALSE, prob_ratio = input$Rmax_prob), rownames = TRUE)
+    output$hist_Rmax_prob <- renderPlot(hist_Rmax(OBJs, prob_ratio = input$Rmax_prob, prob_ylim = input$Rmax_yrange), res = plotres)
+    output$hist_Rmax_prob_table <- renderTable(hist_Rmax(OBJs, figure = FALSE, prob_ratio = input$Rmax_prob), rownames = TRUE)
 
     output$hist_Rmax_prob_table_label <- renderUI({
       HTML(paste0("<p>Annual probability that SSB/SSB<sub>50% Rmax</sub> > ", 100 * input$Rmax_prob, "%</p>"))
     })
   })
 
-  output$hist_RpS90_plot<-renderPlot(hist_RpS90(OBJs$MSEhist),res=plotres)
-  output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs$MSEhist, figure = FALSE), rownames = TRUE)
+  output$hist_RpS90_plot<-renderPlot(hist_RpS90(OBJs),res=plotres)
+  output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
 
   observeEvent({
     input$HistRes1
     input$RpS90_prob
     input$RpS90_yrange
   }, {
-    output$hist_RpS90_prob <- renderPlot(hist_RpS90(OBJs$MSEhist, prob_ratio = input$RpS90_prob, prob_ylim = input$RpS90_yrange), res = plotres)
-    output$hist_RpS90_prob_table <- renderTable(hist_RpS90(OBJs$MSEhist, figure = FALSE, prob_ratio = input$RpS90_prob), rownames = TRUE)
+    output$hist_RpS90_prob <- renderPlot(hist_RpS90(OBJs, prob_ratio = input$RpS90_prob, prob_ylim = input$RpS90_yrange), res = plotres)
+    output$hist_RpS90_prob_table <- renderTable(hist_RpS90(OBJs, figure = FALSE, prob_ratio = input$RpS90_prob), rownames = TRUE)
 
     output$hist_RpS90_prob_table_label <- renderUI({
       HTML(paste0("<p>Annual probability that SSB/SSB<sub>90%ile R/S</sub> > ", 100 * input$RpS90_prob, "%</p>"))
@@ -435,13 +435,13 @@ server <- function(input, output, session) {
   output$MS_FixF_ratio_label <- renderText(paste0("Ratio of F relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
   observeEvent(input$MS_FixF_ratio, {
     updateTextInput(session, "MS_FixF_Label", value = paste0("CurF_", 100 * input$MS_FixF_ratio))
-    output$MS_FixF_plot <- renderPlot(CurF_plot(OBJs$MSEhist, input$MS_FixF_ratio), res = plotres)
+    output$MS_FixF_plot <- renderPlot(CurF_plot(OBJs, input$MS_FixF_ratio), res = plotres)
   })
 
   output$MS_FixC_ratio_label <- renderText(paste0("Ratio of catch relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
   observeEvent(input$MS_FixC_ratio, {
     updateTextInput(session, "MS_FixC_Label", value = paste0("CurC_", 100 * input$MS_FixC_ratio))
-    output$MS_FixC_plot <- renderPlot(CurC_plot(OBJs$MSEhist, input$MS_FixC_ratio), res = plotres)
+    output$MS_FixC_plot <- renderPlot(CurC_plot(OBJs, input$MS_FixC_ratio), res = plotres)
   })
 
   observeEvent({
@@ -689,13 +689,13 @@ server <- function(input, output, session) {
     )
   })
 
-  output$proj_plot <- renderPlot(proj_plot(OBJs$MSEproj, OBJs$MSEhist),res=plotres)
+  output$proj_plot <- renderPlot(proj_plot(OBJs),res=plotres)
   observeEvent({
     input$Res
     input$proj_type
   }, {
     req(inherits(OBJs$MSEproj, "MSE"))
-    output$proj_plot <- renderPlot(proj_plot(OBJs$MSEproj, OBJs$MSEhist, type = input$proj_type),res=plotres)
+    output$proj_plot <- renderPlot(proj_plot(OBJs, type = input$proj_type),res=plotres)
   })
 
   observeEvent({
@@ -729,7 +729,7 @@ server <- function(input, output, session) {
     input$SMP2
     input$stoch_quantile
   }, {
-    output$stoch_plot <- renderPlot(stoch_plot(OBJs$MSEproj, c(input$SMP1, input$SMP2), qval = input$stoch_quantile,
+    output$stoch_plot <- renderPlot(stoch_plot(OBJs, c(input$SMP1, input$SMP2), qval = input$stoch_quantile,
                                                type = input$stoch_type), res=plotres)
   })
 
@@ -740,7 +740,7 @@ server <- function(input, output, session) {
   }, {
     req(inherits(OBJs$MSEproj, "MSE"))
     sims <- sample(1:OBJs$MSEproj@nsim, 3, replace = FALSE)[1:input$nsim_hist]
-    output$plot_hist_sim <- renderPlot(hist_sim(OBJs$MSEproj, OBJs$MSEhist, input$StochMP, sims, type = input$sim_type),res=plotres)
+    output$plot_hist_sim <- renderPlot(hist_sim(OBJs, MP = input$StochMP, sims = sims, type = input$sim_type),res=plotres)
   })
 
   # Performance metrics panel ------------------------------------------------
@@ -787,7 +787,7 @@ server <- function(input, output, session) {
     })
     output$prob_table_label <- renderText(label)
 
-    PMobj <- make_PMobj(OBJs$MSEproj, type = input$prob_type,
+    PMobj <- make_PMobj(OBJs, type = input$prob_type,
                         frac = switch(input$prob_type,
                                       "SSB" = input$SSBhist_thresh,
                                       "SSB0" = input$SSB0_thresh,
@@ -802,10 +802,10 @@ server <- function(input, output, session) {
     attr(PMobj, "label") <- label
     assign("PM_temp", PMobj, envir = PMenv)
 
-    output$prob_plot <- renderPlot(prob_plot(OBJs$MSEproj, PM_list = list(PMobj),
+    output$prob_plot <- renderPlot(prob_plot(OBJs, PM_list = list(PMobj),
                                              xlim = input$prob_yrange, ylim = input$prob_range),
                                    res=plotres)
-    output$prob_table <- renderTable(prob_plot(OBJs$MSEproj, PM_list = list(PMobj), figure = FALSE),
+    output$prob_table <- renderTable(prob_plot(OBJs, PM_list = list(PMobj), figure = FALSE),
                                      rownames = TRUE)
   })
 
@@ -834,7 +834,7 @@ server <- function(input, output, session) {
     PM_list <- lapply(PMs$names, function(x) get(x, envir = PMenv, inherits = FALSE)) %>%
       structure(names = PMs$names)
     output$PM_table <- renderTable({
-      prob_plot(OBJs$MSEproj, PM_list = PM_list, figure = FALSE) %>%
+      prob_plot(OBJs, PM_list = PM_list, figure = FALSE) %>%
         structure(dimnames = list(PM_list[[1]]@MPs, PMs$names))
     }, rownames = TRUE)
 
@@ -842,12 +842,12 @@ server <- function(input, output, session) {
       data.frame(Name = PMs$names, Description = sapply(PM_list, attr, "label"))
     })
 
-    output$PM_lollipop <- renderPlot(lollipop_plot(OBJs$MSEproj, PM_list), res = plotres)
+    output$PM_lollipop <- renderPlot(lollipop_plot(OBJs, PM_list), res = plotres)
 
-    output$PM_radar <- renderPlot(radar_plot(OBJs$MSEproj, PM_list), res = plotres)
+    output$PM_radar <- renderPlot(radar_plot(OBJs, PM_list), res = plotres)
 
     output$PM_tradeoff <- renderPlot({
-      tradeoff_plot(OBJs$MSEproj, PM_list[[input$PM1]], PM_list[[input$PM2]], input$PM1, input$PM2)
+      tradeoff_plot(OBJs, PM_list[[input$PM1]], PM_list[[input$PM2]], input$PM1, input$PM2)
     }, res = plotres)
   })
 
@@ -932,18 +932,18 @@ server <- function(input, output, session) {
   }, {
     req(inherits(OBJs$MSEhist, "Hist"))
     output$plot_hist_age_schedule <- renderPlot(
-      hist_bio_schedule(OBJs$MSEhist, var = input$bio_schedule, n_age_plot = input$bio_schedule_nage,
+      hist_bio_schedule(OBJs, var = input$bio_schedule, n_age_plot = input$bio_schedule_nage,
                         yr_plot = input$bio_schedule_year, sim = input$bio_schedule_sim),
       res = plotres
     )
   })
 
-  output$plot_hist_growth_I <- renderPlot(hist_growth_I(OBJs$MSEhist),res=plotres)
-  output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs$MSEhist),res=plotres)
+  output$plot_hist_growth_I <- renderPlot(hist_growth_I(OBJs),res=plotres)
+  output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
 
-  output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs$MSEhist),res=plotres)
+  output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
 
-  output$plot_future_recruit <- renderPlot(hist_future_recruit(OBJs$MSEhist), res = plotres)
+  output$plot_future_recruit <- renderPlot(hist_future_recruit(OBJs), res = plotres)
 
   observeEvent({
     input$YC_Frange
@@ -952,14 +952,14 @@ server <- function(input, output, session) {
     #input$YC_calc
   }, {
 
-    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs$MSEhist, #YC_type = input$YC_calc,
+    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, #YC_type = input$YC_calc,
                                                       yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
                                                       F_range = input$YC_Frange),
                                       res = plotres)
   }
   )
 
-  observeEvent(input$sel_y, output$plot_hist_sel <- renderPlot(hist_sel(OBJs$MSEhist, input$sel_y),res=plotres))
+  observeEvent(input$sel_y, output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y),res=plotres))
 
 
 
