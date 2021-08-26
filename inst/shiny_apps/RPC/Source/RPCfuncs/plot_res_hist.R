@@ -350,7 +350,23 @@ hist_RpS <- function(OBJs, figure = TRUE) {
 }
 
 
-hist_Rmax <- function(OBJs, figure = TRUE) {
+Rmax_regression <- function(R, SSB, S50, type = c("low", "high")) {
+  type <- match.arg(type)
+  if(type == "low") {
+    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB < S50)
+  } else {
+    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB >= S50)
+  }
+  if(nrow(df) > 3) {
+    reg <- lm(log(R) ~ log(SSB), data = df)
+    df$predict_logR <- predict(reg)
+    return(df)
+  } else {
+    return(NULL)
+  }
+}
+
+hist_Rmax <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   Hist <- OBJs$MSEhist
   out <- stock_recruit_int(Hist)
 
@@ -370,81 +386,90 @@ hist_Rmax <- function(OBJs, figure = TRUE) {
   medR <- apply(out$R, 2, median)
 
   # Regression
-  reg_low <- lapply(1:Hist@OM@nsim, function(i) {
-    df <- data.frame(R = out$R[i, ], SSB = out$SSB[i, ]) %>% filter(SSB < S50[i])
-    if(nrow(df) > 3) {
-      reg <- lm(log(R) ~ log(SSB), data = df)
-      df$predict_logR <- predict(reg)
-      return(df)
-    } else {
-      return(NULL)
-    }
-  })
-  reg_hi <- lapply(1:Hist@OM@nsim, function(i) {
-    df <- data.frame(R = out$R[i, ], SSB = out$SSB[i, ], iter = i) %>% filter(SSB >= S50[i])
-    if(nrow(df) > 3) {
-      reg <- lm(log(R) ~ log(SSB), data = df)
-      df$predict_logR <- predict(reg)
-      return(df)
-    } else {
-      return(NULL)
-    }
-  })
+  reg_low <- lapply(1:Hist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "low"))
+  reg_hi <- lapply(1:Hist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "high"))
 
   if(figure) {
 
-    par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
+    if(is.na(prob_ratio)) {
+      par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
-    # Plot stock-recruit relationship with SSB 50%Rmax
-    matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-            xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
-    plotquant(out$predR, yrs = out$predSSB, addline=T)
-    points(medSSB, medR, pch = 19)
-    abline(v = quantile(S50, probs = c(0.25, 0.5, 0.75)), lty = c(4, 2, 4))
-    abline(h = 0, col = "grey")
+      # Plot stock-recruit relationship with SSB 50%Rmax
+      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
+              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
+      plotquant(out$predR, yrs = out$predSSB, addline=T)
+      points(medSSB, medR, pch = 19)
+      abline(v = S50, col = "#99999920", lty = 2)
+      abline(v = median(S50), lty = 2, lwd = 2)
+      abline(h = 0, col = "grey")
+      legend("topright", c("All Sims", "Median", expression(SSB["50%"~Rmax])), pch = c(4, 16, NA),
+             lty = c(NA, NA, 2), lwd = c(NA, NA, 2), bty = "n")
 
-    # Plot regression line
-    matplot(log(out$SSB), log(out$R), typ = "p", col = "#99999920", xlim = range(c(out$SSB, S50)) %>% log(),
-            xlab = "log(Spawning biomass)", ylab = "log(Recruitment)", pch = 16)
-    abline(v = quantile(S50, probs = c(0.25, 0.5, 0.75)) %>% log(), lty = c(4, 2, 4))
-    lapply(1:Hist@OM@nsim, function(i) {
-      if(!is.null(reg_hi[[i]])) lines(predict_logR ~ log(SSB), data = reg_hi[[i]], lty = 2)
-      if(!is.null(reg_low[[i]])) lines(predict_logR ~ log(SSB), data = reg_low[[i]], lty = 2)
-    })
+      # Plot regression line
+      matplot(log(out$SSB), log(out$R), typ = "p", col = "#99999920", xlim = range(c(out$SSB, S50)) %>% log(),
+              xlab = "log(Spawning biomass)", ylab = "log(Recruitment)", pch = 4)
+      points(log(medSSB), log(medR), pch = 19)
+      abline(v = log(S50), col = "#99999920", lty = 2)
+      abline(v = median(S50) %>% log(), lty = 2, lwd = 2)
+      lapply(1:Hist@OM@nsim, function(i) {
+        if(!is.null(reg_hi[[i]])) lines(predict_logR ~ log(SSB), data = reg_hi[[i]], lty = 2) #col = "#99999920")
+        if(!is.null(reg_low[[i]])) lines(predict_logR ~ log(SSB), data = reg_low[[i]], lty = 2) #col = "#99999920")
+      })
+    } else {
+
+      g <- data.frame(Year = out$yrs, pvec = apply(out$SSB/S50 > prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y = parse(text = paste0("Probability~SSB/SSB[\"50%\"~Rmax]>", prob_ratio))) +
+        ggtitle(parse(text = paste0("Probability~SSB/SSB[\"50%\"~Rmax]>", prob_ratio)))
+      return(g)
+    }
 
   } else {
 
-    slope_high <- vapply(1:Hist@OM@nsim, function(i) {
-      if(!is.null(reg_hi[[i]])) {
-        diff(range(log(reg_hi[[i]]$predict_logR)))/diff(range(log(reg_hi[[i]]$SSB)))
-      } else {
-        NA_real_
-      }
-    }, numeric(1))
-    slope_low <- vapply(1:Hist@OM@nsim, function(i) {
-      if(!is.null(reg_low[[i]])) {
-        diff(range(log(reg_low[[i]]$predict_logR)))/diff(range(log(reg_low[[i]]$SSB)))
-      } else {
-        NA_real_
-      }
-    }, numeric(1))
+    if(is.na(prob_ratio)) {
+      slope_high <- vapply(1:Hist@OM@nsim, function(i) {
+        if(!is.null(reg_hi[[i]])) {
+          diff(range(log(reg_hi[[i]]$predict_logR)))/diff(range(log(reg_hi[[i]]$SSB)))
+        } else {
+          NA_real_
+        }
+      }, numeric(1))
+      slope_low <- vapply(1:Hist@OM@nsim, function(i) {
+        if(!is.null(reg_low[[i]])) {
+          diff(range(log(reg_low[[i]]$predict_logR)))/diff(range(log(reg_low[[i]]$SSB)))
+        } else {
+          NA_real_
+        }
+      }, numeric(1))
 
-    out <- lapply(list(S50, slope_high, slope_low), function(x) {
-      if(all(is.na(x))) {
-        return(rep(NA_real_, 3))
-      } else {
-        return(quantile(x, probs = c(0.25, 0.5, 0.75)))
-      }
-    })
+      out <- lapply(list(S50, slope_high, slope_low), function(x) {
+        if(all(is.na(x))) {
+          return(rep(NA_real_, 3))
+        } else {
+          return(quantile(x, probs = c(0.25, 0.5, 0.75)))
+        }
+      })
 
-    out <- data.frame(do.call(rbind, out), row.names = c("SSB_50%Rmax", "Slope above", "Slope below"))
-    names(out) <- c("25%ile", "Median", "75%ile")
-    return(out)
+      out <- data.frame(do.call(rbind, out), row.names = c("SSB_50%Rmax", "Slope above", "Slope below"))
+      names(out) <- c("25%ile", "Median", "75%ile")
+      return(out)
+
+    } else {
+
+      pvec <- apply(out$SSB/S50 > prob_ratio, 2, mean)
+      return(structure(matrix(pvec, ncol = 1),
+                       dimnames = list(out$yrs, c("Probability"))))
+
+    }
   }
   invisible()
 }
 
-hist_RpS90 <- function(OBJs, figure = TRUE) {
+hist_RpS90 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   Hist <- OBJs$MSEhist
   out <- stock_recruit_int(Hist)
 
@@ -459,31 +484,61 @@ hist_RpS90 <- function(OBJs, figure = TRUE) {
 
   if(figure) {
 
-    par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
+    if(is.na(prob_ratio)) {
+      par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
-    # Plot stock-recruit relationship
-    matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-            xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
-    #plotquant(out$predR, yrs = out$predSSB, addline=T)
-    points(medSSB, medR, pch = 19)
-    abline(v = quantile(S_90, probs = c(0.25, 0.5, 0.75)), lwd = 2, lty = c(4, 2, 4))
-    abline(h = 0, col = "grey")
+      # Plot stock-recruit relationship
+      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
+              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
+      plotquant(out$predR, yrs = out$predSSB, addline=T)
+      points(medSSB, medR, pch = 19)
+      abline(v = S_90, lwd = 2, lty = 2, col = "#99999920")
+      abline(v = median(S_90), lwd = 2, lty = 2)
+      abline(h = 0, col = "grey")
 
-    matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-            xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
-    #plotquant(out$predR, yrs = out$predSSB, addline=T)
-    points(medSSB, medR, pch = 19)
-    abline(a = 0, b = quantile(RpS_90, probs = c(0.25, 0.5, 0.75)), lwd = 2, lty = c(4, 2, 4), col = "red")
-    abline(h = quantile(R_90, probs = c(0.05, 0.5, 0.95)), lwd = 2, lty = c(4, 2, 4), col = "blue")
-    legend("topright", paste("90%ile", c("R/S", "R", "SSB")), col = c("red", "blue", "black"), lwd = 2, lty = 4, bty = "n")
-    abline(h = 0, col = "grey")
+      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
+              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
+      #plotquant(out$predR, yrs = out$predSSB, addline=T)
+      points(medSSB, medR, pch = 19)
+      abline(a = 0, b = median(RpS_90), lwd = 2, lty = 2, col = "red")
+      abline(h = median(R_90), lwd = 2, lty = 2, col = "blue")
+
+      lapply(RpS_90, function(x) abline(a = 0, b = x, lwd = 2, lty = 2, col = makeTransparent("red", 20)))
+      lapply(R_90, function(x) abline(h = x, lwd = 2, lty = 2, col = makeTransparent("blue", 20)))
+
+      legend("topright", c("All sims", "Median", paste("90%ile", c("R/S", "R", "SSB"))),
+             col = c("black", "black", "red", "blue", "black"), pch = c(4, 16, NA, NA, NA),
+             lwd = c(NA, NA, 2, 2, 2), lty = c(NA, NA, 4, 4, 4), bty = "n")
+      abline(h = 0, col = "grey")
+    } else {
+
+      g <- data.frame(Year = out$yrs, pvec = apply(out$SSB/S_90 > prob_ratio, 2, mean)) %>%
+        ggplot(aes(Year, pvec)) +
+        geom_line() +
+        geom_point() +
+        theme_bw() +
+        coord_cartesian(ylim = prob_ylim) +
+        labs(y = parse(text = paste0("Probability~SSB/SSB[\"90%ile\"~R/S]>", prob_ratio))) +
+        ggtitle(parse(text = paste0("Probability~SSB/SSB[\"90%ile\"~R/S]>", prob_ratio)))
+      return(g)
+    }
 
   } else {
 
-    out <- lapply(list(RpS_90, R_90, S_90), quantile, probs = c(0.25, 0.5, 0.75))
-    out <- data.frame(do.call(rbind, out), row.names = c("90%ile R/S", "90%ile Recruitment", "90%ile SSB"))
-    names(out) <- c("25%ile", "Median", "75%ile")
-    return(out)
+    if(is.na(prob_ratio)) {
+
+      out <- lapply(list(RpS_90, R_90, S_90), quantile, probs = c(0.25, 0.5, 0.75))
+      out <- data.frame(do.call(rbind, out), row.names = c("90%ile R/S", "90%ile Recruitment", "90%ile SSB"))
+      names(out) <- c("25%ile", "Median", "75%ile")
+      return(out)
+
+    } else {
+
+      pvec <- apply(out$SSB/S_90 > prob_ratio, 2, mean)
+      return(structure(matrix(pvec, ncol = 1),
+                       dimnames = list(out$yrs, c("Probability"))))
+
+    }
 
   }
   invisible()

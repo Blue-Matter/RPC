@@ -402,8 +402,34 @@ server <- function(input, output, session) {
   output$hist_Rmax_plot<-renderPlot(hist_Rmax(OBJs),res=plotres)
   output$hist_Rmax_table<-renderTable(hist_Rmax(OBJs, figure = FALSE), rownames = TRUE)
 
+  observeEvent({
+    input$HistRes1
+    input$Rmax_prob
+    input$Rmax_yrange
+  }, {
+    output$hist_Rmax_prob <- renderPlot(hist_Rmax(OBJs, prob_ratio = input$Rmax_prob, prob_ylim = input$Rmax_yrange), res = plotres)
+    output$hist_Rmax_prob_table <- renderTable(hist_Rmax(OBJs, figure = FALSE, prob_ratio = input$Rmax_prob), rownames = TRUE)
+
+    output$hist_Rmax_prob_table_label <- renderUI({
+      HTML(paste0("<p>Annual probability that SSB/SSB<sub>50% Rmax</sub> > ", 100 * input$Rmax_prob, "%</p>"))
+    })
+  })
+
   output$hist_RpS90_plot<-renderPlot(hist_RpS90(OBJs),res=plotres)
   output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
+
+  observeEvent({
+    input$HistRes1
+    input$RpS90_prob
+    input$RpS90_yrange
+  }, {
+    output$hist_RpS90_prob <- renderPlot(hist_RpS90(OBJs, prob_ratio = input$RpS90_prob, prob_ylim = input$RpS90_yrange), res = plotres)
+    output$hist_RpS90_prob_table <- renderTable(hist_RpS90(OBJs, figure = FALSE, prob_ratio = input$RpS90_prob), rownames = TRUE)
+
+    output$hist_RpS90_prob_table_label <- renderUI({
+      HTML(paste0("<p>Annual probability that SSB/SSB<sub>90%ile R/S</sub> > ", 100 * input$RpS90_prob, "%</p>"))
+    })
+  })
 
   # Management Strategy Panel -----------------------------------------------------
 

@@ -285,20 +285,64 @@ tabsetPanel(id="HistRes1", selected=1,
 
                                  tabPanel(h5("Table"),
                                           tableOutput("hist_Rmax_table"),
-                                          value=2)
+                                          value=2),
+
+                                 tabPanel(h5("Probability"),
+                                          column(12,
+                                                 column(3,
+                                                        sliderInput("Rmax_prob", HTML("SSB<sub>50% Rmax</sub> threshold"), min = 0, max = 1, value = 1, step = 0.01),
+                                                        sliderInput("Rmax_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                 ),
+                                                 column(9,
+                                                        tabsetPanel(id = "Rmax_prob_output", selected = 1,
+                                                                    tabPanel(h5("Figure"),
+                                                                             plotOutput("hist_Rmax_prob", height = 520),
+                                                                             value = 1),
+                                                                    tabPanel(h5("Table"),
+                                                                             div(style = "overflow-y:scroll; height:520px",
+                                                                                 uiOutput("hist_Rmax_prob_table_label"),
+                                                                                 tableOutput("hist_Rmax_prob_table")
+                                                                             ),
+                                                                             value = 2)
+                                                        )
+                                                 )
+                                          ),
+                                          value = 3)
                      ),
                      value = 8),
 
             tabPanel(h5("90% R/S"),
                      tabsetPanel(id="RpS90hist", selected=1,
                                  tabPanel(h5("Diagnostic"),
-                                          HTML("<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, relatively good recruitment has still been observed in light of high fishing mortality."),
+                                          HTML("<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, SSB<sub>90%ile R/S</sub> relatively good recruitment has still been observed in light of high fishing mortality. Median values of the 90th percentile R/S, R, and SSB are in dark dashed lines, while values from individual simulations are shown in light, transparent colors."),
                                           plotOutput("hist_RpS90_plot",height=520),
                                           value=1),
 
                                  tabPanel(h5("Table"),
                                           tableOutput("hist_RpS90_table"),
-                                          value=2)
+                                          value=2),
+
+                                 tabPanel(h5("Probability"),
+                                          column(12,
+                                                 column(3,
+                                                        sliderInput("RpS90_prob", HTML("SSB<sub>50% Rmax</sub> threshold"), min = 0, max = 1, value = 1, step = 0.01),
+                                                        sliderInput("RpS90_yrange", "Figure y-axis range", min = 0, max = 1, value = c(0, 1), step = 0.01)
+                                                 ),
+                                                 column(9,
+                                                        tabsetPanel(id = "RpS90_prob_output", selected = 1,
+                                                                    tabPanel(h5("Figure"),
+                                                                             plotOutput("hist_RpS90_prob", height = 520),
+                                                                             value = 1),
+                                                                    tabPanel(h5("Table"),
+                                                                             div(style = "overflow-y:scroll; height:520px",
+                                                                                 uiOutput("hist_RpS90_prob_table_label"),
+                                                                                 tableOutput("hist_RpS90_prob_table")
+                                                                             ),
+                                                                             value = 2)
+                                                        )
+                                                 )
+                                          ),
+                                          value = 3)
                      ),
                      value = 9)
 

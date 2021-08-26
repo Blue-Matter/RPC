@@ -49,7 +49,7 @@ modOM<<-function(OM_temp,nsim,proyears){
 
 runMSEhist<<-function(OM){
   withProgress(message = "Constructing operating model", value = 0, {
-    MSEhist <- runMSE(OM, Hist = TRUE)
+    MSEhist <- runMSE(OM, Hist = TRUE, silent = TRUE)
   })
   MSEhist
   #saveRDS(MSEhist,"C:/temp/MSEhist.rda") #
