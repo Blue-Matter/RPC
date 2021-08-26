@@ -17,6 +17,7 @@ library(shinyalert)
 
 A_DFO_DEMO1<-readRDS("./data/OMs/DFO_DEMO1.rda")
 A_DFO_DEMO2<-readRDS("./data/OMs/DFO_DEMO2.rda")
+DFO_Arrowtooth_Flounder_2014 <- readRDS("./data/OMs/Arrowtooth_Flounder_2014.rda")
 DFO_Inside_YE_Rockfish<-readRDS("./data/OMs/DFO_IYRF.rds")
 DFO_BoF_Herring<-readRDS("./data/OMs/Fit.rda")@OM
 DFO_HG_Herring<-readRDS("./data/OMs/HG_herring.rda")
