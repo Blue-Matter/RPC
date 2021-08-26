@@ -25,7 +25,7 @@ DFO_SoG_Herring<-readRDS("./data/OMs/SoG_herring.rda")
 DFO_WCVI_Herring<-readRDS("./data/OMs/WCVI_herring.rda")
 DFO_Inside_QB_Rockfish<-readRDS("./data/OMs/insQB_prelim.rds")
 DFO_Pacific_Cod<-readRDS("./data/OMs/pcod_5ABCD.rds")
-#DFO_Pacific_Hake<-readRDS("./data/OMs/Hake.rda")
+DFO_Pacific_Hake_2019<-readRDS("./data/OMs/Hake_2019.rda")
 
 No_Fishing <- MSEtool::NFref
 MPdesc$No_Fishing <- "Set F = 0"

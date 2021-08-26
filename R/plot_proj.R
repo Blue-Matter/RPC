@@ -82,7 +82,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
       geom_point(data = SSB_out, aes(shape = Type)) +
       scale_linetype_manual(name = "SSB Type", values = c(1, 2, 1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "SSB Type", values = c(NA_integer_, 1, 16, 4), labels = scales::label_parse()) +
-      scale_size_manual(name = "SSB Type", values = c(2, 1, 1, 1), labels = scales::label_parse())
+      scale_size_manual(name = "SSB Type", values = c(2, 0.5, 0.5, 0.5), labels = scales::label_parse())
 
 
   } else if(type == "SSBMSY") {
@@ -98,7 +98,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
       geom_point(data = SSB_out, aes(shape = Type)) +
       scale_linetype_manual(name = "SSB Type", values = c(1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "SSB Type", values = c(NA_integer_, 4), labels = scales::label_parse()) +
-      scale_size_manual(name = "SSB Type", values = c(2, 1), labels = scales::label_parse())
+      scale_size_manual(name = "SSB Type", values = c(2, 0.5), labels = scales::label_parse())
 
   } else if(type == "F") {
     FMSY <- data.frame(value = apply(MSEproj@RefPoint$ByYear$FMSY, 2, median),
@@ -114,7 +114,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
       geom_point(data = F_out, aes(shape = Type)) +
       scale_linetype_manual(name = "F Type", values = c(1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "F Type", values = c(NA_integer_, 4), labels = scales::label_parse()) +
-      scale_size_manual(name = "F Type", values = c(2, 1), labels = scales::label_parse())
+      scale_size_manual(name = "F Type", values = c(2, 0.5), labels = scales::label_parse())
   } else if(type == "SPR") {
     SPR <- data.frame(value = hist, Year = hy)
     g <- g + geom_line(data = SPR, size = 2)
@@ -171,10 +171,10 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch")
     #SSB0i <- array(MSEproj@SSB_hist[, 1], dim(SSB0a))
   } else if(type == "SSBMSY") {
     xout <- MSEproj@SSB
-    ref <- MSEproj@RefPoint$SSBMSY[, , pyind]
+    ref <- MSEproj@RefPoint$SSBMSY[, , pyind, drop = FALSE]
     caption <- paste0("Probability~SSB/SSB[MSY]>", frac)
   } else if(type == "F") {
-    xout <- MSEproj@RefPoint$FMSY[, , pyind]/MSEproj@FM
+    xout <- MSEproj@RefPoint$FMSY[, , pyind, drop = FALSE]/MSEproj@FM
     ref <- 1
     caption <- paste0("Probability~F/F[MSY]<", frac)
   } else if(type == "SPR") {
@@ -214,10 +214,11 @@ prob_plot <- function(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TR
   # Probability plots
   nyp<-MSEproj@proyears
   py<-CurrentYr + 1:nyp
-  if(missing(xlim) || is.null(xlim) || all(!xlim)) xlim <- range(py)
-  if(missing(ylim) || is.null(ylim) || all(!ylim)) ylim <- c(0, 1.05)
-
   if(figure) {
+
+    if(missing(xlim) || is.null(xlim) || all(!xlim)) xlim <- range(py)
+    if(missing(ylim) || is.null(ylim) || all(!ylim)) ylim <- c(0, 1.05)
+
     # PM_list is either length one or two
     g <- lapply(PM_list, function(x) {
       dat <- apply(x@Stat > x@Ref, c(2, 3), mean) %>%
@@ -233,7 +234,7 @@ prob_plot <- function(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TR
     if(length(PM_list) == 1) return(g[[1]])
 
   } else {
-    prob <- sapply(PM_list, function(x) x@Mean) %>%
+    prob <- sapply(PM_list, function(x) x@Mean) %>% matrix(nrow = nMP) %>%
       structure(dimnames = list(MSEproj@MPs, rep("Probability", length(PM_list))))
     return(prob)
   }
@@ -292,7 +293,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "
   } else if(type == "SSBMSY") {
 
     SSB<-MSEproj@SSB
-    refs <- list(1, MSEproj@RefPoint$SSBMSY[, , pyind])
+    refs <- list(1, MSEproj@RefPoint$SSBMSY[, , pyind, drop = FALSE])
     ylabs <- c("SSB", "SSB/SSB[MSY]")
 
     g <- lapply(1:length(refs), function(rr) {
@@ -308,7 +309,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "
   } else if(type == "F") {
 
     FM <- MSEproj@FM
-    refs <- list(1, MSEproj@RefPoint$FMSY[, , pyind])
+    refs <- list(1, MSEproj@RefPoint$FMSY[, , pyind, drop = FALSE])
     ylabs <- c("Fishing~mortality", "F/F[MSY]")
 
     g <- lapply(1:length(refs), function(rr) {
@@ -335,11 +336,10 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
   q <- c(0.5 * (1 - qval), 0.5, qval + 0.5 * (1 - qval))
   qs <- apply(x/ref, 2:3, quantile, q)
 
-  meds <- structure(qs[2, , ][MPind, , drop = FALSE], dimnames = list(MP = MPs, Year = py)) %>%
+  meds <- structure(qs[2, MPind, , drop = FALSE], dimnames = list(Type = "Median", MP = MPs, Year = py)) %>%
     reshape2::melt()
-  lower <- structure(qs[1, , ][MPind, , drop = FALSE], dimnames = list(MP = MPs, Year = py)) %>% reshape2::melt()
-  upper <- structure(qs[3, , ][MPind, length(py):1, drop = FALSE],
-                     dimnames = list(MP = MPs, Year = rev(py))) %>% reshape2::melt()
+  lower <- structure(qs[1, MPind, , drop = FALSE], dimnames = list(Type = "Lower", MP = MPs, Year = py)) %>% reshape2::melt()
+  upper <- structure(qs[3, MPind, length(py):1, drop = FALSE], dimnames = list(Type = "Upper", MP = MPs, Year = rev(py))) %>% reshape2::melt()
 
   ggplot(rbind(lower, upper), aes(Year, value)) +
     geom_line(size = 2, data = meds, aes(colour = MP)) +
@@ -372,13 +372,9 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR"
   yrs<-CurrentYr+(-nyears:(proyears-1))
   MPind<-match(MP,MSEproj@MPs)
 
-  SSB<-cbind(MSEproj@SSB_hist[sims, , drop = FALSE],
-             MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
-
   if(type == "SSB0") {
 
-    SSB<-cbind(MSEproj@SSB_hist[sims, , drop = FALSE],
-               MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
+    SSB<-cbind(MSEproj@SSB_hist[sims, , drop = FALSE], MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
 
     SSB0d<-MSEproj@RefPoint$Dynamic_Unfished$SSB0[sims, , drop = FALSE]
     SSB0a<-MSEproj@RefPoint$ByYear$SSB0[sims, , drop = FALSE]
@@ -395,8 +391,7 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR"
     matlines(yrs, matrix(SSB0i, length(yrs), length(sims), byrow = TRUE), lty = 1, col=cols)
   } else if(type == "SSBMSY") {
 
-    SSB <- cbind(MSEproj@SSB_hist[sims, , drop = FALSE],
-                 MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
+    SSB <- cbind(MSEproj@SSB_hist[sims, , drop = FALSE], MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
     SSBMSY <- MSEproj@RefPoint$ByYear$SSBMSY[sims, , drop = FALSE]
 
     par(mai=c(0.3,0.6,0.1,0.05),omi=c(0.6,0,0,0))
