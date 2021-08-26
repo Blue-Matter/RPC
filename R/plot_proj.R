@@ -1,10 +1,7 @@
 
-# MSEproj <- readRDS("C:/temp/MSEproj.rda")
-
-# Called functions
-proj_plot<-function(OBJs, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+#' @export
+proj_plot<-function(MSEproj, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
   type <- match.arg(type)
-  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1)
 
@@ -21,7 +18,7 @@ proj_plot<-function(OBJs, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
                  "SSB0" = MSEproj@SSB_hist,
                  "SSBMSY" = MSEproj@SSB_hist,
                  "F" = MSEproj@FM_hist,
-                 "SPR" = OBJs$MSEhist@TSdata$SPR$Equilibrium,
+                 "SPR" = MSEhist@TSdata$SPR$Equilibrium,
                  "Catch" = MSEproj@CB_hist) %>% apply(2, median)
   proj_med <- switch(type,
                      "SSB0" = MSEproj@SSB,
@@ -122,12 +119,12 @@ proj_plot<-function(OBJs, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
   return(g)
 }
 
-make_PMobj <- function(OBJs, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
+#' @export
+make_PMobj <- function(MSEproj, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
                        frac = 0.4, year_range, label, ...) {
   type <- match.arg(type)
   dots <- list(...)
 
-  MSEproj<-OBJs$MSEproj
   CurrentYr <- MSEproj@OM$CurrentYr[1]
 
   nyp<-MSEproj@proyears
@@ -189,9 +186,9 @@ make_PMobj <- function(OBJs, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catc
   return(PM)
 }
 
-prob_plot <- function(OBJs, PM_list = list(), xlim = NULL, ylim = NULL, figure = TRUE) {
+#' @export
+prob_plot <- function(MSEproj, PM_list = list(), xlim = NULL, ylim = NULL, figure = TRUE) {
 
-  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   CurrentYr <- MSEproj@OM$CurrentYr[1]
   MPcols <- rainbow(nMP,start=0.2,end=1)
@@ -224,15 +221,14 @@ prob_plot <- function(OBJs, PM_list = list(), xlim = NULL, ylim = NULL, figure =
   }
 }
 
-
-stoch_plot <- function(OBJs, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+#' @export
+stoch_plot <- function(MSEproj, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
   type <- match.arg(type)
 
   qval <- max(0.01, qval)
   qval <- min(0.99, qval)
   type <- match.arg(type)
 
-  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   CurrentYr <- MSEproj@OM$CurrentYr[1]
   MPcols <- rainbow(nMP,start=0.2,end=1,alpha = 0.3)
@@ -332,11 +328,9 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
     labs(y = parse(text = ylab))
 }
 
-
-hist_sim <- function(OBJs, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+#' @export
+hist_sim <- function(MSEproj, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
   type <- match.arg(type)
-
-  MSEproj<-OBJs$MSEproj
 
   if(missing(MP)) MP <- MSEproj@MPs[1]
   if(missing(sims)) sims <- 1:max(MSEproj@nsim, 3)
@@ -396,7 +390,7 @@ hist_sim <- function(OBJs, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Cat
     matlines(yrs,t(FM),col=makeTransparent(cols,80),type='l',lty=1,lwd=5)
   } else if(type == "SPR") {
 
-    SPR <- cbind(OBJs$MSEhist@TSdata$SPR$Equilibrium[sims, , drop = FALSE],
+    SPR <- cbind(MSEhist@TSdata$SPR$Equilibrium[sims, , drop = FALSE],
                  MSEproj@SPR$Equilibrium[, MPind, ][sims, , drop = FALSE])
 
     layout(matrix(1:2, nrow = 1), widths = c(0.8, 0.2))
@@ -468,17 +462,18 @@ hist_sim <- function(OBJs, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Cat
 
 }
 
-lollipop_plot <- function(OBJs, PM_list) {
+#' @export
+lollipop_plot <- function(MSEproj, PM_list) {
   probs <- Map(function(x, y) {
     out <- data.frame(MP = x@MPs)
     out[["Probability"]] <- x@Mean
     out[["PM"]] <- y
     return(out)
   }, x = PM_list, y = names(PM_list)) %>% bind_rows()
-  probs$MP <- factor(probs$MP, levels = OBJs$MSEproj@MPs)
+  probs$MP <- factor(probs$MP, levels = MSEproj@MPs)
 
-  MPcols <- rainbow(OBJs$MSEproj@nMPs, start = 0.2, end = 1) %>%
-    structure(names = OBJs$MSEproj@MPs)
+  MPcols <- rainbow(MSEproj@nMPs, start = 0.2, end = 1) %>%
+    structure(names = MSEproj@MPs)
 
   ggplot(probs, aes(PM, Probability)) +
     geom_linerange(position = position_dodge(width = 0.6), aes(colour = MP, ymin = 0, ymax = Probability)) +
@@ -490,9 +485,9 @@ lollipop_plot <- function(OBJs, PM_list) {
     labs(x = "Performance metric")
 }
 
-tradeoff_plot <- function(OBJs, PMx, PMy, xlab, ylab) {
+#' @export
+tradeoff_plot <- function(MSEproj, PMx, PMy, xlab, ylab) {
 
-  MSEproj<-OBJs$MSEproj
   nMP<-MSEproj@nMPs
   MPcols <- rainbow(nMP,start=0.2,end=1, alpha = 0.5)
 
@@ -508,19 +503,36 @@ tradeoff_plot <- function(OBJs, PMx, PMy, xlab, ylab) {
     scale_fill_manual(values = structure(MPcols, names = MSEproj@MPs))
 }
 
-radar_plot <- function(pm_df, palette = "Set2", custom_pal = NULL, ...) {
+#' @export
+radar_plot <- function(MSEproj, PM_list, ...) {
+
+  pm_df <- Map(function(x, y) {
+    out <- data.frame(MP = x@MPs)
+    out[[y]] <- x@Mean
+    return(out)
+  }, x = PM_list, y = names(PM_list)) %>% Reduce(dplyr::left_join, .)
+  pm_df$MP <- factor(pm_df$MP, levels = MSEproj@MPs)
+  custom_pal <- rainbow(MSEproj@nMPs, start = 0.2, end = 1) %>% structure(names = MSEproj@MPs)
+
   x <- reshape2::melt(pm_df, id.vars = "MP", value.name = "prob",
                       variable.name = "pm")
-  g <- ggspider::spider_web(x, "MP", "pm", "prob", leg_main_title = "MP",
-                            leg_lty_title = "MP type", palette = palette, ...)
-  if ("ggplot" %in% class(g)) {
-    g <- g + ggplot2::labs(color = "MP")
-  }
-  if (!is.null(custom_pal)) {
-    suppressMessages({
-      g <- g + ggplot2::scale_color_manual(values = custom_pal)
-    })
-  }
-  g + guides(linetype = "none")
+  suppressMessages({
+    g <- ggspider::spider_web(x, "MP", "pm", "prob", leg_main_title = "MP",
+                              leg_lty_title = "MP type", palette = "Set2", ...) +
+      scale_color_manual(name = "MP", values = custom_pal) +
+      guides(linetype = "none")
+  })
+
+  return(g)
+
+  #if ("ggplot" %in% class(g)) {
+  #  g <- g + ggplot2::labs(color = "MP")
+  #}
+  #if (!is.null(custom_pal)) {
+  #  suppressMessages({
+  #    g <- g + ggplot2::scale_color_manual(values = custom_pal)
+  #  })
+  #}
+  #g + guides(linetype = "none")
 }
 

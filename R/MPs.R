@@ -4,7 +4,8 @@
 
 # DFO
 
-SCA_6020<-make_MP(SCA_Pope,HCR60_20)
+#SCA_6020<-make_MP(SCA_Pope,HCR60_20)
+
 
 CurF <- function(x, Data, reps = 1, val = 1) {
   rec <- new("Rec")
@@ -22,21 +23,22 @@ CurC <- function(x, Data, reps = 1, val = 1) {
 }
 class(CurC) <- "MP"
 
-No_Fishing <- NFref
 
-
+#' @export
 make_FixC_MP <- function(ratio) {
   MP_out <- CurC
   formals(MP_out)$val <- ratio
-  structure(MP_out, class = "MP")
+  structure(MP_out, class = "MP", RPC = TRUE)
 }
 
+#' @export
 make_FixF_MP <- function(ratio) {
   MP_out <- CurF
   formals(MP_out)$val <- ratio
-  structure(MP_out, class = "MP")
+  structure(MP_out, class = "MP", RPC = TRUE)
 }
 
+#' @export
 make_RPC_MP <- function(input, verbose = TRUE) {
   Assess <- input$MS_Origin
 
@@ -60,6 +62,7 @@ make_RPC_MP <- function(input, verbose = TRUE) {
   MP <- make_MP(Assess, HCR_segment, OCP_type = OCP_type, Ftarget_type = Ftarget_type,
                 OCP = c(LOCP, TOCP), relF = c(relF_min, relF_max),
                 SPR_OCP = SPR_OCP, SPR_targ = SPR_targ)
+  attr(MP, "RPC") <- TRUE
 
   if(verbose) {
     AM(paste0("Management Procedure '", input$MS_HCR_Label, "' constructed as:\n",
@@ -71,6 +74,7 @@ make_RPC_MP <- function(input, verbose = TRUE) {
   return(MP)
 }
 
+#' @export
 make_HCR_name <- function(input, type = c("label", "description")) {
   type <- match.arg(type)
 

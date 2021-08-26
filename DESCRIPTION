@@ -6,7 +6,7 @@ Date: 2021-08-25
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
-Maintainer: Tom Carruthers <tom@bluematterscience.com>
+Maintainer: Quang Huynh <quang@bluematterscience.com>
 Description: A Shiny App for the exploration of fisheries reference points using operating models.
 License: GPL-3
 Depends:
@@ -20,12 +20,15 @@ Imports:
     ggplot2,
     ggpubr,
     ggrepel,
+    ggspider,
     shinyalert,
     shinyBS,
     shinydashboard,
     shinyWidgets,
     stats,
     utils
+Remotes: 
+    github::pbs-assess/ggspider
 Suggests: knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true

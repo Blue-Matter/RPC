@@ -1,4 +1,5 @@
 
+#' @export
 HCR_plot<-function(input){
 
   if(input$MS_IVar=="SSB_SSBMSY") {
@@ -64,8 +65,8 @@ HCR_plot<-function(input){
   }
 }
 
-CurF_plot <- function(OBJs, F_ratio = 1) {
-  MSEhist <- OBJs$MSEhist
+#' @export
+CurF_plot <- function(MSEhist, F_ratio = 1) {
   yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
 
   Find <- MSEhist@SampPars$Fleet$qs * MSEhist@SampPars$Fleet$Find
@@ -75,9 +76,8 @@ CurF_plot <- function(OBJs, F_ratio = 1) {
   abline(v =  MSEhist@OM@CurrentYr, lty = 2)
 }
 
-
-CurC_plot <- function(OBJs, C_ratio = 1) {
-  MSEhist <- OBJs$MSEhist
+#' @export
+CurC_plot <- function(MSEhist, C_ratio = 1) {
   yrs <- 1:(MSEhist@OM@nyears + MSEhist@OM@proyears) + MSEhist@OM@CurrentYr - MSEhist@OM@nyears
 
   Removals <- apply(MSEhist@TSdata$Removals, 1:2, sum)

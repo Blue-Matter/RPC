@@ -1,11 +1,12 @@
-hist_SSB <- function(OBJs, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  MSEh<-OBJs$MSEhist
-  nyh<-MSEh@OM@nyears
+#' @export
+hist_SSB <- function(MSEhist, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
-  hy<-MSEh@OM@CurrentYr - (nyh:1) + 1
-  yind <- SSB_y - MSEh@OM@CurrentYr + MSEh@OM@nyears
+  nyh<-MSEhist@OM@nyears
 
-  SSB<-apply(MSEh@TSdata$SBiomass,1:2,sum)
+  hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
+  yind <- SSB_y - MSEhist@OM@CurrentYr + MSEhist@OM@nyears
+
+  SSB<-apply(MSEhist@TSdata$SBiomass,1:2,sum)
 
   if(figure) {
     if(is.na(prob_ratio)) {
@@ -32,9 +33,9 @@ hist_SSB <- function(OBJs, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim
 }
 
 
-hist_SSBMSY <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
+#' @export
+hist_SSBMSY <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
 
-  MSEhist<-OBJs$MSEhist
   nyh<-MSEhist@OM@nyears
 
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
@@ -100,19 +101,18 @@ hist_SSBMSY <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1
   }
 }
 
+#' @export
+hist_SSB0 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
-hist_SSB0 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  nyh<-MSEhist@OM@nyears
 
-  MSEh<-OBJs$MSEhist
-  nyh<-MSEh@OM@nyears
+  hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
 
-  hy<-MSEh@OM@CurrentYr - (nyh:1) + 1
-
-  SSB<-apply(MSEh@TSdata$SBiomass,1:2,sum)
+  SSB<-apply(MSEhist@TSdata$SBiomass,1:2,sum)
 
   SSB0h<-array(SSB[,1],dim(SSB))
-  SSB0a<-MSEh@Ref$ByYear$SSB0
-  SSB0d<-MSEh@Ref$Dynamic_Unfished$SSB0
+  SSB0a<-MSEhist@Ref$ByYear$SSB0
+  SSB0d<-MSEhist@Ref$Dynamic_Unfished$SSB0
 
   SSBrh<-SSB/SSB0h
   SSBra<-SSB/SSB0a[,1:nyh]
@@ -146,10 +146,8 @@ hist_SSB0 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
   }
 }
 
-
-hist_BvsSP<-function(OBJs, figure = TRUE){
-
-  MSEhist<-OBJs$MSEhist
+#' @export
+hist_BvsSP<-function(MSEhist, figure = TRUE){
 
   nyh<-MSEhist@OM@nyears
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
@@ -197,10 +195,10 @@ hist_BvsSP<-function(OBJs, figure = TRUE){
   }
 }
 
-hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
+#' @export
+hist_R <- function(MSEhist, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
 
-  Hist <- OBJs$MSEhist
-  out <- stock_recruit_int(Hist)
+  out <- stock_recruit_int(MSEhist)
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)
 
@@ -215,10 +213,10 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
       if(missing(SR_xlim)) SR_xlim <- c(0, max(out$SSB))
       if(missing(SR_ylim)) SR_ylim <- c(0, max(out$R))
       if(missing(SR_y_RPS0)) {
-        SR_y_RPS0 <- Hist@OM@nyears
-      } else { #if(SR_y_RPS0 > Hist@OM@nyears) { # convert calendar year to matrix column
-        SR_y_RPS0 <- try(max(1, SR_y_RPS0 - Hist@OM@CurrentYr + Hist@OM@nyears), silent = TRUE)
-        if(is.character(SR_y_RPS0)) SR_y_RPS0 <- Hist@OM@nyears
+        SR_y_RPS0 <- MSEhist@OM@nyears
+      } else { #if(SR_y_RPS0 > MSEhist@OM@nyears) { # convert calendar year to matrix column
+        SR_y_RPS0 <- try(max(1, SR_y_RPS0 - MSEhist@OM@CurrentYr + MSEhist@OM@nyears), silent = TRUE)
+        if(is.character(SR_y_RPS0)) SR_y_RPS0 <- MSEhist@OM@nyears
       }
 
       dat_out <- data.frame(R = as.numeric(out$R), SSB = as.numeric(out$SSB), Type = "All sims")
@@ -248,16 +246,16 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
       }
 
       if(any(SR_include == 3)) { # Plot recruits per spawner lines
-        StockPars <- Hist@SampPars$Stock
-        FleetPars <- Hist@SampPars$Fleet
+        StockPars <- MSEhist@SampPars$Stock
+        FleetPars <- MSEhist@SampPars$Fleet
 
-        RpS_crash <- median(1/Hist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
+        RpS_crash <- median(1/MSEhist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
 
-        RpS_0 <- vapply(1:Hist@OM@nsim, function(x, y) {
+        RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
           MSEtool:::Ref_int_cpp(1e-8, M_at_Age = StockPars$M_ageArray[x, , y],
                                 Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
                                 Fec_at_Age = StockPars$Fec_Age[x, , y],
-                                V_at_Age = Hist@SampPars$Fleet$V[x, , y],
+                                V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
                                 StockPars$SRrel[x], maxage = StockPars$maxage,
                                 plusgroup = StockPars$plusgroup)[3, ]
         }, numeric(1), y = SR_y_RPS0) %>% median()
@@ -265,7 +263,7 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
         RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
 
         ablines <- data.frame(b = c(RpS_0, RpS_med, RpS_crash), a = 0,
-                              Type = c(paste0("Unfished~(", SR_y_RPS0 + Hist@OM@CurrentYr - Hist@OM@nyears, ")~R/S"),
+                              Type = c(paste0("Unfished~(", SR_y_RPS0 + MSEhist@OM@CurrentYr - MSEhist@OM@nyears, ")~R/S"),
                                        "Median~hist.~R/S", "Maximum~R/S"))
 
         g <- g + geom_abline(data = ablines, aes(slope = b, colour = Type, intercept = a), size = 0.75, linetype = 2) +
@@ -312,10 +310,9 @@ hist_R <- function(OBJs, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_
 }
 
 
-
-hist_RpS <- function(OBJs, figure = TRUE) {
-  Hist <- OBJs$MSEhist
-  out <- stock_recruit_int(Hist)
+#' @export
+hist_RpS <- function(MSEhist, figure = TRUE) {
+  out <- stock_recruit_int(MSEhist)
 
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)
@@ -350,44 +347,28 @@ hist_RpS <- function(OBJs, figure = TRUE) {
 }
 
 
-Rmax_regression <- function(R, SSB, S50, type = c("low", "high")) {
-  type <- match.arg(type)
-  if(type == "low") {
-    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB < S50)
-  } else {
-    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB >= S50)
-  }
-  if(nrow(df) > 3) {
-    reg <- lm(log(R) ~ log(SSB), data = df)
-    df$predict_logR <- predict(reg)
-    return(df)
-  } else {
-    return(NULL)
-  }
-}
+#' @export
+hist_Rmax <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  out <- stock_recruit_int(MSEhist)
 
-hist_Rmax <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  Hist <- OBJs$MSEhist
-  out <- stock_recruit_int(Hist)
-
-  if(Hist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50)
-    Rmax <-  4 * Hist@SampPars$Stock$R0 * Hist@SampPars$Stock$hs / (5 * Hist@SampPars$Stock$hs - 1)
+  if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50)
+    Rmax <-  4 * MSEhist@SampPars$Stock$R0 * MSEhist@SampPars$Stock$hs / (5 * MSEhist@SampPars$Stock$hs - 1)
     Rmax50 <- 0.5 * Rmax
-    S50 <- (5 * Hist@SampPars$Stock$hs - 1) / (1 - Hist@SampPars$Stock$hs) /
-      (Hist@SampPars$Stock$SSBpR[, 1] * Hist@SampPars$Stock$R0)
+    S50 <- (5 * MSEhist@SampPars$Stock$hs - 1) / (1 - MSEhist@SampPars$Stock$hs) /
+      (MSEhist@SampPars$Stock$SSBpR[, 1] * MSEhist@SampPars$Stock$R0)
     S50 <- 1/S50  # Myers et al. 1994
   } else {
     Rmax <- apply(out$predR, 1, max)
     Rmax50 <- 0.5 * Rmax
-    S50 <- 0.231961/Hist@SampPars$Stock$bR[, 1] # Myers et al. 1994
+    S50 <- 0.231961/MSEhist@SampPars$Stock$bR[, 1] # Myers et al. 1994
   }
 
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)
 
   # Regression
-  reg_low <- lapply(1:Hist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "low"))
-  reg_hi <- lapply(1:Hist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "high"))
+  reg_low <- lapply(1:MSEhist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "low"))
+  reg_hi <- lapply(1:MSEhist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "high"))
 
   if(figure) {
 
@@ -411,7 +392,7 @@ hist_Rmax <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
       points(log(medSSB), log(medR), pch = 19)
       abline(v = log(S50), col = "#99999920", lty = 2)
       abline(v = median(S50) %>% log(), lty = 2, lwd = 2)
-      lapply(1:Hist@OM@nsim, function(i) {
+      lapply(1:MSEhist@OM@nsim, function(i) {
         if(!is.null(reg_hi[[i]])) lines(predict_logR ~ log(SSB), data = reg_hi[[i]], lty = 2) #col = "#99999920")
         if(!is.null(reg_low[[i]])) lines(predict_logR ~ log(SSB), data = reg_low[[i]], lty = 2) #col = "#99999920")
       })
@@ -431,14 +412,14 @@ hist_Rmax <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
   } else {
 
     if(is.na(prob_ratio)) {
-      slope_high <- vapply(1:Hist@OM@nsim, function(i) {
+      slope_high <- vapply(1:MSEhist@OM@nsim, function(i) {
         if(!is.null(reg_hi[[i]])) {
           diff(range(log(reg_hi[[i]]$predict_logR)))/diff(range(log(reg_hi[[i]]$SSB)))
         } else {
           NA_real_
         }
       }, numeric(1))
-      slope_low <- vapply(1:Hist@OM@nsim, function(i) {
+      slope_low <- vapply(1:MSEhist@OM@nsim, function(i) {
         if(!is.null(reg_low[[i]])) {
           diff(range(log(reg_low[[i]]$predict_logR)))/diff(range(log(reg_low[[i]]$SSB)))
         } else {
@@ -469,9 +450,9 @@ hist_Rmax <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1))
   invisible()
 }
 
-hist_RpS90 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  Hist <- OBJs$MSEhist
-  out <- stock_recruit_int(Hist)
+#' @export
+hist_RpS90 <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
+  out <- stock_recruit_int(MSEhist)
 
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)
@@ -545,43 +526,11 @@ hist_RpS90 <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)
 }
 
 
-make_df <- function(x, Year, probs = c(0.25, 0.5, 0.75)) {
-  xx <- t(apply(x, 2, quantile, probs = probs))
-  structure(xx, dimnames = list(Year, c("Lower quartile", "Median", "Upper quartile")))
-}
-
-stock_recruit_int <- function(Hist) {
-  yrs <- Hist@OM@CurrentYr - Hist@OM@nyears:1 + 1
-
-  R <- predR_y <- apply(Hist@AtAge$Number[, 1, , ], 1:2, sum)
-  SSB <- apply(Hist@TSdata$SBiomass, 1:2, sum)
-
-  predSSB <- seq(0, 1.1 * max(SSB), length.out = 100)
-  predR <- matrix(0, Hist@OM@nsim, length(predSSB))
-  SRrel <- Hist@SampPars$Stock$SRrel[1]
-  for(i in 1:Hist@OM@nsim) {
-    if(SRrel == 1) {
-      predR[i, ] <- 4 * Hist@SampPars$Stock$R0[i] * Hist@SampPars$Stock$hs[i] * predSSB/
-        (Hist@SampPars$Stock$SSBpR[i, 1] * Hist@SampPars$Stock$R0[i] * (1 - Hist@SampPars$Stock$hs[i]) +
-           (5 * Hist@SampPars$Stock$hs[i] - 1) * predSSB)
-      predR_y[i, ] <- 4 * Hist@SampPars$Stock$R0[i] * Hist@SampPars$Stock$hs[i] * SSB[i, ]/
-        (Hist@SampPars$Stock$SSBpR[i, 1] * Hist@SampPars$Stock$R0[i] * (1 - Hist@SampPars$Stock$hs[i]) +
-           (5 * Hist@SampPars$Stock$hs[i] - 1) * SSB[i, ])
-    } else {
-      predR[i, ] <- Hist@SampPars$Stock$aR[i, 1] * predSSB * exp(-Hist@SampPars$Stock$bR[i, 1] * predSSB)
-      predR_y[i, ] <- Hist@SampPars$Stock$aR[i, 1] * SSB[i, ] * exp(-Hist@SampPars$Stock$bR[i, 1] * SSB[i, ])
-    }
-  }
-
-  list(R = R, SSB = SSB, predR_y = predR_y, predR = predR, predSSB = predSSB, yrs = yrs)
-}
 
 
+#' @export
+hist_SPR <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
-
-hist_SPR <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-
-  MSEhist <- OBJs$MSEhist
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   Fmed <- MSEhist@Ref$ByYear$Fmed
@@ -624,8 +573,8 @@ hist_SPR <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
   }
 }
 
-hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  MSEhist<-OBJs$MSEhist
+#' @export
+hist_exp <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   # Apical F index
@@ -705,9 +654,8 @@ hist_exp <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) 
 
 
 
-
-hist_Fmed <- function(OBJs, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  MSEhist<-OBJs$MSEhist
+#' @export
+hist_Fmed <- function(MSEhist, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
   # Apical F index
