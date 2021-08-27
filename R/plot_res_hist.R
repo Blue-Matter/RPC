@@ -1,9 +1,41 @@
+
+#' @name plot-Hist-prob
+#' @title Plot historical dynamics with probabilities
+#' @description Generate figures associated with probabilities
+#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
+#' the Hist object.
+#' @param figure Logical, whether to return a figure (TRUE) or data frame (FALSE).
+#' @param prob_ratio If NA, returns annual values. Otherwise, a numeric that indicates a threshold. Functions return
+#' annual probabilities of exceeding this threshold.
+#' @param prob_ylim The y-axis range of the figure if prob_ratio is a numeric. Only used if \code{figure = TRUE}.
+#' @return If \code{figure = TRUE}, various plots using either base graphics or ggplot2 showing annual values (\code{prob_ratio = NA}) or
+#' probabilities (\code{prob_ratio} is numeric). If \code{figure = FALSE}, returns a data frame displaying quantiles (\code{prob_ratio = NA})
+#' or probabilities (\code{prob_ratio} is numeric).
+#' @examples
+#' Hist <- MSEtool::runMSE(Hist = TRUE)
+#'
+#' hist_SSB(Hist)
+#' hist_SSB(Hist, SSB_y = 50, prob_ratio = 0.5)
+#'
+#' hist_SSB(Hist, figure = FALSE)
+#' hist_SSB(Hist, figure = FALSE, SSB_y = 50, prob_ratio = 0.5)
+#' @author Q. Huynh
+NULL
+
+#' @rdname plot-Hist-prob
+#' @details \code{hist_SSB} returns annual SSB or the annual probability that SSB exceeds some historical value (corresponding to the year in
+#' argument \code{SSB_y}).
+#' @param SSB_y The year (relative to OM@@CurentYr) to compare annual SSB values (only if prob_ratio is a numeric).
 #' @export
 hist_SSB <- function(x, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = c(0, 1)) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
+  }
+
+  if(!is.na(prob_ratio) && is.na(SSB_y)) {
+    stop("A year is needed to compare SSB in year specified in argument SSB_y")
   }
 
   nyh<-MSEhist@OM@nyears
@@ -38,6 +70,8 @@ hist_SSB <- function(x, figure = TRUE, SSB_y = NA, prob_ratio = NA, prob_ylim = 
 }
 
 
+#' @rdname plot-Hist-prob
+#' @details \code{hist_SSBMSY} returns annual SSB/SSBMSY or the annual probability that SSB/SSBMSY exceeds \code{prob_ratio}.
 #' @export
 hist_SSBMSY <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)) {
   if(inherits(x, "reactivevalues")) {
@@ -60,22 +94,24 @@ hist_SSBMSY <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)
   #  FleetPars <- MSEhist@SampPars$Fleet
   #  SSBMSY2 <- vapply(1:MSEhist@OM@nsim, function(x) {
   #    vapply(1:MSEhist@OM@nyears, function(y) {
-  #      logFMSY <- optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
+  #      logFMSY <- optimize(MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
   #                          Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
   #                          Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
   #                          R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
   #                          opt = 1, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])$minimum
-  #      RPC:::MSYCalcs2(logFMSY, M_at_Age = StockPars$M_ageArray[x, , y],
-  #                      Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-  #                      Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
-  #                      R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-  #                      opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])["B"]
+  #      MSYCalcs2(logFMSY, M_at_Age = StockPars$M_ageArray[x, , y],
+  #                Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
+  #                Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
+  #                R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+  #                opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])["B"]
   #    }, numeric(1))
   #  }, numeric(MSEhist@OM@nyears)) %>% t()
   #}
 
   if(figure) {
     if(is.na(prob_ratio)) {
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfrow=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
 
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
@@ -110,6 +146,9 @@ hist_SSBMSY <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1.5)
   }
 }
 
+#' @rdname plot-Hist-prob
+#' @details \code{hist_SSB0} returns annual SSB/SSB0 or the annual probability that SSB/SSB0 exceeds \code{prob_ratio}.
+#' @export
 #' @export
 hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   if(inherits(x, "reactivevalues")) {
@@ -133,6 +172,8 @@ hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   if(figure) {
     if(is.na(prob_ratio)) {
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
       tsplot(x=SSBrh,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Initial~SSB[0]))
@@ -159,8 +200,10 @@ hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   }
 }
 
+#' @rdname plot-Hist-prob
+#' @details \code{hist_BvsSP} returns annual surplus production (annual change in biomass - catch) and per capita surplus production.
 #' @export
-hist_BvsSP<-function(x, figure = TRUE){
+hist_BvsSP<-function(x, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -179,6 +222,8 @@ hist_BvsSP<-function(x, figure = TRUE){
   medSPB<-apply(SP/B[, ind1], 2, median)
 
   if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
     par(mfcol=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
 
     tsplot(SP,yrs=hy[ind1],xlab="Year",ylab="Surplus production",zeroyint=F)
@@ -212,8 +257,18 @@ hist_BvsSP<-function(x, figure = TRUE){
   }
 }
 
+#' @rdname plot-Hist-prob
+#' @details \code{hist_R} returns either annual recruitment (as a figure or table) or a stock recruit figure.
+#' @param SR_only Logical, whether to plot annual recruitment (FALSE) or the stock-recruit figure (TRUE). Only used if \code{figure = TRUE}.
+#' @param SR_xlim Optional x-axis range for the stock recruit plot. Only used if \code{SR_only = TRUE} and \code{figure = TRUE}.
+#' @param SR_ylim Optional y-axis range for the stock recruit plot. Only used if \code{SR_only = TRUE} and \code{figure = TRUE}.
+#' @param SR_y_RPS0 The year (relative to OM@@CurrentYr) for which to plot unfished recruits per spawner,
+#' Only used if \code{SR_only = TRUE} and \code{figure = TRUE}, and \code{any(SR_include == 3)}.
+#' @param SR_include A vector including any of c(1, 2, 3) that indicates what to plot in the stock-recruit figure. 1 = individual S-R pairs,
+#' 2 = stock-recruit relationship, 3 = reference recruits-per-spawner (R/S) lines
+#' (maximum R/S corresponding to stock-recruit alpha, median historical R/S, and year-specific unfished R/S).
 #' @export
-hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include) {
+hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include = 1:3) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -295,10 +350,12 @@ hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS
 
     } else {
 
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
 
       # Plot stock-recruit relationship
-      #matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
+      #matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
       #        xlab = "Spawning biomass", ylab = "Recruitment", pch = 16)
       #plotquant(out$predR, yrs = out$predSSB, addline = TRUE)
       #points(medSSB, medR, pch = 19)
@@ -310,7 +367,7 @@ hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS
       abline(h = 0, lty = 3)
 
       ## Recruitment deviations vs SSB
-      matplot(out$SSB, Rdev, typ = "p", xlim = c(0, max(out$SSB)), #ylim = c(0, max(R)),
+      matplot(out$SSB, Rdev, type = "p", xlim = c(0, max(out$SSB)), #ylim = c(0, max(R)),
               col = "#99999920", pch = 19,
               xlab = "Spawning biomass", ylab = "Log recruitment deviation")
       plotquant(Rdev, yrs = medSSB, addline = TRUE)
@@ -324,13 +381,15 @@ hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS
   } else {
 
     out <- make_df(out$R, out$yrs)
+
     return(out)
   }
 
   invisible()
 }
 
-
+#' @rdname plot-Hist-prob
+#' @details \code{hist_RpS} returns annual recruits-per-spawner.
 #' @export
 hist_RpS <- function(x, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
@@ -345,6 +404,8 @@ hist_RpS <- function(x, figure = TRUE) {
   medRpS <- apply(out$R/out$SSB, 2, median)
 
   if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
     par(mfrow = c(2, 2), mar = c(5, 4, 1, 1))
     # Annual recruits-per-spawner
     tsplot(out$R/out$SSB,yrs=out$yrs,xlab="Year",ylab="Recruits per spawner",zeroyint=TRUE)
@@ -372,198 +433,35 @@ hist_RpS <- function(x, figure = TRUE) {
 
 }
 
-
-#' @export
-hist_Rmax <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  if(inherits(x, "reactivevalues")) {
-    MSEhist <- x$MSEhist
-  } else {
-    MSEhist <- x
-  }
-  out <- stock_recruit_int(MSEhist)
-
-  if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50)
-    Rmax <-  4 * MSEhist@SampPars$Stock$R0 * MSEhist@SampPars$Stock$hs / (5 * MSEhist@SampPars$Stock$hs - 1)
-    Rmax50 <- 0.5 * Rmax
-    S50 <- (5 * MSEhist@SampPars$Stock$hs - 1) / (1 - MSEhist@SampPars$Stock$hs) /
-      (MSEhist@SampPars$Stock$SSBpR[, 1] * MSEhist@SampPars$Stock$R0)
-    S50 <- 1/S50  # Myers et al. 1994
-  } else {
-    Rmax <- apply(out$predR, 1, max)
-    Rmax50 <- 0.5 * Rmax
-    S50 <- 0.231961/MSEhist@SampPars$Stock$bR[, 1] # Myers et al. 1994
-  }
-
-  medSSB <- apply(out$SSB, 2, median)
-  medR <- apply(out$R, 2, median)
-
-  # Regression
-  reg_low <- lapply(1:MSEhist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "low"))
-  reg_hi <- lapply(1:MSEhist@OM@nsim, function(i) Rmax_regression(R = out$R[i, ], SSB = out$SSB[i, ], S50 = S50[i], type = "high"))
-
-  if(figure) {
-
-    if(is.na(prob_ratio)) {
-      par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
-
-      # Plot stock-recruit relationship with SSB 50%Rmax
-      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
-      plotquant(out$predR, yrs = out$predSSB, addline=T)
-      points(medSSB, medR, pch = 19)
-      abline(v = S50, col = "#99999920", lty = 2)
-      abline(v = median(S50), lty = 2, lwd = 2)
-      abline(h = 0, col = "grey")
-      legend("topright", c("All Sims", "Median", expression(SSB["50%"~Rmax])), pch = c(4, 16, NA),
-             lty = c(NA, NA, 2), lwd = c(NA, NA, 2), bty = "n")
-
-      # Plot regression line
-      matplot(log(out$SSB), log(out$R), typ = "p", col = "#99999920", xlim = range(c(out$SSB, S50)) %>% log(),
-              xlab = "log(Spawning biomass)", ylab = "log(Recruitment)", pch = 4)
-      points(log(medSSB), log(medR), pch = 19)
-      abline(v = log(S50), col = "#99999920", lty = 2)
-      abline(v = median(S50) %>% log(), lty = 2, lwd = 2)
-      lapply(1:MSEhist@OM@nsim, function(i) {
-        if(!is.null(reg_hi[[i]])) lines(predict_logR ~ log(SSB), data = reg_hi[[i]], lty = 2) #col = "#99999920")
-        if(!is.null(reg_low[[i]])) lines(predict_logR ~ log(SSB), data = reg_low[[i]], lty = 2) #col = "#99999920")
-      })
-    } else {
-
-      g <- data.frame(Year = out$yrs, pvec = apply(out$SSB/S50 > prob_ratio, 2, mean)) %>%
-        ggplot(aes(Year, pvec)) +
-        geom_line() +
-        geom_point() +
-        theme_bw() +
-        coord_cartesian(ylim = prob_ylim) +
-        labs(y = parse(text = paste0("Probability~SSB/SSB[\"50%\"~Rmax]>", prob_ratio))) +
-        ggtitle(parse(text = paste0("Probability~SSB/SSB[\"50%\"~Rmax]>", prob_ratio)))
-      return(g)
-    }
-
-  } else {
-
-    if(is.na(prob_ratio)) {
-      slope_high <- vapply(1:MSEhist@OM@nsim, function(i) {
-        if(!is.null(reg_hi[[i]])) {
-          diff(range(log(reg_hi[[i]]$predict_logR)))/diff(range(log(reg_hi[[i]]$SSB)))
-        } else {
-          NA_real_
-        }
-      }, numeric(1))
-      slope_low <- vapply(1:MSEhist@OM@nsim, function(i) {
-        if(!is.null(reg_low[[i]])) {
-          diff(range(log(reg_low[[i]]$predict_logR)))/diff(range(log(reg_low[[i]]$SSB)))
-        } else {
-          NA_real_
-        }
-      }, numeric(1))
-
-      out <- lapply(list(S50, slope_high, slope_low), function(x) {
-        if(all(is.na(x))) {
-          return(rep(NA_real_, 3))
-        } else {
-          return(quantile(x, probs = c(0.25, 0.5, 0.75)))
-        }
-      })
-
-      out <- data.frame(do.call(rbind, out), row.names = c("SSB_50%Rmax", "Slope above", "Slope below"))
-      names(out) <- c("25%ile", "Median", "75%ile")
-      return(out)
-
-    } else {
-
-      pvec <- apply(out$SSB/S50 > prob_ratio, 2, mean)
-      return(structure(matrix(pvec, ncol = 1),
-                       dimnames = list(out$yrs, c("Probability"))))
-
-    }
-  }
-  invisible()
-}
-
-#' @export
-hist_RpS90 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
-  if(inherits(x, "reactivevalues")) {
-    MSEhist <- x$MSEhist
-  } else {
-    MSEhist <- x
-  }
-  out <- stock_recruit_int(MSEhist)
-
-  medSSB <- apply(out$SSB, 2, median)
-  medR <- apply(out$R, 2, median)
-  #medRpS <- medR/medSSB
-
-  RpS_med <- apply(out$R/out$SSB, 1, median)
-  RpS_90 <- apply(out$R/out$SSB, 1, quantile, probs = 0.9)
-  R_90 <- apply(out$R, 1, quantile, probs = 0.9)
-  S_90 <- R_90/RpS_90
-
-  if(figure) {
-
-    if(is.na(prob_ratio)) {
-      par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
-
-      # Plot stock-recruit relationship
-      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
-      plotquant(out$predR, yrs = out$predSSB, addline=T)
-      points(medSSB, medR, pch = 19)
-      abline(v = S_90, lwd = 2, lty = 2, col = "#99999920")
-      abline(v = median(S_90), lwd = 2, lty = 2)
-      abline(h = 0, col = "grey")
-
-      matplot(out$SSB, out$R, typ = "p", col = "#99999920", xlim = c(0, max(out$SSB)), ylim = c(0, max(out$R)),
-              xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
-      #plotquant(out$predR, yrs = out$predSSB, addline=T)
-      points(medSSB, medR, pch = 19)
-      abline(a = 0, b = median(RpS_90), lwd = 2, lty = 2, col = "red")
-      abline(h = median(R_90), lwd = 2, lty = 2, col = "blue")
-
-      lapply(RpS_90, function(x) abline(a = 0, b = x, lwd = 2, lty = 2, col = makeTransparent("red", 20)))
-      lapply(R_90, function(x) abline(h = x, lwd = 2, lty = 2, col = makeTransparent("blue", 20)))
-
-      legend("topright", c("All sims", "Median", paste("90%ile", c("R/S", "R", "SSB"))),
-             col = c("black", "black", "red", "blue", "black"), pch = c(4, 16, NA, NA, NA),
-             lwd = c(NA, NA, 2, 2, 2), lty = c(NA, NA, 4, 4, 4), bty = "n")
-      abline(h = 0, col = "grey")
-    } else {
-
-      g <- data.frame(Year = out$yrs, pvec = apply(out$SSB/S_90 > prob_ratio, 2, mean)) %>%
-        ggplot(aes(Year, pvec)) +
-        geom_line() +
-        geom_point() +
-        theme_bw() +
-        coord_cartesian(ylim = prob_ylim) +
-        labs(y = parse(text = paste0("Probability~SSB/SSB[\"90%ile\"~R/S]>", prob_ratio))) +
-        ggtitle(parse(text = paste0("Probability~SSB/SSB[\"90%ile\"~R/S]>", prob_ratio)))
-      return(g)
-    }
-
-  } else {
-
-    if(is.na(prob_ratio)) {
-
-      out <- lapply(list(RpS_90, R_90, S_90), quantile, probs = c(0.25, 0.5, 0.75))
-      out <- data.frame(do.call(rbind, out), row.names = c("90%ile R/S", "90%ile Recruitment", "90%ile SSB"))
-      names(out) <- c("25%ile", "Median", "75%ile")
-      return(out)
-
-    } else {
-
-      pvec <- apply(out$SSB/S_90 > prob_ratio, 2, mean)
-      return(structure(matrix(pvec, ncol = 1),
-                       dimnames = list(out$yrs, c("Probability"))))
-
-    }
-
-  }
-  invisible()
-}
+#' @name plot-Hist-diagnostic
+#' @title Biomass limit reference points methods
+#' @description Two figures showing diagnostics associated with methods for identifying biomass limit reference points using
+#' the stock-recruit relationship.
+#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
+#' the Hist object.
+#' @param figure Logical, whether to return a stock-recruit figure (TRUE) or data frame reporting the limit reference point (FALSE).
+#' @param prob_ratio If NA, returns the limit reference point. Otherwise, a numeric that indicates the threshold of exceeding the reference point.
+#' Functions return annual probabilities of exceeding this threshold.
+#' @param prob_ylim The y-axis range of the figure if prob_ratio is a numeric. Only used if \code{figure = TRUE}.
+#' @references
+#' Mace, P.M. 1994. Relationships between Common Biological Reference Points Used as Thresholds and Targets of Fisheries Management Strategies.
+#' CJFAS. 51:110-122. https://doi.org/10.1139/f94-013
+#'
+#' Myers, et al. 1994. In search of thresholds for recruitment overfishing. ICES JMS. 51:191–205. https://doi.org/10.1006/jmsc.1994.1020
+#' @examples
+#' Hist <- MSEtool::runMSE(Hist = TRUE)
+#'
+#' hist_Rmax(Hist)
+#' hist_Rmax(Hist, prob_ratio = 0.5)
+#'
+#' hist_Rmax(Hist, figure = FALSE)
+#' hist_Rmax(Hist, figure = FALSE, prob_ratio = 0.5)
+NULL
 
 
 
-
+#' @rdname plot-Hist-prob
+#' @details \code{hist_SPR} returns annual spawning potential ratio.
 #' @export
 hist_SPR <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   if(inherits(x, "reactivevalues")) {
@@ -578,6 +476,8 @@ hist_SPR <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   if(figure) {
     if(is.na(prob_ratio)) {
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
@@ -613,6 +513,9 @@ hist_SPR <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   }
 }
 
+
+#' @rdname plot-Hist-prob
+#' @details \code{hist_exp} returns annual F and F/FMSY.
 #' @export
 hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   if(inherits(x, "reactivevalues")) {
@@ -630,6 +533,8 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   if(figure) {
     if(is.na(prob_ratio)) {
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
@@ -676,7 +581,7 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   #  FleetPars <- MSEhist@SampPars$Fleet
   #  FMSY2 <- sapply(1:MSEhist@OM@nsim, function(x) {
   #    sapply(1:MSEhist@OM@nyears, function(y) {
-  #      optimize(RPC:::MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
+  #      optimize(MSYCalcs2, log(c(1e-4, 3)), M_at_Age = StockPars$M_ageArray[x, , y],
   #               Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
   #               Fec_at_Age = StockPars$Fec_Age[x, , y], V_at_Age = FleetPars$V[x, , y], maxage = StockPars$maxage,
   #               R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
@@ -699,6 +604,9 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
 
 
+#' @rdname plot-Hist-prob
+#' @details \code{hist_Fmed} returns F and Fmed (the fishing mortality corresponding to the historical median recruits per spawner,
+#' frequently also referred to as the F-replacement F).
 #' @export
 hist_Fmed <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   if(inherits(x, "reactivevalues")) {
@@ -716,6 +624,8 @@ hist_Fmed <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   if(figure) {
     if(is.na(prob_ratio)) {
+      old_par <- par(no.readonly = TRUE)
+      on.exit(par(old_par))
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
@@ -750,4 +660,5 @@ hist_Fmed <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
     }
   }
 }
+
 

@@ -1,4 +1,11 @@
 
+#' @name plot-MP
+#' @title Functions to plot MPs
+#' @description Various functions to plot the MP on the RPC App.
+
+#' @rdname plot-MP
+#' @details \code{HCR_plot} plots the selected harvest control rule.
+#' @param input The input list from the shiny server
 #' @export
 HCR_plot<-function(input){
 
@@ -65,6 +72,11 @@ HCR_plot<-function(input){
   }
 }
 
+#' @rdname plot-MP
+#' @details \code{CurF_plot} plots the projection F relative to historical F.
+#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
+#' the Hist object.
+#' @param F_ratio The ratio of projection F and that from the last historical year.
 #' @export
 CurF_plot <- function(x, F_ratio = 1) {
   if(inherits(x, "reactivevalues")) {
@@ -81,6 +93,9 @@ CurF_plot <- function(x, F_ratio = 1) {
   abline(v =  MSEhist@OM@CurrentYr, lty = 2)
 }
 
+#' @rdname plot-MP
+#' @details \code{CurC_plot} plots the projection catch relative to historical.
+#' @param C_ratio The ratio of projection catch and that from the last historical year.
 #' @export
 CurC_plot <- function(x, C_ratio = 1) {
   if(inherits(x, "reactivevalues")) {

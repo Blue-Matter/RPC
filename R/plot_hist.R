@@ -1,13 +1,28 @@
 
+#' @name plot-Hist
+#' @title Plot historical dynamics
+#' @description Various plots for plotting historical time series for the operating model.
+#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
+#' the Hist object.
+#' @return Various plots using base graphics
+#' @examples
+#' Hist <- MSEtool::runMSE(Hist = TRUE)
+#' hist_bio(Hist)
+#' @author Q. Huynh
+NULL
 
-
+#' @rdname plot-Hist
+#' @details \code{hist_bio} plots time series of biomass, abundance, and recruitment.
 #' @export
 hist_bio<-function(x) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
 
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
 
@@ -25,13 +40,18 @@ hist_bio<-function(x) {
 
 }
 
+#' @rdname plot-Hist
+#' @details \code{hist_future_recruit} plots historical and future recruitment deviations.
 #' @export
 hist_future_recruit <- function(x) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
 
   yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
   par(mfrow=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
@@ -62,13 +82,20 @@ hist_future_recruit <- function(x) {
 }
 
 
+#' @rdname plot-Hist
+#' @details \code{hist_bio_schedule} plots in biological at age parameters.
+#' @param var A string to indicate which object to plot from OM@@cpars.
+#' @param n_age_plot The number of ages to plot in the left figure.
+#' @param yr_plot The year (relative to OM@@CurrentYr) to plot for the right figure.
+#' @param sim The simulation to plot for the left figure.
 #' @export
-hist_bio_schedule <- function(x, var = "Len_age", n_age_plot, yr_plot, sim) {
+hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"), n_age_plot, yr_plot, sim) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  var <- match.arg(var)
   labs <- c(Len_age = "Mean Length at age", Wt_age = "Weight at age",
             Mat_age = "Maturity", M_ageArray = "Natural mortality")
   ylab <- labs[match(var, names(labs))]
@@ -98,9 +125,11 @@ hist_bio_schedule <- function(x, var = "Len_age", n_age_plot, yr_plot, sim) {
   age_plot <- pretty(age, n_age_plot)
   age_plot <- age_plot[age_plot <= max(age)]
 
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
 
-  matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, typ = 'l', lty = 1,
+  matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, type = 'l', lty = 1,
           xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
   text(max(yr_cal), sched[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
   abline(v = MSEhist@OM@CurrentYr, lty = 3)
@@ -112,46 +141,68 @@ hist_bio_schedule <- function(x, var = "Len_age", n_age_plot, yr_plot, sim) {
   invisible()
 }
 
-
+#' @rdname plot-Hist
+#' @details \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 #' @export
 hist_growth_I <- function(x) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   plot('Growth', MSEhist, plot.num=1)
 }
 
+#' @rdname plot-Hist
+#' @details \code{hist_growth_II} plots histograms of von Bertalanffy parameters by year.
 #' @export
 hist_growth_II <- function(x) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   plot('Growth', MSEhist, plot.num=2)
 }
 
+#' @rdname plot-Hist
+#' @details \code{hist_spatial} plots histograms of the parameters for spatial movement in a two-area model (set all to 0.5 to functionally create a single area model).
 #' @export
 hist_spatial <- function(x) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   plot('Spatial', MSEhist)
 }
 
+#' @rdname plot-Hist
+#' @details \code{hist_sel} plots selectivity/retention at age for two different years in the OM.
+#' @param yr A length-2 vector for the years (relative to OM@@CurrentYr) to plot selectivity.
+#' @param maturity Logical, whether to plot maturity along with selectivity.
 #' @export
 hist_sel <- function(x, yr, maturity = TRUE) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  if(missing(yr)) {
+    yr <- c(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1, MSEhist@OM@CurrentYr)
+  } else if(length(yr) != 2) {
+    stop("yr must be a length two vector")
+  }
   yind <- yr - MSEhist@OM@CurrentYr + MSEhist@OM@nyears # Length 2 vector
 
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   #par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
   par(mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0.2,0))
   layout(matrix(c(1:6, rep(7, 3)), nrow = 3), widths = c(1, 1, 0.5))
@@ -181,11 +232,15 @@ hist_sel <- function(x, yr, maturity = TRUE) {
   mtext("Age", 1, outer = TRUE, line = 2)
 }
 
-
+#' @rdname plot-Hist
+#' @details \code{hist_YieldCurve} plots the yield curve.
+#' @param yr_bio The year (relative to OM@@CurrentYr) for the biological parameters (growth, M, maturity).
+#' @param yr_sel The year (relative to OM@@CurrentYr) for the selectivity parameters.
+#' @param F_range Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.
 #' @export
 hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   if(inherits(x, "reactivevalues")) {
-    MSEhist <- OBJs$MSEhist
+    MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
@@ -228,11 +283,11 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   } else { # Constant alpha, beta
     YC <- lapply(1:MSEhist@OM@nsim, function(x) {
       vapply(log(F_search), function(y) {
-        RPC:::MSYCalcs2(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
-                        Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                        V_at_Age = V[x, ], maxage = StockPars$maxage,
-                        R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                        opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])
+        MSYCalcs2(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                  Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                  V_at_Age = V[x, ], maxage = StockPars$maxage,
+                  R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                  opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])
       }, numeric(11))
     })
   }
@@ -250,6 +305,8 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   SSB <- sapply(YC, function(x) x[3, ])
   SSB_SSB0a <- sapply(YC, function(x) x[4, ])
 
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
   par(mfrow = c(2, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
   cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 

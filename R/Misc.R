@@ -1,4 +1,7 @@
 
+#' @describeIn runMSEhist Modifies an OM with fewer simulations and projection years if desired.
+#' @param nsim The number of simulations in the reduced OM.
+#' @param proyears The number of projection years in the reduced OM.
 #' @export
 modOM <- function(OM, nsim, proyears) {
   nsim_full <- OM@nsim
@@ -41,6 +44,11 @@ modOM <- function(OM, nsim, proyears) {
   OM
 }
 
+#' Generate an operating model
+#'
+#' Returns a Hist object with shiny progress bars.
+#'
+#' @param OM An OM object.
 #' @export
 runMSEhist <- function(OM) {
   withProgress(message = "Constructing operating model", value = 0, {
@@ -92,7 +100,7 @@ MSYCalcs2 <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Ag
     new_R0 <- (Arec * Egg0-1)/(Brec * Egg0)
   }
   if (SRrelx ==2) { # Ricker
-    Brec <- 1.25 * log(5*h) / (R0x * SSBpR0)
+    Brec <- 1.25 * log(5*hx) / (R0x * SSBpR0)
     Arec <- ((5*hx)^1.25)/SSBpR0
     RelRec <- log(Arec * EggF)/Brec/EggF
     new_R0 <- log(Arec * Egg0)/Brec/Egg0

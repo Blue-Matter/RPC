@@ -13,20 +13,25 @@ Depends:
     R (>= 4.0.1),
     shiny
 Imports:
+    methods,
+    stats,
+    utils,
     DLMtool,
     MSEtool,
     SAMtool,
+    dplyr,
     DT,
     ggplot2,
     ggpubr,
     ggrepel,
     ggspider,
+    grDevices,
+    reshape2,
+    scales,
     shinyalert,
     shinyBS,
     shinydashboard,
-    shinyWidgets,
-    stats,
-    utils
+    shinyWidgets
 Remotes: 
     github::pbs-assess/ggspider
 Suggests: knitr, rmarkdown

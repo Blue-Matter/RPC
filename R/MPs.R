@@ -23,14 +23,25 @@ CurC <- function(x, Data, reps = 1, val = 1) {
 }
 class(CurC) <- "MP"
 
+#' @name make-MP
+#' @title Functions for making management procedures
+#'
+#' @description Various functions that generate MPs
+NULL
 
+#' @rdname make-MP
+#' @details \code{make_FixC_MP} generates a fixed catch MP.
+#' @param ratio Numeric, the ratio of projected F or catch relative to that in the last historical year.
 #' @export
-make_FixC_MP <- function(ratio) {
+make_FixC_MP <- function(ratio = 1) {
   MP_out <- CurC
   formals(MP_out)$val <- ratio
   structure(MP_out, class = "MP", RPC = TRUE)
 }
 
+
+#' @rdname make-MP
+#' @details \code{make_FixF_MP} generates a fixed F MP. Ensure that \code{OM@@qinc <- OM@@qcv <- c(0, 0)}.
 #' @export
 make_FixF_MP <- function(ratio) {
   MP_out <- CurF
@@ -38,6 +49,10 @@ make_FixF_MP <- function(ratio) {
   structure(MP_out, class = "MP", RPC = TRUE)
 }
 
+#' @rdname make-MP
+#' @details \code{make_RPC_MP} generates MP using a harvest control rule in the App.
+#' @param input The input list from a shiny server session.
+#' @param verbose Whether to return information on the MP in the server log.
 #' @export
 make_RPC_MP <- function(input, verbose = TRUE) {
   Assess <- input$MS_Origin
@@ -74,6 +89,9 @@ make_RPC_MP <- function(input, verbose = TRUE) {
   return(MP)
 }
 
+#' @rdname make-MP
+#' @details \code{make_HCR_name} returns a default name or description of the harvest control rule.
+#' @param type Whether a label or full description is returned.
 #' @export
 make_HCR_name <- function(input, type = c("label", "description")) {
   type <- match.arg(type)
