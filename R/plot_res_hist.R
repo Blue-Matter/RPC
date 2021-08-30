@@ -213,7 +213,7 @@ hist_BvsSP<-function(x, figure = TRUE) {
   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
   B<-apply(MSEhist@TSdata$Biomass,1:2,sum)
   catch<-apply(MSEhist@TSdata$Removals,1:2,sum)
-  ind1<-1:(nyh-1)
+  ind1<-2:nyh-1
   ind2<-2:nyh
 
   SP<-B[, ind2]-B[, ind1]+catch[, ind1]

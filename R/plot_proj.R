@@ -15,7 +15,7 @@
 #' @rdname plot-MSE
 #' @details \code{proj_plot} generates median trajectories (historical and projected) with reference points if applicable.
 #' @export
-proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch")) {
   if(inherits(x, "reactivevalues")) {
     MSEproj <- x$MSEproj
     MSEhist <- x$MSEhist
@@ -39,12 +39,19 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
   hist <- switch(type,
                  "SSB0" = MSEproj@SSB_hist,
                  "SSBMSY" = MSEproj@SSB_hist,
+                 "SP" = local({
+                   B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)
+                   Removals <- apply(MSEproj@Misc$extended$Removals, c(1, 3, 4), sum)
+                   B[, 1, 2:(nyh+1)] - B[, 1, 1:nyh] + Removals[, 1, 1:nyh]
+                 }),
                  "F" = MSEproj@FM_hist,
                  "SPR" = MSEhist@TSdata$SPR$Equilibrium,
                  "Catch" = MSEproj@CB_hist) %>% apply(2, median)
   proj_med <- switch(type,
                      "SSB0" = MSEproj@SSB,
                      "SSBMSY" = MSEproj@SSB,
+                     "SP" = MSEproj@B[, , 2:nyp - 1, drop = FALSE] - MSEproj@B[, , 2:nyp, drop = FALSE] +
+                       MSEproj@Removals[, , 2:nyp, drop = FALSE],
                      "F" = MSEproj@FM,
                      "SPR" = MSEproj@SPR$Equilibrium,
                      "Catch" = MSEproj@Catch) %>% apply(c(2, 3), median)
@@ -53,6 +60,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
   ylab <- switch(type,
                  "SSB0" = "Spawning biomass (SSB)",
                  "SSBMSY" = "Spawning biomass (SSB)",
+                 "SP" = "Surplus production",
                  "F" = "Fishing mortality",
                  "SPR" = "Equilibrium SPR",
                  "Catch" = "Removals")
@@ -60,21 +68,35 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
   title_txt <- switch(type,
                       "SSB0" = parse(text = "Median~SSB~and~SSB[0]~reference~points"),
                       "SSBMSY" = parse(text = "Median~SSB~and~SSB[MSY]~reference~points"),
+                      "SP" = "Median surplus production",
                       "F" = parse(text = "Median~F~and~F[MSY]~reference~points"),
                       "SPR" = "Median equilibrium SPR",
                       "Catch" = "Median catch")
 
+  if(type == "SP") {
+    dat_MP <- cbind(rep(hist[nyh], nMP), proj_med) %>%
+      structure(dimnames = list(MP = MSEproj@MPs, Year = c(CurrentYr, py[-length(py)]))) %>%
+      reshape2::melt()
 
-  dat_MP <- cbind(rep(hist[nyh], nMP), proj_med) %>%
-    structure(dimnames = list(MP = MSEproj@MPs, Year = c(CurrentYr, py))) %>%
-    reshape2::melt()
+    g <- ggplot(dat_MP, aes(Year, value)) + geom_line(size = 1, aes(colour = MP)) +
+      theme_bw() +
+      coord_cartesian(xlim = range(ay)) +
+      geom_vline(xintercept = CurrentYr, linetype = 4) +
+      geom_hline(yintercept = 0, linetype = 2) +
+      scale_colour_manual(values = MPcols %>% structure(names = MSEproj@MPs)) +
+      labs(y = ylab) + ggtitle(title_txt)
+  } else {
+    dat_MP <- cbind(rep(hist[nyh], nMP), proj_med) %>%
+      structure(dimnames = list(MP = MSEproj@MPs, Year = c(CurrentYr, py))) %>%
+      reshape2::melt()
 
-  g <- ggplot(dat_MP, aes(Year, value)) + geom_line(size = 1, aes(colour = MP)) +
-    theme_bw() +
-    coord_cartesian(xlim = range(ay), ylim = c(0, 1.2 * max_y)) +
-    geom_vline(xintercept = CurrentYr, linetype = 4) +
-    scale_colour_manual(values = MPcols %>% structure(names = MSEproj@MPs)) +
-    labs(y = ylab) + ggtitle(title_txt)
+    g <- ggplot(dat_MP, aes(Year, value)) + geom_line(size = 1, aes(colour = MP)) +
+      theme_bw() +
+      coord_cartesian(xlim = range(ay), ylim = c(0, 1.2 * max_y)) +
+      geom_vline(xintercept = CurrentYr, linetype = 4) +
+      scale_colour_manual(values = MPcols %>% structure(names = MSEproj@MPs)) +
+      labs(y = ylab) + ggtitle(title_txt)
+  }
 
   if(type == "SSB0") {
     SSB0d <- data.frame(value = apply(MSEproj@RefPoint$Dynamic_Unfished$SSB0, 2, median),
@@ -115,6 +137,9 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
       scale_shape_manual(name = "SSB Type", values = c(NA_integer_, 4), labels = scales::label_parse()) +
       scale_size_manual(name = "SSB Type", values = c(2, 0.5), labels = scales::label_parse())
 
+  } else if(type == "SP") {
+    SP <- data.frame(value = hist, Year = hy)
+    g <- g + geom_line(data = SP, size = 2)
   } else if(type == "F") {
     FMSY <- data.frame(value = apply(MSEproj@RefPoint$ByYear$FMSY, 2, median),
                        Type = "F[MSY]",
@@ -300,7 +325,7 @@ prob_plot <- function(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TR
 #' @param MPstoch A character vector of MPs to plot.
 #' @param qval The quantile of the confidence interval to plot.
 #' @export
-stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch")) {
   if(inherits(x, "reactivevalues")) {
     MSEproj <- x$MSEproj
   } else {
@@ -365,6 +390,15 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "
     g$common.legend <- TRUE
     do.call(ggpubr::ggarrange, g)
 
+  } else if(type == "SP") {
+    B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)[, MPind, , drop = FALSE]
+    Removals <- apply(MSEproj@Misc$extended$Removals, c(1, 3, 4), sum)[, MPind, , drop = FALSE]
+    SP <- B[, , nyh + 2:nyp, drop = FALSE] - B[, , nyh + 2:nyp - 1, drop = FALSE] + Removals[, , nyh + 2:nyp - 1, drop = FALSE]
+
+    Stoch_plot_int(x = SP, ref = 1, ylab = "Surplus~production", py = py[-length(py)], MPcols = MPcols,
+                   MPlabcols = MPlabcols, MPind = MPind, qval = qval, MPs = MPstoch, ylim = expression(range(qs))) +
+      geom_hline(yintercept = 0, linetype = 2)
+
   } else if(type == "F") {
 
     FM <- MSEproj@FM
@@ -391,7 +425,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "F", "
 }
 
 
-Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval, MPs) {
+Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval, MPs, ylim = expression(c(0, 1.1 * max(qs)))) {
   q <- c(0.5 * (1 - qval), 0.5, qval + 0.5 * (1 - qval))
   qs <- apply(x/ref, 2:3, quantile, q)
 
@@ -406,7 +440,7 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
     theme_bw() +
     scale_fill_manual(values = MPcols[MPind]) +
     scale_colour_manual(values = MPlabcols[MPind]) +
-    coord_cartesian(xlim = range(py), ylim = c(0, 1.1 * max(qs))) +
+    coord_cartesian(xlim = range(py), ylim = eval(ylim)) +
     labs(y = parse(text = ylab))
 }
 
@@ -415,7 +449,7 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
 #' @param MP Character, name of MP to plot.
 #' @param sims Numeric vector (up to length three) indicating the simulations to plot.
 #' @export
-hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")) {
+hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch")) {
   if(inherits(x, "reactivevalues")) {
     MSEproj <- x$MSEproj
     MSEhist <- x$MSEhist
@@ -466,6 +500,19 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR"
     matplot(yrs,t(SSBMSY),col=cols,lty=3,type='o',pch=4,yaxs='i',ylim=c(0,max(SSB, SSBMSY)),ylab="Spawning stock biomass (SSB)")
     abline(v=CurrentYr+c(0,(1:100)*10),col='grey')
     matlines(yrs,t(SSB),col=makeTransparent(cols,80),type='l',lty=1,lwd=5)
+  } else if(type == "SP") {
+
+    layout(matrix(1:2, nrow = 1), widths = c(0.8, 0.2))
+
+    B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)[, MPind, ][sims, , drop = FALSE]
+    Removals <- apply(MSEproj@Misc$extended$Removals, c(1, 3, 4), sum)[, MPind, ][sims, , drop = FALSE]
+
+    matplot(yrs[-length(yrs)], t(B[, 2:length(yrs)] - B[, 2:length(yrs) - 1] + Removals[, 2:length(yrs) - 1]),
+            col = makeTransparent(cols, 80), lty = 1, type = 'l', lwd = 5, pch = 4, yaxs = "i",
+            xlab = "Year", ylab = "Surplus production")
+    abline(v=CurrentYr+c(0,(1:100)*10),col='grey')
+    abline(h = 0, lty = 2)
+
   } else if(type == "F") {
 
     FM <- cbind(MSEproj@FM_hist[sims, , drop = FALSE], MSEproj@FM[, MPind, ][sims, , drop = FALSE])

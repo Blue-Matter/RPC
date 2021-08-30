@@ -11,7 +11,7 @@
 \alias{radar_plot}
 \title{Plot output from MSE}
 \usage{
-proj_plot(x, MSEhist, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
+proj_plot(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch"))
 
 prob_plot(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TRUE)
 
@@ -19,10 +19,16 @@ stoch_plot(
   x,
   MPstoch,
   qval = 0.9,
-  type = c("SSB0", "SSBMSY", "F", "SPR", "Catch")
+  type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch")
 )
 
-hist_sim(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "F", "SPR", "Catch"))
+hist_sim(
+  x,
+  MSEhist,
+  MP,
+  sims,
+  type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Catch")
+)
 
 lollipop_plot(x, PM_list)
 
