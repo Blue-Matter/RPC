@@ -1,6 +1,8 @@
 conditionalPanel("input.Select==3",
 
-                 h5("Construct a fully specified operating model using the MERA system"),
+                 h5("Construct a fully specified operating model using the ",
+                    a("MERA", href = "https://dlmtool.github.io/DLMtool/MERA/MERA_User_Guide_v6.html", target = "_blank"),
+                    "system"),
 
                  column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                         fluidRow(

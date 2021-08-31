@@ -164,13 +164,23 @@ server <- function(input, output, session) {
     }
   )
 
+  # Download report ---------------------------------------------------
+  output$OM_Rep <- downloadHandler(
+    filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".html"),
+    content = function(file) {
+      "Blank report"
+      #report <- file.path()
+      #rmarkdown::render(Rmd, output_file = file)
+    }
+  )
+
   # Fishery panel ---------------------------------------------------
   shinyjs::disable("DD_update")
   shinyjs::disable("Load_OM")
 
   observeEvent(input$Select, {
     req(input$Select == 3)
-    updateSliderInput(session, "DD_nsim", min = 3, max = 250, value = 24)
+    updateSliderInput(session, "DD_nsim", min = 3, max = 100, value = 24)
     updateSliderInput(session, "DD_proyears", min = 5, max = 100, value = 50)
   })
 
@@ -303,6 +313,7 @@ server <- function(input, output, session) {
     input$SSB
     input$SSBhist
   }, {
+    req(OBJs$MSEhist)
     output$OM_name <- renderTable({
       x <- c("Name of operating model" = OBJs$name,
              "Number of simulations" = OBJs$MSEhist@OM@nsim,
@@ -313,7 +324,6 @@ server <- function(input, output, session) {
       as.data.frame(x)
     }, colnames = FALSE, rownames = TRUE)
 
-    req(inherits(OBJs$MSEhist, "Hist"))
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
     R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()
 
@@ -728,14 +738,14 @@ server <- function(input, output, session) {
     input$Res
     input$proj_type
   }, {
-    req(inherits(OBJs$MSEproj, "MSE"))
+    req(OBJs$MSEproj)
     output$proj_plot <- renderPlot(proj_plot(OBJs, type = input$proj_type),res=plotres)
   })
 
   observeEvent({
     input$Res
   }, {
-    req(inherits(OBJs$MSEproj, "MSE"))
+    req(OBJs$MSEproj)
 
     updateSelectInput(session, "SMP1", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[1])
     updateSelectInput(session, "SMP2", choices = OBJs$MSEproj@MPs, selected = OBJs$MSEproj@MPs[OBJs$MSEproj@nMPs])
@@ -772,7 +782,7 @@ server <- function(input, output, session) {
     input$StochB_resample
     input$StochMP
   }, {
-    req(inherits(OBJs$MSEproj, "MSE"))
+    req(OBJs$MSEproj)
     sims <- sample(1:OBJs$MSEproj@nsim, 3, replace = FALSE)[1:input$nsim_hist]
     output$plot_hist_sim <- renderPlot(hist_sim(OBJs, MP = input$StochMP, sims = sims, type = input$sim_type),res=plotres)
   })
@@ -794,7 +804,7 @@ server <- function(input, output, session) {
     input$Chist_thresh
     input$Chist_yr
   }, {
-    req(inherits(OBJs$MSEproj, "MSE"))
+    req(OBJs$MSEproj)
 
     PM_name <- switch(input$prob_type,
                       "SSB" = paste0(100 * input$SSBhist_thresh, "%SSB", input$SSBhist_yr),

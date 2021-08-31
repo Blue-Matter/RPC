@@ -34,7 +34,14 @@ fluidPage(
                     dimension[1] = window.innerHeight;
                     Shiny.onInputChange("dimension", dimension);
                 });
-            ')
+            '),
+    tags$script(
+    "
+    // Enable navigation prompt
+    window.onbeforeunload = function() {
+        return 'Leave site? All work will be lost unless saved.';
+    };
+    ")
   ),
 
   # === Header ==============================================================================================================================================================
@@ -78,7 +85,7 @@ fluidPage(
                                                h5("Select an example operating model, and update the number of simulations and projection years (in Settings) as desired."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
-                                                          selectInput("SelectOMDD", choices=OMs, label=NULL, selected=OMs[1])),
+                                                          selectInput("SelectOMDD", choices = OMs, label = NULL, selected = NULL)),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px'))
                                                )
@@ -88,12 +95,8 @@ fluidPage(
                                                h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and the number of simulations and projection years (in Setings), in order to build the operating model."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
 
-
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
-                                                          #tipify(
-                                                            fileInput("Load_OMprelim", label = NULL, buttonLabel = div('Browse',style='color:red')) #,
-                                                            #title = "File name"
-                                                          #)
+                                                          fileInput("Load_OMprelim", label = NULL, buttonLabel = div('Browse',style='color:red'))
                                                       ),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           actionButton("Load_OM",label = "Build",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
