@@ -1,6 +1,7 @@
 
 
 fluidPage(
+  useShinyjs(),
   useShinyalert(),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
@@ -74,17 +75,17 @@ fluidPage(
                               HTML("<br>"),
                               radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
                               conditionalPanel("input.Select==1",
-                                               h5("Select an example operating model"),
+                                               h5("Select an example operating model, and update the number of simulations and projection years (in Settings) as desired."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
-                                                      div(style="display: inline-block;vertical-align:top; width: 250px;",selectInput("SelectOMDD", choices=OMs, label=NULL, selected=OMs[1])),
-                                                      div(style="display: inline-block;vertical-align:top; width: 250px;",actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
-                                                      sliderInput("Custom_nsim", "Number of simulations", min = max(get(OMs[1])@nsim, 3), max = get(OMs[1])@nsim, value = min(nsim, get(OMs[1])@nsim), step = 1, round = TRUE),
-                                                      sliderInput("Custom_proyears", "Number of projection years", min = 2, max = get(OMs[1])@proyears, value = get(OMs[1])@proyears, step = 1, round = TRUE)
+                                                      div(style="display: inline-block;vertical-align:top; width: 250px;",
+                                                          selectInput("SelectOMDD", choices=OMs, label=NULL, selected=OMs[1])),
+                                                      div(style="display: inline-block;vertical-align:top; width: 250px;",
+                                                          actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px'))
                                                )
                               ),
 
                               conditionalPanel("input.Select==2",
-                                               h5("Load an openMSE compatible operating model object from file"),
+                                               h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and the number of simulations and projection years (in Setings), in order to build the operating model."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
 
 
@@ -98,9 +99,7 @@ fluidPage(
                                                           actionButton("Load_OM",label = "Build",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
 
                                                       conditionalPanel("output.OM_upload == 1",
-                                                                       textInput("Load_OMname", "Name of operating model", value = ""),
-                                                                       sliderInput("Custom_nsim_load", "Number of simulations", min = 0, max = 0, value = 0, step = 1),
-                                                                       sliderInput("Custom_proyears_load", "Number of projection years", min = 0, max = 0, value = 0, step = 1)
+                                                                       textInput("Load_OMname", "Name of operating model", value = "")
                                                                        )
                                                       )
                               ),

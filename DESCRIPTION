@@ -31,6 +31,7 @@ Imports:
     shinyalert,
     shinyBS,
     shinydashboard,
+    shinyjs,
     shinyWidgets
 Remotes: 
     github::pbs-assess/ggspider

@@ -34,7 +34,7 @@ server <- function(input, output, session) {
   outputOptions(output,"Sel",suspendWhenHidden=FALSE)
   #updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
 
-  OBJs <<- reactiveValues(MSEhist = "", MSEproj = "", name = "")
+  OBJs <<- reactiveValues(MSEhist = "", MSEproj = "", name = "", OM = "")
 
   PMs <<- reactiveValues(names = character(0))
   output$PMs <- reactive({ PMs$names })
@@ -72,10 +72,10 @@ server <- function(input, output, session) {
     tryCatch({
       prev_session <- readRDS(file = filey$datapath)
       stopifnot(inherits(prev_session, "list"))
-
       OBJs$MSEhist <<- prev_session$MSEhist
       OBJs$MSEproj <<- prev_session$MSEproj
       OBJs$name <<- prev_session$name
+      OBJs$OM <<- prev_session$OM
 
       if(inherits(prev_session$MSEproj, "MSE")) {
         AM(paste("MSE results loaded:", filey$name))
@@ -137,7 +137,7 @@ server <- function(input, output, session) {
   output$Save_session <- downloadHandler(
     filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
     content = function(file) {
-      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, name = OBJs$name, MPs = list(All = MPs$All, Sel = MPs$Sel))
+      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, name = OBJs$name, OM = OBJs$OM, MPs = list(All = MPs$All, Sel = MPs$Sel))
       out$MPs_env <- new.env()
       out$MPdesc <- new.env()
       out$MPinterval <- new.env()
@@ -165,20 +165,29 @@ server <- function(input, output, session) {
   )
 
   # Fishery panel ---------------------------------------------------
+  shinyjs::disable("DD_update")
+  shinyjs::disable("Load_OM")
+
+  observeEvent(input$Select, {
+    req(input$Select == 3)
+    updateSliderInput(session, "DD_nsim", min = 3, max = 250, value = 24)
+    updateSliderInput(session, "DD_proyears", min = 5, max = 100, value = 50)
+  })
 
   # OM select
   observeEvent(input$SelectOMDD,{
     OM_temp <- get(input$SelectOMDD)
-    updateSliderInput(session, "Custom_nsim",
-                      min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
-    updateSliderInput(session, "Custom_proyears",
-                      min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+    updateSliderInput(session, "DD_nsim", min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
+    updateSliderInput(session, "DD_proyears", min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+    toggleDropdownButton("DD_Settings", session)
   })
 
   observeEvent(input$SelectOM,{
-    OM <- modOM(get(input$SelectOMDD), input$Custom_nsim, input$Custom_proyears)
-    OBJs$MSEhist <<- runMSEhist(OM)
+    OM <- get(input$SelectOMDD)
+    OM_temp <- modOM(OM, input$DD_nsim, input$DD_proyears)
+    OBJs$MSEhist <<- runMSEhist(OM_temp)
     OBJs$name <<- input$SelectOMDD
+    OBJs$OM <<- OM
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -191,6 +200,7 @@ server <- function(input, output, session) {
     tryCatch({
       OM_temp <- readRDS(file=filey$datapath)
       stopifnot(inherits(OM_temp, "OM"))
+      OBJs$OM <<- OM_temp
 
       updateTextInput(session, "Load_OMname",
                       value = local({
@@ -198,10 +208,11 @@ server <- function(input, output, session) {
                         paste(name[-length(name)], collapse = ".")
                       }))
 
-      updateSliderInput(session, "Custom_nsim_load",
-                        min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
-      updateSliderInput(session, "Custom_proyears_load",
-                        min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+      updateSliderInput(session, "DD_nsim", min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
+      updateSliderInput(session, "DD_proyears", min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+      toggleDropdownButton("DD_Settings", session)
+      shinyjs::enable("Load_OM")
+
       AM(paste0("Operating model loaded: ", filey$name))
       OM_upload(1)
 
@@ -219,10 +230,8 @@ server <- function(input, output, session) {
 
   observeEvent(input$Load_OM,{
     tryCatch({
-      filey <- input$Load_OMprelim
-      OM_temp <- readRDS(file = filey$datapath)
 
-      OM <- modOM(OM_temp, input$Custom_nsim_load, input$Custom_proyears_load)
+      OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
       OBJs$MSEhist <<- runMSEhist(OM)
 
       if(nchar(input$Load_OMname)) {
@@ -252,16 +261,37 @@ server <- function(input, output, session) {
       shinyalert("Incomplete Questionnaire", text=paste("The following questions have not been answered or answered incorrectly:",paste(temp$probQs,collapse=", ")), type = "warning")
     }else{
       doprogress("Reading sketch",1)
-      OM<-makeOM(input,PanelState,nsim)
+      OM<-makeOM(input,PanelState,input$DD_nsim, proyears = input$DD_proyears)
     }
-
     OBJs$MSEhist <<- runMSEhist(OM)
     OBJs$name <<- "Operating model built from MERA"
+    OBJs$OM <<- OM
+
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
     AM(paste0("Operating model sketched: ", OM@Name))
 
+  })
+
+
+  observeEvent({
+    input$DD_nsim
+    input$DD_proyears
+  }, {
+    req(OBJs$MSEhist)
+    toggleState(id = "DD_update", condition = input$DD_nsim != OBJs$MSEhist@OM@nsim || input$DD_proyears != OBJs$MSEhist@OM@proyears)
+  })
+
+  observeEvent(input$DD_update, {
+    OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
+    OBJs$MSEhist <<- runMSEhist(OM)
+
+    OM_L(1)
+    MSErun(0)
+    updateVerticalTabsetPanel(session,'Main',selected=3)
+    shinyjs::disable("DD_update")
+    AM(paste0("Operating model ", OBJs$name, " updated with ", input$DD_nsim, " simulations and ", input$DD_proyears, " projection years."))
   })
 
 
@@ -430,6 +460,7 @@ server <- function(input, output, session) {
   })
 
   # Management Strategy Panel -----------------------------------------------------
+  shinyjs::disable("Build_MS_import")
 
   # MP setup -----------------------------------------------------
   output$MS_FixF_ratio_label <- renderText(paste0("Ratio of F relative to last historical year (", OBJs$MSEhist@OM@CurrentYr, "). Set to 1 for status quo."))
@@ -462,6 +493,7 @@ server <- function(input, output, session) {
     page_name <- help(input$MS_DLM) %>% as.character() %>% strsplit("/") %>% getElement(1)
     url <- paste0("https://dlmtool.openmse.com/reference/", page_name[length(page_name)], ".html")
     output$DLM_iframe <- renderUI(tags$iframe(src = url, width = "100%", height = "460px", style = "overflow-y:scroll"))
+    toggleState("Build_MS_DLM", condition = all(input$MS_DLM != MPs$Sel))
   })
 
   observeEvent(input$MS_Import_file, {
@@ -474,6 +506,8 @@ server <- function(input, output, session) {
     tryCatch({
       MP_out <- readRDS(file = filey$datapath)
       stopifnot(typeof(MP_out) == "closure" && inherits(MP_out, "MP"))
+      shinyjs::enable("Build_MS_import")
+
     }, error = function(e) {
       AM(paste0(e,"\n"))
       shinyalert(paste0("No MP was found in file: ", filey$name), type = "error")
@@ -515,7 +549,7 @@ server <- function(input, output, session) {
     if(!nchar(input$MS_FixF_Label)) {
       shinyalert("No name for the MP was provided.", type = "error")
     } else if(input$MS_FixF_Label %in% MPs$Sel) {
-      AM(paste0("Error: ", input$MS_FixF_Label, " already selected. Choose another name."))
+      shinyalert(paste0(input$MS_FixF_Label, " is already used. Choose another name."), type = "error")
     } else {
       MPs$All <<- c(MPs$All, input$MS_FixF_Label)
       MPs$Sel <<- c(MPs$Sel, input$MS_FixF_Label)
@@ -537,7 +571,7 @@ server <- function(input, output, session) {
     if(!nchar(input$MS_FixC_Label)) {
       shinyalert("No name for the MP was provided.", type = "error")
     } else if(input$MS_FixC_Label %in% MPs$Sel) {
-      AM(paste0("Error: ", input$MS_FixC_Label, " MP already selected. Choose another name."))
+      shinyalert(paste0(input$MS_FixC_Label, " is already used. Choose another name."), type = "error")
     } else {
       MPs$All <<- c(MPs$All, input$MS_FixC_Label)
       MPs$Sel <<- c(MPs$Sel, input$MS_FixC_Label)
@@ -559,7 +593,7 @@ server <- function(input, output, session) {
     if(!nchar(input$MS_HCR_Label)) {
       shinyalert("No name for the MP was provided.", type = "error")
     } else if(input$MS_HCR_Label %in% MPs$Sel) {
-      AM(paste0("Error: ", input$MS_HCR_Label, " MP already selected. Choose another name."))
+      shinyalert(paste0(input$MS_HCR_Label, " is already used. Choose another name."), type = "error")
     } else {
       MPs$All <<- c(MPs$All, input$MS_HCR_Label)
       MPs$Sel <<- c(MPs$Sel, input$MS_HCR_Label)
@@ -885,14 +919,14 @@ server <- function(input, output, session) {
   observeEvent({
     input$OM_hist
   }, {
-    req(inherits(OBJs$MSEhist, "Hist"))
+    req(OBJs$MSEhist)
     MSEhist <- OBJs$MSEhist
     yr_cal <- seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1,
                   MSEhist@OM@CurrentYr + MSEhist@OM@proyears)
     updateSliderInput(session, "bio_schedule_sim", min = 1, max = MSEhist@OM@nsim, value = 1, step = 1)
     updateSliderInput(session, "bio_schedule_year", min = min(yr_cal), max = max(yr_cal),
                       value = MSEhist@OM@CurrentYr, step = 1)
-    updateSliderInput(session, "bio_schedule_nage", "Number of ages", min = 2, max = MSEhist@OM@maxage+1,
+    updateSliderInput(session, "bio_schedule_nage", min = 2, max = MSEhist@OM@maxage+1,
                       value = MSEhist@OM@maxage+1, step = 1)
 
     Frange_max <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash) %>% round(2)
@@ -905,21 +939,18 @@ server <- function(input, output, session) {
   })
 
   output$bio_year_text <- renderText({
-    paste0("Right figure: year", ifelse(inherits(OBJs$MSEhist, "Hist"),
-                                        paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
-                                        ""))
+    req(OBJs$MSEhist)
+    paste0("Right figure: year (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")")
   })
 
   output$YC_bio_text <- renderText({
-    paste0("Year for biological parameters", ifelse(inherits(OBJs$MSEhist, "Hist"),
-                                        paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
-                                        ""))
+    req(OBJs$MSEhist)
+    paste0("Year for biological parameters (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")")
   })
 
   output$sel_y_text <- renderText({
-    paste0("Year", ifelse(inherits(OBJs$MSEhist, "Hist"),
-                          paste0(" (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")"),
-                          ""))
+    req(OBJs$MSEhist)
+    paste0("Years (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")")
   })
 
   observeEvent({
@@ -930,7 +961,7 @@ server <- function(input, output, session) {
     input$bio_schedule_year
     input$bio_schedule_nage
   }, {
-    req(inherits(OBJs$MSEhist, "Hist"))
+    req(OBJs$MSEhist)
     output$plot_hist_age_schedule <- renderPlot(
       hist_bio_schedule(OBJs, var = input$bio_schedule, n_age_plot = input$bio_schedule_nage,
                         yr_plot = input$bio_schedule_year, sim = input$bio_schedule_sim),
@@ -959,7 +990,9 @@ server <- function(input, output, session) {
   }
   )
 
-  observeEvent(input$sel_y, output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y),res=plotres))
+  observeEvent(input$sel_y, {
+    output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y),res=plotres)
+  })
 
 
 

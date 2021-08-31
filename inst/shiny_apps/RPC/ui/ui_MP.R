@@ -121,7 +121,7 @@ tabsetPanel(id="MP_select", selected = 1,
 
             tabPanel(h5("Import MP"),
                      column(12, style="height:500px; padding-top:30px",
-                            h5("Import an MP (saved using saveRDS):", style='font-weight:bold'),
+                            h5("Import an MP (saved using saveRDS). Once a file is uploaded, provide the name and update frequency of the MP to add it.", style='font-weight:bold'),
                             column(4,
                                    column(3, h5('MP Name:')),
                                    column(9,

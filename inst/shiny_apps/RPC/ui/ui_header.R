@@ -58,7 +58,7 @@ column(12,
               # Reports menu dropdown
               div(style="display: inline-block;vertical-align:top; float:right;",
 
-                  dropdownButton(
+                  dropdownButton(inputId = "Reports",
                     column(12,
                            column(9, h5("Operating model", style = "font-weight:bold;color:#347ab6")),
                            column(3, downloadButton("OM_Rep", " ")),
@@ -67,7 +67,6 @@ column(12,
                            column(9, h5("RPC results", style = "font-weight:bold;color:#347ab6")),
                            column(3, downloadButton("FPAT_Rep"," "))
                     ),
-                    inputId = "Reports",
                     label = "Reports",
                     icon = icon("newspaper"),
                     status = "dropdownbutton",
@@ -81,11 +80,15 @@ column(12,
               # Settings menu dropdown
               div(style = "display: inline-block;vertical-align:top; float:right;",
 
-                  dropdownButton(
+                  dropdownButton(inputId = "DD_Settings",
                     column(12,
                            h5(tags$b("Settings for controlling MSE specifications", style = "color:#347ab6")),
+                           sliderInput("DD_nsim", "Number of simulations", min = max(get(OMs[1])@nsim, 3), max = get(OMs[1])@nsim, value = min(nsim, get(OMs[1])@nsim), step = 1),
+                           sliderInput("DD_proyears", "Number of projection years", min = 2, max = get(OMs[1])@proyears, value = get(OMs[1])@proyears, step = 1),
+                           conditionalPanel("output.OM_L == 1",
+                                            actionButton("DD_update", label = "Update", icon = icon("redo"), style = "color:red")
+                                            )
                     ),
-                    inputId = "DD_Settings",
                     label = "Settings",
                     icon = icon("sliders-h"),
                     status = "dropdownbutton",
