@@ -195,9 +195,9 @@ server <- function(input, output, session) {
   observeEvent(input$SelectOM,{
     OM <- get(input$SelectOMDD)
     OM_temp <- modOM(OM, input$DD_nsim, input$DD_proyears)
+    OBJs$OM <<- OM
     OBJs$MSEhist <<- runMSEhist(OM_temp)
     OBJs$name <<- input$SelectOMDD
-    OBJs$OM <<- OM
     OM_L(1)
     MSErun(0)
     updateVerticalTabsetPanel(session,'Main',selected=3)
@@ -271,17 +271,18 @@ server <- function(input, output, session) {
       shinyalert("Incomplete Questionnaire", text=paste("The following questions have not been answered or answered incorrectly:",paste(temp$probQs,collapse=", ")), type = "warning")
     }else{
       doprogress("Reading sketch",1)
-      OM<-makeOM(input,PanelState,input$DD_nsim, proyears = input$DD_proyears)
+      OM <- makeOM(input, PanelState, nsim = 100, proyears = 100)
+      OM_temp <- modOM(OM, input$DD_nsim, input$DD_proyears)
+
+      OBJs$OM <<- OM
+      OBJs$MSEhist <<- runMSEhist(OM_temp)
+      OBJs$name <<- "Operating model built from MERA"
+
+      OM_L(1)
+      MSErun(0)
+      updateVerticalTabsetPanel(session,'Main',selected=3)
+      AM(paste0("Operating model sketched: ", OM@Name))
     }
-    OBJs$MSEhist <<- runMSEhist(OM)
-    OBJs$name <<- "Operating model built from MERA"
-    OBJs$OM <<- OM
-
-    OM_L(1)
-    MSErun(0)
-    updateVerticalTabsetPanel(session,'Main',selected=3)
-    AM(paste0("Operating model sketched: ", OM@Name))
-
   })
 
 
@@ -1083,6 +1084,9 @@ server <- function(input, output, session) {
     UpPanelState(input)
   })
 
+  # Dynamically update global variable Syear, Current_Year and Lyear is fixed to 2021
+  observeEvent(input$Syear, Syear <<- input$Syear)
+
   # ======================= Explanatory Plots ===================================
   # Scheme
   fcol = rgb(0.4,0.8,0.95) #"#0299f"
@@ -1206,16 +1210,21 @@ server <- function(input, output, session) {
 
 
   # Effort sketching
+  observeEvent({
+    input$Syear
+    input$Lyear
+  }, {
+    eff_values <<- reactiveValues(df=data.frame(x=c(Syear,floor(mean(c(Syear, Lyear))), Lyear), y=c(0,0.5,0.5), series=rep(1,3)),
+                                  series=1,
+                                  stack=data.frame(x=c(Syear,floor(mean(c(Syear, Lyear))), Lyear), y=c(0,0.5,0.5), series=rep(1,3)))
 
-  eff_values <- reactiveValues(df=data.frame(x=c(1951,1980,2018), y=c(0,0.5,0.5), series=rep(1,3)),
-                               series=1,
-                               stack=data.frame(x=c(1951,1980,2018), y=c(0,0.5,0.5), series=rep(1,3)))
+    reset_eff_values<<-function(){
+      eff_values$df <<- data.frame(x=c(input$Syear,floor(mean(c(input$Syear,input$Lyear))),input$Lyear), y=c(0,0.5,0.5), series=rep(1,3))
+      eff_values$series <<- 1
+      eff_values$stack <<- data.frame(x=c(input$Syear,floor(mean(c(input$Syear,input$Lyear))),input$Lyear), y=c(0,0.5,0.5), series=rep(1,3))
+    }
+  })
 
-  reset_eff_values<-function(){
-    eff_values$df=data.frame(x=c(input$Syear,floor(mean(c(input$Syear,input$Lyear))),input$Lyear), y=c(0,0.5,0.5), series=rep(1,3))
-    eff_values$series=1
-    eff_values$stack=data.frame(x=c(input$Syear,floor(mean(c(input$Syear,input$Lyear))),input$Lyear), y=c(0,0.5,0.5), series=rep(1,3))
-  }
 
   output$info <- renderText({
     xy_str <- function(e) {
@@ -1244,9 +1253,9 @@ server <- function(input, output, session) {
 
     # check if x value already exists
     ind <- which(eff_values$df$x == newX & eff_values$df$series == eff_values$series)
-    if (length(ind)>0) eff_values$df <- eff_values$df[-ind,]
+    if (length(ind)>0) eff_values$df <<- eff_values$df[-ind,]
 
-    eff_values$stack <- data.frame(x=c(eff_values$stack$x,newX),
+    eff_values$stack <<- data.frame(x=c(eff_values$stack$x,newX),
                                    y=c(eff_values$stack$y, newY),
                                    series=c(eff_values$stack$series, eff_values$series))
 
@@ -1256,7 +1265,7 @@ server <- function(input, output, session) {
 
     tempDF <- dplyr::arrange(tempDF, series, x)
 
-    eff_values$df <- tempDF
+    eff_values$df <<- tempDF
 
   })
 
@@ -1277,12 +1286,12 @@ server <- function(input, output, session) {
       #showNotification("Series must include last historical year", type="error")
       #shinyalert("Incomplete effort series", paste0("Series must include last historical year (",CurrentYr,")"), type = "info")
       vec<-c(input$Lyear,eff_values$df$y[nrow(eff_values$df)],eff_values$df$series[nrow(eff_values$df)])
-      eff_values$df<-rbind(eff_values$df,vec)
-      eff_values$stack<-rbind(eff_values$stack,vec)
+      eff_values$df<<-rbind(eff_values$df,vec)
+      eff_values$stack<<-rbind(eff_values$stack,vec)
     }
 
-    eff_values$series <-eff_values$series+1
-    eff_values$df <- data.frame(x=c(eff_values$df$x, initYr),
+    eff_values$series <<-eff_values$series+1
+    eff_values$df <<- data.frame(x=c(eff_values$df$x, initYr),
                                 y=c(eff_values$df$y, yvals),
                                 series=c(eff_values$df$series, eff_values$series))
 
@@ -1293,8 +1302,8 @@ server <- function(input, output, session) {
     if (nrow(eff_values$df)>1) {
       nrows <- nrow(eff_values$stack)
       last_vals <- eff_values$stack[nrows,]
-      eff_values$stack <- eff_values$stack[1:(nrows-1),]
-      eff_values$df <- dplyr::anti_join(eff_values$df, last_vals, by=c('x', 'y', 'series'))
+      eff_values$stack <<- eff_values$stack[1:(nrows-1),]
+      eff_values$df <<- dplyr::anti_join(eff_values$df, last_vals, by=c('x', 'y', 'series'))
     }
   })
 

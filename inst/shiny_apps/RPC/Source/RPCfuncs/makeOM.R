@@ -78,7 +78,7 @@ makeOM<-function(input, PanelState,nsim, nyears=NA,maxage=NA,proyears=NA,UseQonl
 
   #if(input$use_seed) OM1@seed<-input$seed
 
-  OM1@R0<-1e9
+  OM1@R0<-1
   OM1@Linf<-c(100,100)
   OM1@L50<-NaN
   OM1@K<-NaN
@@ -90,6 +90,7 @@ makeOM<-function(input, PanelState,nsim, nyears=NA,maxage=NA,proyears=NA,UseQonl
   OM1@Agency<-input$Agency
   Nyears<-input$Lyear-input$Syear+1
   OM1@nyears<-Nyears
+  OM1@CurrentYr <- Current_Year
 
   OM1@Source<-input$Author
   OM1@interval<-1#input$interval

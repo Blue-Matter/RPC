@@ -50,7 +50,7 @@ plotD <- function(dummy=1){
   }else if(is.na(ny)){
     ny<-68
   }
-  
+
   if(sum(cond)>0){
     par(mfrow=c(1,2),mai=c(0.3,0.5,0.01,0.01), omi=c(0.4,0.18,0.55,0.1),cex.main = 1.5, cex.lab=1.35 )
     D_max<-max(D_maxes[cond])
@@ -181,12 +181,12 @@ warp<-function(n,y,ploty=F){ # linear warping function
 }
 
 cutoff<-function(frac,y,ploty=F){
-  
+
   ny<-length(y)
   ip<-seq(1,(ny*frac),length.out=ny)
   out<-rep(NA,ny)
   out[1]<-y[1]
-  
+
   for(i in 2:ny){
     li<-floor(ip[i])
     ui<-ceiling(ip[i])
@@ -278,7 +278,7 @@ Ftrendfunc<-function(M1=0.2,M2=1.2,sd1=0.1,sd2=0.3,h2=2,ny=68,loc=1,co=1,start_m
   }
 
   ET3<-cutoff(co,ET2,ploty=ploty)
-  
+
   ET3<-ET3/mean(ET3)
 
   if(ploty){
@@ -294,25 +294,25 @@ Ftrendfunc<-function(M1=0.2,M2=1.2,sd1=0.1,sd2=0.3,h2=2,ny=68,loc=1,co=1,start_m
 
 plotFP<-function(dummy=1){
   temp<-eff_values$df
-  cols <- c(fcol,'black','dark grey',palette(rainbow(20))) 
+  cols <- c(fcol,'black','dark grey',palette(rainbow(20)))
   lwd <- 1.2
   pch <- 16
   pdat <- dplyr::filter(eff_values$df, series==1)
   par(mai=c(0.5,0.5,0.15,0.2))
-  
+
   plot(pdat$x, pdat$y, type="b", col=cols[1], lwd=lwd, pch=pch,
        xlim=c(input$Syear, input$Lyear), ylim=c(0,1),
        xlab="Year",
        ylab="Historical Effort",
        bty="l",
        xaxs="i",
-       yaxs="i", 
+       yaxs="i",
        xpd=NA)
-  
+
   texty<-""
   if(nrow(eff_values$df)==3)if(all(eff_values$df$x==c(input$Syear,floor(mean(c(input$Syear,input$Lyear))),input$Lyear) & eff_values$df$y==c(0,0.5,0.5)))texty="< Click here to sketch effort >"
   legend('top',legend=texty,bty='n',text.col="red")
-  
+
   axis(3,c(0,1E10))
   axis(4,c(0,1E10))
   # additional series
@@ -324,7 +324,7 @@ plotFP<-function(dummy=1){
       points(pdat$x, pdat$y, type="b", col=cols[i], lwd=lwd, pch=pch, xpd=NA)
     }
   }
-  
+
 }
 
 plotFP_old <-function(dummy=1){
@@ -376,17 +376,17 @@ plotF <- function(dummy=1){
   nt<-dim(trends)[1]
   yrs<-getyrs()
   ny<-length(yrs)
-  
-  F_nams<-unlist(F_list) 
+
+  F_nams<-unlist(F_list)
   cond2<-F_nams%in%input$F
-  
+
   if(sum(cond2)>0){
     par(mfrow=c(1,2),mai=c(0.3,0.5,0.01,0.01), omi=c(0.4,0.4,0.55,0.1),cex.main = 1.5, cex.lab=1.35 )
-    
+
     #trends<-trends[cond,]
     simbyt<-100
     nsim<-simbyt*nt
-    
+
     Esd_max<-max(F_maxes[cond2])
     Esd_min<-min(F_mins[cond2])
     Esdrand<-runif(nsim,Esd_min,Esd_max)
@@ -397,11 +397,11 @@ plotF <- function(dummy=1){
     stochtrends<-array(NA,c(nsim,ny))
     stochtrends[Eind]<-Esdarray[Eind]*trends[Tind]
     stochtrends<-stochtrends/apply(stochtrends,1,mean)
-    
+
     plot(range(yrs),c(0,quantile(stochtrends,0.98)),col="white",xlab="",ylab="",yaxs='i')
     B90s<-apply(stochtrends,2,quantile,p=c(0.05,0.95))
     B50s<-apply(stochtrends,2,quantile,p=c(0.25,0.75))
-    
+
     #med<-apply(stochtrends,2,quantile,p=0.5)
     #matplot(t(stochtrends),col="#99999920",type="l")
     polygon(c(yrs,yrs[ny:1]),c(B90s[1,],B90s[2,ny:1]),border=NA,col=fcol)
@@ -411,14 +411,14 @@ plotF <- function(dummy=1){
     mtext("Historical year",1,line=0.45,outer=T)
     mtext("Relative fishing effort",2,line=2)
     mtext("Range of simulations",3,line=0.8)
-    
+
     # Example plots
     maxind<-(((0:(nt-1))*100)+aggregate(Esdrand,by=list(rep(1:nt,each=simbyt)),which.max)$x)
     minind<-(((0:(nt-1))*100)+aggregate(Esdrand,by=list(rep(1:nt,each=simbyt)),which.min)$x)
-    
+
     cols<-c(fcol,'black','dark grey',palette(rainbow(20))) #rep(c(fcol,'black','dark grey'),2)
     ltys<-1#rep(c(1,2),each=3)
-    
+
     plot(range(yrs),c(0,quantile(stochtrends,0.98)),col="white",xlab="",ylab="")
     if(nt==1){
       lines(yrs,stochtrends[maxind,],col=cols,lty=ltys)
@@ -427,18 +427,18 @@ plotF <- function(dummy=1){
       matplot(yrs,t(stochtrends[maxind,]),add=T,col=cols,lty=ltys,type='l')
       matplot(yrs,t(stochtrends[minind,]),add=T,col=cols,lty=ltys,type='l')
     }
-    
+
     mtext("",1,line=2)
     mtext("",2,line=2)
-    
+
     #legend('topleft',legend=names(FP_list)[cond],text.col=cols[cond],lty=ltys[cond],col=cols[cond],bty='n',cex=0.8)
     mtext("Individual simulations",3,line=0.8)
-    
-    
+
+
   }else{
     plot(c(1,ny),c(0,2),col="white",axes=FALSE,xlab="",ylab="")
     text(ny/2,1,"< questionnaire incomplete >",col="red")
-  
+
   }
 
 }
@@ -473,12 +473,12 @@ plotqh <- function(dummy=1){
     abline(h=c(hmax,hmin),col=c(maxcol,mincol),lty=2)
     vmax<-log(hmax,1+q_max/100)
     vmin<-log(hmin,1+q_min/100)
-    abline(v=2018-ny+c(vmax,vmin),col=c(maxcol,mincol),lty=2)
+    abline(v=max(yrs)-ny+c(vmax,vmin),col=c(maxcol,mincol),lty=2)
 
     mtext("Year",1,line=2)
     mtext(paste("Catchability relative to",min(yrs),"(q)"),2,line=2)
-    text(vmax-ny/5+2018-ny,0.03,paste(round(vmax),"years"),col=maxcol)
-    text(vmin-ny/5+2018-ny,0.24,paste(round(vmin),"years"),col=mincol)
+    text(vmax-ny/5+max(yrs)-ny,0.03,paste(round(vmax),"years"),col=maxcol)
+    text(vmin-ny/5+max(yrs)-ny,0.24,paste(round(vmin),"years"),col=mincol)
     legend('topleft',legend=c(paste("Highest = ",q_max,"%"),paste("Lowest = ",q_min,"%")),text.col=c(maxcol,mincol),bty='n',text.font=1)
 
 
@@ -508,10 +508,10 @@ plotq <- function(dummy=1){
 
     par(mfrow=c(1,1),mar=c(3.5,3,0.01,0.01), cex.main = 1.5, cex.lab=1.35 )
 
-    plot(c(0.5,ny)+2018,c(0,2.5),col="white",xlab="",ylab="")
-    polygon(2018+c(1:ny,ny:1),c(qy_max,qy_min[ny:1]),border=NA,col=fcol)
-    lines((1:ny)+2018,qy_max,col=maxcol)
-    lines((1:ny)+2018,qy_min,col=mincol)
+    plot(c(0.5,ny)+Current_Year,c(0,2.5),col="white",xlab="",ylab="")
+    polygon(Current_Year+c(1:ny,ny:1),c(qy_max,qy_min[ny:1]),border=NA,col=fcol)
+    lines((1:ny)+Current_Year,qy_max,col=maxcol)
+    lines((1:ny)+Current_Year,qy_min,col=mincol)
     hmin<-hmax<-0.5
     if(q_max>0)hmax<-2
     if(q_min>0)hmin<-2
@@ -520,12 +520,12 @@ plotq <- function(dummy=1){
     abline(h=c(hmax,hmin),col=c(maxcol,mincol),lty=2)
     vmax<-log(hmax,1+q_max/100)
     vmin<-log(hmin,1+q_min/100)
-    abline(v=2018+c(vmax,vmin),col=c(maxcol,mincol),lty=2)
+    abline(v=Current_Year+c(vmax,vmin),col=c(maxcol,mincol),lty=2)
 
     mtext("Year",1,line=2)
     mtext("Catchability relative to today (q)",2,line=2)
-    text(vmax-10+2018,0.03,paste(round(vmax),"years"),col=maxcol)
-    text(vmin-10+2018,0.24,paste(round(vmin),"years"),col=mincol)
+    text(vmax-10+Current_Year,0.03,paste(round(vmax),"years"),col=maxcol)
+    text(vmin-10+Current_Year,0.24,paste(round(vmin),"years"),col=mincol)
     legend('topleft',legend=c(paste("Highest = ",q_max,"%"),paste("Lowest = ",q_min,"%")),text.col=c(maxcol,mincol),bty='n',text.font=1)
 
 
