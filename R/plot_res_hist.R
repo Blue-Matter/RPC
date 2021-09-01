@@ -535,14 +535,15 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
     if(is.na(prob_ratio)) {
       old_par <- par(no.readonly = TRUE)
       on.exit(par(old_par))
-      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
       # Total removals
       if(sum(MSEhist@TSdata$Discards)) {
+        par(mfcol=c(3,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
         tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
         tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
       } else {
+        par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
         tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Catch", cols=cols)
       }
       tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
@@ -626,14 +627,15 @@ hist_Fmed <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
     if(is.na(prob_ratio)) {
       old_par <- par(no.readonly = TRUE)
       on.exit(par(old_par))
-      par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
       # Total removals
       if(sum(MSEhist@TSdata$Discards)) {
+        par(mfcol=c(3,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
         tsplot(apply(MSEhist@TSdata$Landings,1:2,sum), yrs, xlab="Year", ylab="Landings", cols=cols)
         tsplot(apply(MSEhist@TSdata$Discards,1:2,sum), yrs, xlab="Year", ylab="Discards", cols=cols)
       } else {
+        par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
         tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Catch", cols=cols)
       }
       tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)

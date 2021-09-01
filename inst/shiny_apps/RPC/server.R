@@ -309,21 +309,23 @@ server <- function(input, output, session) {
   # Historical results panel -----------------------------------------------------
   output$plot_hist_bio <- renderPlot(hist_bio(OBJs),res=plotres)
 
+  output$OM_name <- renderTable({
+    req(OBJs$MSEhist)
+    x <- c("Name of operating model" = OBJs$name,
+           "Number of simulations" = OBJs$MSEhist@OM@nsim,
+           "Historical years" = paste0(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, "-", OBJs$MSEhist@OM@CurrentYr, " (",
+                                       OBJs$MSEhist@OM@nyears, " years)"),
+           "Projection years" = paste0(OBJs$MSEhist@OM@CurrentYr + 1, "-", OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@proyears, " (",
+                                       OBJs$MSEhist@OM@proyears, " years)"))
+    as.data.frame(x)
+  }, colnames = FALSE, rownames = TRUE)
+
   observeEvent({
     input$HistRes1
     input$SSB
     input$SSBhist
   }, {
     req(OBJs$MSEhist)
-    output$OM_name <- renderTable({
-      x <- c("Name of operating model" = OBJs$name,
-             "Number of simulations" = OBJs$MSEhist@OM@nsim,
-             "Historical years" = paste0(OBJs$MSEhist@OM@CurrentYr - OBJs$MSEhist@OM@nyears + 1, "-", OBJs$MSEhist@OM@CurrentYr, " (",
-                                         OBJs$MSEhist@OM@nyears, " years)"),
-             "Projection years" = paste0(OBJs$MSEhist@OM@CurrentYr + 1, "-", OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@proyears, " (",
-                                         OBJs$MSEhist@OM@proyears, " years)"))
-      as.data.frame(x)
-    }, colnames = FALSE, rownames = TRUE)
 
     SSB_max <- apply(OBJs$MSEhist@TSdata$SBiomass, 1:2, sum) %>% max() %>% ceiling()
     R_max <- apply(OBJs$MSEhist@AtAge$Number[, 1, , ], 1:2, sum) %>% max() %>% ceiling()

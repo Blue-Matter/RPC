@@ -92,7 +92,7 @@ fluidPage(
                               ),
 
                               conditionalPanel("input.Select==2",
-                                               h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and the number of simulations and projection years (in Setings), in order to build the operating model."),
+                                               h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and adjust the number of simulations and projection years (in Settings), in order to build the operating model."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
 
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",

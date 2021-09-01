@@ -73,7 +73,7 @@ tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue",
                  ymax = NULL){
 
   ymin <- ifelse(zeroyint, 0, quantile(x, 0.01))
-  if(is.null(ymax)) ymax <- quantile(x, 0.99)
+  if(is.null(ymax)) ymax <- quantile(x, 0.96)
   plot(range(yrs), c(ymin, ymax), typ = "n",xlab=xlab,ylab=ylab,yaxs='i')
   abline(h=pretty(seq(from=ymin,to=max(x)*1.25,length.out=20)),col="light grey")
   plotquant(x,yrs=yrs,cols=cols)
@@ -84,9 +84,9 @@ tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue",
 Rmax_regression <- function(R, SSB, S50, type = c("low", "high")) {
   type <- match.arg(type)
   if(type == "low") {
-    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB < S50)
+    df <- data.frame(R = R, SSB = SSB) %>% dplyr::filter(SSB < S50)
   } else {
-    df <- data.frame(R = R, SSB = SSB) %>% filter(SSB >= S50)
+    df <- data.frame(R = R, SSB = SSB) %>% dplyr::filter(SSB >= S50)
   }
   if(nrow(df) > 3) {
     reg <- lm(log(R) ~ log(SSB), data = df)
