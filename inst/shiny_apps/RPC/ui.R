@@ -75,14 +75,19 @@ fluidPage(
       verticalTabPanel(id="Fishery",value=2,
                        h5(strong('Step 1. Specify Operating Model')),
                        column(12, style='height:800px; padding-left:10px; overflow-y:scroll"',
-                              h5("The first step is to specify your fishery by either selecting a comparable fishery from those available in the app, loading a
-                                 compatible openMSE operating model or sketching the fishery dynamics using the MERA system."),
-                              h5("Alternatively, load a previously saved RPC session (Select 'File' in upper right)."),
+                              h5("In Step 1, the operating model is loaded into the app. The operating model specifies both the historical
+                              and future dynamics of the stock. There are currently three ways to specify the operating model: (1) selecting
+                              a pre-made operating model; (2) loading a customized operating model compatible with ",
+                              a("openMSE", href = "https://openmse.com/", target = "_blank"),
+                              "; or (3) sketching and outlining the fishery dynamics using a questionnaire."),
+                              h5("Alternatively, load a previously saved RPC session by selecting 'File' in upper right."),
+                              h5("At any time, the number of simulation replicates and future projection years for testing management procedures
+                              can be adjusted in the 'Settings' tab in the upper right."),
                               hr(),
                               HTML("<br>"),
                               radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
                               conditionalPanel("input.Select==1",
-                                               h5("Select an example operating model, and update the number of simulations and projection years (in Settings) as desired."),
+                                               h5("Select an example operating model, and update the number of simulations and projection years as desired."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           selectInput("SelectOMDD", choices = OMs, label = NULL, selected = NULL)),
@@ -92,7 +97,7 @@ fluidPage(
                               ),
 
                               conditionalPanel("input.Select==2",
-                                               h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and adjust the number of simulations and projection years (in Settings), in order to build the operating model."),
+                                               h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and adjust the number of simulations and projection years, in order to build the operating model."),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
 
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
@@ -167,8 +172,8 @@ fluidPage(
                        h5(strong("Step 4. Management Outcomes")),
                        column(12, style='height:800px; overflow-y:scroll',
 
-                              conditionalPanel('output.MPsSpec==0',{
-                                h5("Please select at least one management procedure in Step 3 above",style="color:darkgrey")
+                              conditionalPanel('output.OM_L==0',{
+                                h5("Operating model has not been selected, loaded or sketched yet. Please specify an operating model in the 'Step 1. Specify Operating Model' panel above.",style="color:darkgrey")
                               }),
                               hr(),
 

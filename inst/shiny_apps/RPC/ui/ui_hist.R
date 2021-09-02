@@ -4,6 +4,16 @@ tabsetPanel(id="HistRes1", selected=1,
                      tabsetPanel(id = "Overview", selected = 1,
                                  tabPanel(h5("Table"),
                                           tableOutput("OM_name"),
+                                          p("Step 2 provides summary figures describing the historical reconstruction of the stock in the operating model.
+                                          Various methods for identifying reference points for management are also discussed. Values of reference points
+                                          are usually related to some diagnostic, such as the yield curve, or some historical reference period,
+                                          such as the lowest observed biomass. Along with annual values of abundance, biomass, fishing mortality,
+                                          and recruitment, annual probabilities that the stock has exceeded a threshold, specified by the user,
+                                          in the past are calculated."),
+                                          p("These diagnostics can be used to provide justification for identifying a limit reference point (LRP)
+                                            under the Fish Stocks Provisions, as well as a target reference point (TRP), upper stock reference (USR),
+                                            and a reference removal (RR) rate. Not all methods are necessarily useful for setting reference points,
+                                            for example, if the assumptions with a given method are not met."),
                                           value = 1),
                                  tabPanel(h5("Figure"),
                                           plotOutput("plot_hist_bio", height = 540),

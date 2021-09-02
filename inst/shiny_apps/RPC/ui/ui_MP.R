@@ -1,5 +1,36 @@
 tabsetPanel(id="MP_select", selected = 1,
 
+            tabPanel(h5("Overview"),
+                     p("Step 3 provides the ability to develop various types of management procedures (MPs) for
+                     projections. Two types of static MPs can be created here: fixed F (fishing mortality) and
+                     fixed catch MPs, where the levels of F and catch, respectively, in the projection are
+                     specified relative to the value in the last historical year."),
+
+                     p("MPs which combine a model and harvest control rules can be developed by specifying (1)
+                     the operational control points (OCPs); (2) the output variable used to generate the
+                     corresponding catch recommendation; and (3) the model from which to obtain values of
+                     the OCPs and output variables; and (4) the frequency at which the MP is applied (with
+                     constant catch advice between updates)."),
+
+                     p("Data-limited MPs can be selected from a list of those available in DLMtool."),
+
+                     p("Custom MPs compatible with ", a("openMSE", href = "https://www.openmse.com/", target = "_blank"),
+                       " can also be uploaded to RPC. This option may be useful for testing and fine-tuning case-specific
+                       assessment models."),
+
+                     p(tags$strong("No_Fishing"), "is always a selected MP."),
+
+                     p("Closed-loop simulation is utilized for all MPs. The operating model generates data in
+                     response to the each application of the MP (typically returning a catch recommendation,
+                     but effort and size limits can also be specified in DLMtool MPs), with each successive
+                     application of the MP forward in time using new data simulated during the projection period."),
+
+                     p("At any time, the number of simulation replicates and projection years (for the future
+                     projections) in the operating model can be adjusted in the 'Settings' tab in the upper right."),
+
+                     p("MPs made in the App can also be downloaded to be used in openMSE."),
+                     value = 1),
+
             tabPanel(h5("Fixed F"),
                      column(12, style="height:500px; padding-top:30px",
                             h5("Specify an MP that sets fishing mortality (F) relative to last historical year", style='font-weight:bold'),
@@ -16,7 +47,7 @@ tabsetPanel(id="MP_select", selected = 1,
                             ),
                      actionButton("Build_MS_FixF","Build MP",style='color:red',icon=icon('cogs')),
                      downloadButton("Save_MS_FixF","Save MP",style='color:red'),
-                     value = 1),
+                     value = 2),
 
             tabPanel(h5("Fixed catch"),
                      column(12, style="height:500px; padding-top:30px",
@@ -34,7 +65,7 @@ tabsetPanel(id="MP_select", selected = 1,
                      ),
                      actionButton("Build_MS_FixC","Build MP",style='color:red',icon=icon('cogs')),
                      downloadButton("Save_MS_FixC","Save MP",style='color:red'),
-                     value = 2),
+                     value = 3),
 
             tabPanel(h5("Harvest control rule"),
                      column(12, style="height:500px; padding-top:30px",
@@ -101,7 +132,7 @@ tabsetPanel(id="MP_select", selected = 1,
                      ),
                      actionButton("Build_MS","Build MP",style='color:red',icon=icon('cogs')),
                      downloadButton("Save_MS","Save MP",style='color:red'),
-                     value = 3),
+                     value = 4),
 
             tabPanel(h5("Data-limited MPs"),
                      column(12, style="height:500px; padding-top:30px",
@@ -117,7 +148,7 @@ tabsetPanel(id="MP_select", selected = 1,
                                    )
                      ),
                      actionButton("Build_MS_DLM","Add MP",style='color:red',icon=icon('cogs')),
-                     value = 4),
+                     value = 5),
 
             tabPanel(h5("Import MP"),
                      column(12, style="height:500px; padding-top:30px",
@@ -136,13 +167,13 @@ tabsetPanel(id="MP_select", selected = 1,
                             sliderInput("MS_Import_interval", "Frequency of MP update (years)", min = 1, max = 10, value = 2, step = 1)
                      ),
                      actionButton("Build_MS_import","Add MP",style='color:red',icon=icon('cogs')),
-                     value = 5),
+                     value = 6),
 
             tabPanel(h5("Summary"),
                      column(12, style="height:500px; padding-top:30px",
                             tableOutput("MS_summary")
                      ),
-                     value = 6)
+                     value = 7)
 
 )
 
