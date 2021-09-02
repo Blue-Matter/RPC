@@ -28,7 +28,7 @@ hist_growth_I(x)
 
 hist_growth_II(x)
 
-hist_spatial(x)
+hist_spatial(x, type = c("par", "matrix", "all"), ...)
 
 hist_sel(x, yr, maturity = TRUE)
 
@@ -45,6 +45,10 @@ the Hist object.}
 \item{yr_plot}{The year (relative to OM@CurrentYr) to plot for the right figure.}
 
 \item{sim}{The simulation to plot for the left figure.}
+
+\item{type}{Type of spatial plot}
+
+\item{...}{arguments to \link[MSEtool]{plot_mov}}
 
 \item{yr}{A length-2 vector for the years (relative to OM@CurrentYr) to plot selectivity.}
 

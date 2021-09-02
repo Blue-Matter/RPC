@@ -171,16 +171,24 @@ hist_growth_II <- function(x) {
 
 #' @rdname plot-Hist
 #' @details \code{hist_spatial} plots histograms of the parameters for spatial movement in a two-area model (set all to 0.5 to functionally create a single area model).
+#' @param type Type of spatial plot
+#' @param ... arguments to \link[MSEtool]{plot_mov}
 #' @export
-hist_spatial <- function(x) {
+hist_spatial <- function(x, type = c("par", "matrix", "all"), ...) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
+  type <- match.arg(type)
   old_par <- par(no.readonly = TRUE)
   on.exit(par(old_par))
-  plot('Spatial', MSEhist)
+  if(type == "par") {
+    plot('Spatial', MSEhist)
+  } else {
+    plot_mov(MSEhist@SampPars$Stock$mov, type = type, ...)
+  }
+
 }
 
 #' @rdname plot-Hist

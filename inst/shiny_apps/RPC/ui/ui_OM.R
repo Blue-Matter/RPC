@@ -50,17 +50,42 @@ tabsetPanel(id="OM_hist", selected = 1,
                      plotOutput("plot_future_recruit", height = 540),
                      value = 4),
 
-            tabPanel(h5("Growth Parameters I"),
-                     plotOutput("plot_hist_growth_I",height=540),
+            tabPanel(h5("Growth"),
+
+                     tabsetPanel(id = "OM_growth", selected = 1,
+                                 tabPanel(h5("Parameter Means"),
+                                          plotOutput("plot_hist_growth_I",height=540),
+                                          value = 1),
+                                 tabPanel(h5("Time-varying values"),
+                                          plotOutput("plot_hist_growth_II",height=540),
+                                          value = 2)
+                                 ),
                      value = 5),
 
-            tabPanel(h5("Growth Parameters II"),
-                     plotOutput("plot_hist_growth_II",height=540),
-                     value = 6),
-
             tabPanel(h5("Spatial"),
-                     p("Multiple-area spatial operating models can be used. Although a default 2-area model is generated, a single-area (no spatial dynamics) model is effectively replicated by setting all these parameters to 0.5."),
-                     plotOutput("plot_hist_spatial",height=540),
+                     p("Multiple-area spatial operating models can be used. A single-area (no spatial dynamics) model is effectively created with a 2-area model with all movement parameters set to 0.5."),
+                     column(12,
+                            column(3,
+                                   sliderInput("spatial_year", textOutput("spatial_year_text"), min = 0, max = 0, value = 0, step = 1, sep = ""),
+                                   sliderInput("spatial_age", "Age for matrix plot", min = 0, max = 0, value = 0, step = 1),
+                                   sliderInput("spatial_quantile", "Quantile", min = 0, max = 1, value = 0.8, step = 0.01)
+                            ),
+                            column(9,
+                                   tabsetPanel(id = "OM_spatial", selected = 1,
+                                               tabPanel(h5("Matrix"),
+                                                        plotOutput("plot_hist_spatial_matrix",height=540),
+                                                        value = 1),
+
+                                               tabPanel(h5("All movement"),
+                                                        plotOutput("plot_hist_spatial_all", height = 540),
+                                                        value = 2),
+
+                                               tabPanel(h5("Parameters"),
+                                                        plotOutput("plot_hist_spatial_par", height = 540),
+                                                        value = 3)
+                                   )
+                            )
+                     ),
                      value = 7)
 
 ) # tabsetpanel

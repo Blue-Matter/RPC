@@ -949,6 +949,10 @@ server <- function(input, output, session) {
 
     updateSliderInput(session, "sel_y", min = min(yr_cal), max = max(yr_cal),
                       value = c(min(yr_cal), MSEhist@OM@CurrentYr))
+
+    updateSliderInput(session, "spatial_year", min = min(yr_cal), max = max(yr_cal),
+                      value = MSEhist@OM@CurrentYr)
+    updateSliderInput(session, "spatial_age", min = 0, max = MSEhist@OM@maxage, value = 1)
   })
 
   output$bio_year_text <- renderText({
@@ -967,8 +971,6 @@ server <- function(input, output, session) {
   })
 
   observeEvent({
-    input$OM_hist
-    input$OM_hist_exp
     input$bio_schedule
     input$bio_schedule_sim
     input$bio_schedule_year
@@ -985,7 +987,27 @@ server <- function(input, output, session) {
   output$plot_hist_growth_I <- renderPlot(hist_growth_I(OBJs),res=plotres)
   output$plot_hist_growth_II <- renderPlot(hist_growth_II(OBJs),res=plotres)
 
-  output$plot_hist_spatial <- renderPlot(hist_spatial(OBJs),res=plotres)
+  output$spatial_year_text <- renderText({
+    req(OBJs$MSEhist)
+    paste0("Year (last historical year: ", OBJs$MSEhist@OM@CurrentYr, ")")
+  })
+
+  observeEvent({
+    input$spatial_year
+    input$spatial_age
+    input$spatial_quantile
+  }, {
+    req(OBJs$MSEhist)
+    output$plot_hist_spatial_matrix <- renderPlot({
+      hist_spatial(OBJs, type = "matrix", year = input$spatial_year - OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@nyears,
+                   age = input$spatial_age, qval = input$spatial_quantile)
+    }, res = plotres)
+    output$plot_hist_spatial_all <- renderPlot({
+      hist_spatial(OBJs, type = "all", year = input$spatial_year - OBJs$MSEhist@OM@CurrentYr + OBJs$MSEhist@OM@nyears,
+                   qval = input$spatial_quantile)
+    }, res = plotres)
+  })
+  output$plot_hist_spatial_par <- renderPlot(hist_spatial(OBJs),res=plotres)
 
   output$plot_future_recruit <- renderPlot(hist_future_recruit(OBJs), res = plotres)
 
