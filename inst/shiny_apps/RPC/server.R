@@ -76,6 +76,7 @@ server <- function(input, output, session) {
       OBJs$MSEproj <<- prev_session$MSEproj
       OBJs$name <<- prev_session$name
       OBJs$OM <<- prev_session$OM
+      PanelState <<- prev_session$PanelState
 
       if(inherits(prev_session$MSEproj, "MSE")) {
         AM(paste("MSE results loaded:", filey$name))
@@ -137,7 +138,9 @@ server <- function(input, output, session) {
   output$Save_session <- downloadHandler(
     filename = paste0("RPC-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".rpc"),
     content = function(file) {
-      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, name = OBJs$name, OM = OBJs$OM, MPs = list(All = MPs$All, Sel = MPs$Sel))
+      out <- list(MSEhist = OBJs$MSEhist, MSEproj = OBJs$MSEproj, name = OBJs$name,
+                  OM = OBJs$OM, PanelState = PanelState,
+                  MPs = list(All = MPs$All, Sel = MPs$Sel))
       out$MPs_env <- new.env()
       out$MPdesc <- new.env()
       out$MPinterval <- new.env()
