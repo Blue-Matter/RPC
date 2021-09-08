@@ -332,7 +332,7 @@ hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS
                                 Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
                                 Fec_at_Age = StockPars$Fec_Age[x, , y],
                                 V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-                                StockPars$SRrel[x], maxage = StockPars$maxage,
+                                maxage = StockPars$maxage,
                                 plusgroup = StockPars$plusgroup)[3, ]
         }, numeric(1), y = SR_y_RPS0) %>% median()
 

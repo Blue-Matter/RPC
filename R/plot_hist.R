@@ -304,7 +304,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
     vapply(F_search, function(y) {
       MSEtool:::Ref_int_cpp(y, M_at_Age = M[x, ],
                             Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                            V_at_Age = V[x, ], StockPars$SRrel[x], maxage = StockPars$maxage,
+                            V_at_Age = V[x, ], maxage = StockPars$maxage,
                             plusgroup = StockPars$plusgroup)[2, ]
     }, numeric(1))
   }, numeric(length(F_search)))
