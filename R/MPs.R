@@ -8,8 +8,16 @@
 
 
 CurF <- function(x, Data, reps = 1, val = 1) {
+  y <- max(Data@Year) - Data@LHYear+1
+  q <- Data@Misc$FleetPars$qs[x]
+  qvar <- Data@Misc$FleetPars$qvar[x, y] # future only
+  if (!length(qvar)) qvar <- 1
+  qinc <- Data@Misc$FleetPars$qinc[x] # future only
+  qcur <- qvar * q*(1+qinc/100)^y # catchability this year
+  Etarget <- val * q/qcur
+
   rec <- new("Rec")
-  rec@Effort <- rep(val, reps)
+  rec@Effort <- rep(Etarget, reps)
   rec
 }
 class(CurF) <- "MP"

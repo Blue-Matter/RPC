@@ -574,9 +574,11 @@ server <- function(input, output, session) {
 
       MP_txt <- paste0("Set constant F at ", 100*input$MS_FixF_ratio, "% F from last historical year (",
                        OBJs$MSEhist@OM@CurrentYr, ")")
-      assign(input$MS_FixF_Label, MP_txt, envir = MPdesc)
+      MPdesc[[input$MS_FixF_Label]] <- MP_txt
 
-      assign(input$MS_FixF_Label, expression(OBJs$MSEhist@OM@proyears + 1), envir = MPinterval)
+      MPinterval[[input$MS_FixF_Label]] <-
+        ifelse(all(OBJs$MSEhist@SampPars$Fleet$qvar == 1) && all(!OBJs$MSEhist@SampPars$Fleet$qinc),
+               expression(OBJs$MSEhist@OM@proyears + 1), expression(1))
 
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
@@ -596,9 +598,9 @@ server <- function(input, output, session) {
 
       MP_txt <- paste0("Set constant catch at ", 100*input$MS_FixF_ratio, "% catch from last historical year (",
                        OBJs$MSEhist@OM@CurrentYr, ")")
-      assign(input$MS_FixC_Label, MP_txt, envir = MPdesc)
+      MPdesc[[input$MS_FixC_Label]] <- MP_txt
 
-      assign(input$MS_FixC_Label, expression(OBJs$MSEhist@OM@proyears + 1), envir = MPinterval)
+      MPinterval[[input$MS_FixC_Label]] <- expression(OBJs$MSEhist@OM@proyears + 1)
 
       updateSelectInput(session,"HS_sel",choices=MPs$All,selected=MPs$Sel)
       MPsSpec(1)
