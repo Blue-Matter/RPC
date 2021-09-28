@@ -43,7 +43,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                  tabPanel(HTML("<h5>SSB<sub>0</sub></h5>"),
                                           HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
                                                                                <ul>
-                                                                               <li><strong>Asymptotic SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with constant steepness and R</sub>0</sub>.</li>
+                                                                               <li><strong>Asymptotic SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with stock recruit parameters &alpha; and &beta;.</li>
                                                                                <li><strong>Initial SSB<sub>0</sub></strong> is the spawning biomass in the first year of the operating model</li>
                                                                                <li><strong>Dynamic SSB<sub>0</sub></strong> is the annual value calculated from reconstructing the model with zero catches and preserving the magnitude of the recruitment deviations. This is intended to characterize the natural temporal variability of the population in the absence of fishing.</li>
                                                                                </ul>
@@ -55,7 +55,7 @@ tabsetPanel(id="HistRes1", selected=1,
 
                                  tabPanel(HTML("<h5>SSB<sub>MSY</sub></h5>"),
                                           HTML("<p>Time series of SSB and SSB<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
-                                               annual SSB<sub>MSY</sub> is calculated from constant R<sub>0</sub> and steepness and annual unfished spawners per recruit."),
+                                               annual SSB<sub>MSY</sub> is calculated from constant stock-recruit &alpha; and &beta; with annual unfished spawners per recruit. Ensure that there is an optimum in the yield curve under the \"Detailed Operating Model Info\" tab.<p>"),
                                           HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a target = \"_blank\" href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
                                                                     the limit reference point is set below SSB<sub>MSY</sub>, e.g., 0.5 SSB<sub>MSY</sub> or (1-M) SSB<sub>MSY</sub> in recognition that the population will naturally fluctuate above and below
                                                                     SSB<sub>MSY</sub> when fishing at F<sub>MSY</sub> (<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>).</p>"),
@@ -97,7 +97,8 @@ tabsetPanel(id="HistRes1", selected=1,
                                  tabPanel(HTML("<h5>F<sub>MSY</sub></h5>"),
                                           div(style = "overflow-y:scroll; height:520px",
                                               HTML("<p>Time series of catches (landings and discards, or total removals only if no discards are modeled) with instantaneous fishing mortality (F) and F<sub>MSY</sub>. When there are time-varying parameters (biological and selectivity parameters),
-                                               annual F<sub>MSY</sub> is calculated from constant R<sub>0</sub> and steepness and annual unfished spawners per recruit."),
+                                               annual F<sub>MSY</sub> is calculated from constant stock-recruit parameters &alpha; and &beta; with annual unfished spawners per recruit (&#120601<sub>0</sub>). F<sub>MSY</sub> near zero implies that fishing has little impact on the the stock, which could crash in the absence of fishing
+                                                   (&#120601<sub>0</sub> is very low). On the other hand, large values of F<sub>MSY</sub> may imply that there is no optimum in the yield curve; double-check under the \"Detailed Operating Model Info\" tab."),
                                               HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a target = \"_blank\" href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
                                                     a conservative limit reference point for fishing mortality should not exceed F<sub>MSY</sub> (<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>).</p>"),
                                               tabsetPanel(id = "exp_hist", selected = 1,

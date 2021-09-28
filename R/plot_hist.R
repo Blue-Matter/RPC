@@ -253,9 +253,6 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
     MSEhist <- x
   }
 
-  #YC_type <- match.arg(YC_type, choices = c(1, 2))
-  YC_type <- 1
-
   if(missing(yr_bio)) {
     yr_bio <- MSEhist@OM@nyears
   } else {
@@ -277,41 +274,28 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
 
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
-
-  if(YC_type == 1) {  # Constant R0/h
-    YC <- lapply(1:MSEhist@OM@nsim, function(x) {
-      vapply(log(F_search), function(y) {
-        MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
-                           Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                           V_at_Age = V[x, ], maxage = StockPars$maxage,
-                           R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                           opt = 2, plusgroup = StockPars$plusgroup)
-      }, numeric(11))
+  YC <- lapply(1:MSEhist@OM@nsim, function(x) {
+    sapply(log(F_search), function(y) {
+      MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+                         Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                         V_at_Age = V[x, ], maxage = StockPars$maxage,
+                         R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                         opt = 2, plusgroup = StockPars$plusgroup)
     })
-  } else { # Constant alpha, beta
-    YC <- lapply(1:MSEhist@OM@nsim, function(x) {
-      vapply(log(F_search), function(y) {
-        MSYCalcs2(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
-                  Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                  V_at_Age = V[x, ], maxage = StockPars$maxage,
-                  R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                  opt = 2, plusgroup = StockPars$plusgroup, SSBpR0 = StockPars$SSBpR[x, 1])
-      }, numeric(11))
-    })
-  }
+  })
 
   SPR_F <- vapply(1:MSEhist@OM@nsim, function(x) {
     vapply(F_search, function(y) {
       MSEtool:::Ref_int_cpp(y, M_at_Age = M[x, ],
                             Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                            V_at_Age = V[x, ], StockPars$SRrel[x], maxage = StockPars$maxage,
+                            V_at_Age = V[x, ], maxage = StockPars$maxage,
                             plusgroup = StockPars$plusgroup)[2, ]
     }, numeric(1))
   }, numeric(length(F_search)))
 
-  Yield <- sapply(YC, function(x) x[1, ])
-  SSB <- sapply(YC, function(x) x[3, ])
-  SSB_SSB0a <- sapply(YC, function(x) x[4, ])
+  Yield <- sapply(YC, function(x) x["Yield", ])
+  SSB <- sapply(YC, function(x) x["SB", ])
+  SSB_SSB0a <- sapply(YC, function(x) x["SB_SB0", ])
 
   old_par <- par(no.readonly = TRUE)
   on.exit(par(old_par))

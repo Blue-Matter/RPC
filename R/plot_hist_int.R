@@ -72,8 +72,8 @@ plotquant2 <- function(x, p = c(0.05,0.25,0.75,0.95), yrs) { # For ggplot
 tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue", col50='light blue', col90='#60859925'),
                  ymax = NULL){
 
-  ymin <- ifelse(zeroyint, 0, quantile(x, 0.01))
-  if(is.null(ymax)) ymax <- quantile(x, 0.96)
+  ymin <- ifelse(zeroyint, 0, 0.9 * min(x, na.rm = TRUE))
+  if(is.null(ymax)) ymax <- 1.1 * max(x, na.rm = TRUE)
   plot(range(yrs), c(ymin, ymax), typ = "n",xlab=xlab,ylab=ylab,yaxs='i')
   abline(h=pretty(seq(from=ymin,to=max(x)*1.25,length.out=20)),col="light grey")
   plotquant(x,yrs=yrs,cols=cols)

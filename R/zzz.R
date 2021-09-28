@@ -1,3 +1,3 @@
 
-#' @import methods stats graphics ggplot2 grDevices dplyr MSEtool SAMtool ggrepel ggpubr shiny scales reshape2
+#' @import methods stats utils dplyr graphics ggplot2 ggpubr ggrepel grDevices reshape2 scales shiny MSEtool SAMtool
 NULL

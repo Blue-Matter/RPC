@@ -1,7 +1,7 @@
 
 column(12,
        column(1, h1("RPC"), style = "height:65px"),
-       column(5, h3("reference point calculator (alpha)"), style = "height:65px;padding-top:8px"),
+       column(5, h3(paste("Reference Point Calculator", packageVersion("RPC"), "(beta)")), style = "height:65px;padding-top:8px"),
 
 
        column(6, style = "padding-top:25px",
