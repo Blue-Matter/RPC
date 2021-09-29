@@ -429,7 +429,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   tsplot(t(Y),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols)
   tsplot(t(Y),yrs=t(SPR_F),xlab="Spawning potential ratio (SPR)",ylab="Yield",cols = cols)
   tsplot(t(Y),yrs=t(SSB),xlab="Spawning biomass (SSB)",ylab="Yield",cols = cols)
-  tsplot(t(Y),yrs=t(SSB_SSB0a),xlab=expression(SSB~"/"~"Asymptotic"~SSB[0]),ylab="Yield",cols = cols)
+  tsplot(t(Y),yrs=t(SSB_SSB0a),xlab=expression(SSB~"/"~"Equilibrium"~SSB[0]),ylab="Yield",cols = cols)
 
 }
 

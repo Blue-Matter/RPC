@@ -64,7 +64,7 @@ tabsetPanel(id="Res", selected=1,
                                    ),
                                    conditionalPanel("input.prob_type == 'SSB0'",
                                                     selectInput("SSB0_type", label = HTML("SSB<sub>0</sub> Type"),
-                                                                choices = list("Asymptotic", "Initial", "Dynamic"),
+                                                                choices = list("Equilibrium", "Initial", "Dynamic"),
                                                                 selectize = FALSE, size = 1),
                                                     sliderInput("SSB0_thresh", HTML("SSB/SSB<sub>0</sub> threshold"), min = 0, max = 1, value = 0.4, step = 0.01)
                                    ),

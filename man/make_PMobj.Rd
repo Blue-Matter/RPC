@@ -37,7 +37,7 @@ Function that defines and returns performance measures.
 \details{
 \code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
 
-\code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Asymptotic").
+\code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium").
 Provide the type with argument \code{SSB0_type}.
 
 \code{type = "SSBMSY"} calculates SSB relative to SSBMSY.

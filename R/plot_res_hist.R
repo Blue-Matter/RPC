@@ -148,12 +148,12 @@ hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
       par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
       tsplot(x=SSB,yrs=hy,xlab="Year",ylab="Spawning biomass (SSB)")
       tsplot(x=SSBrh,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Initial~SSB[0]))
-      tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Asymptotic~SSB[0]))
+      tsplot(x=SSBra,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Equilibrium~SSB[0]))
       tsplot(x=SSBrd,yrs=hy,xlab="Year",ylab=expression(SSB~"/"~Dynamic~SSB[0]))
       mtext("Year", side = 1, outer = TRUE, line = 1)
     } else {
       pmat <- sapply(list(SSBra, SSBrh, SSBrd), function(x) apply(x > prob_ratio, 2, mean)) %>%
-        structure(dimnames = list(NULL, c("Asymptotic~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]")))
+        structure(dimnames = list(NULL, c("Equilibrium~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]")))
       data.frame(Year = hy) %>% cbind(pmat) %>% reshape2::melt(id.vars = "Year") %>%
         ggplot(aes(Year, value, linetype = variable, shape = variable)) +
         geom_line() +
@@ -167,7 +167,7 @@ hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   } else {
     sapply(list(SSBrh, SSBra, SSBrd), function(x) apply(x > prob_ratio, 2, mean)) %>%
-      structure(dimnames = list(hy, c("Initial", "Asymptotic", "Dynamic") %>% paste("SSB0")))
+      structure(dimnames = list(hy, c("Initial", "Equilibrium", "Dynamic") %>% paste("SSB0")))
   }
 }
 

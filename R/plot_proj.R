@@ -103,7 +103,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
                         Type = "Dynamic~SSB[0]",
                         Year = ay)
     SSB0a <- data.frame(value = apply(MSEproj@RefPoint$ByYear$SSB0, 2, median),
-                        Type = "Asymptotic~SSB[0]",
+                        Type = "Equilibrium~SSB[0]",
                         Year = ay)
     SSB0i <- data.frame(value = rep(hist[1], length(ay)),
                         Type = "Initial~SSB[0]",
@@ -113,7 +113,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
                           Year = hy)
     SSB_out <- rbind(SSB0d, SSB0a, SSB0i, SSBhist)
     SSB_out$Type <- factor(SSB_out$Type,
-                           levels = c("Historical~SSB", "Asymptotic~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]"))
+                           levels = c("Historical~SSB", "Equilibrium~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]"))
 
     g <- g + geom_line(data = SSB_out, aes(linetype = Type, size = Type)) +
       geom_point(data = SSB_out, aes(shape = Type)) +
@@ -181,7 +181,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
 #' @details
 #' \code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
 #'
-#' \code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Asymptotic").
+#' \code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium").
 #' Provide the type with argument \code{SSB0_type}.
 #'
 #' \code{type = "SSBMSY"} calculates SSB relative to SSBMSY.
@@ -226,7 +226,7 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch")
 
     # Identical regardless of MP, but make same shape as SSB
     ref <- switch(dots$SSB0_type,
-                  "Asymptotic" = array(MSEproj@RefPoint$ByYear$SSB0[, pyind], dim(xout)[c(1, 3 ,2)]) %>%
+                  "Equilibrium" = array(MSEproj@RefPoint$ByYear$SSB0[, pyind], dim(xout)[c(1, 3 ,2)]) %>%
                     aperm(c(1, 3, 2)),
                   "Initial" = MSEproj@SSB_hist[, 1],
                   "Dynamic" = array(MSEproj@RefPoint$Dynamic_Unfished$SSB0[, pyind], dim(xout)[c(1, 3, 2)]) %>%
@@ -361,7 +361,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "SP", 
 
     refs <- list(SSB0i,SSB0an,SSB0a,SSB0d)
     nrr<-length(refs)
-    ylabs <- paste0("SSB/", c("Initial", paste0("Asymptotic~(", CurrentYr, ")"), "Asymptotic", "Dynamic"), "~SSB[0]")
+    ylabs <- paste0("SSB/", c("Initial", paste0("Equilibrium~(", CurrentYr, ")"), "Equilibrium", "Dynamic"), "~SSB[0]")
 
     g <- lapply(1:length(refs), function(rr) {
       Stoch_plot_int(x=SSB,ref=refs[[rr]],ylab=ylabs[rr],py=py,MPcols=MPcols,
@@ -564,12 +564,12 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F",
     abline(v=CurrentYr+c(0,(1:100)*10),col='#99999930')
 
     matplot(yrs,t(SSB/SSB0a),col=cols,lty=1,type='l',yaxs='i',ylim=c(0, 1.1 * max(SSB/SSB0a)),
-            ylab=expression(SSB/Asymptotic~SSB[0]))
+            ylab=expression(SSB/Equilibrium~SSB[0]))
     abline(h=pretty(c(0,1.1 * max(SSB/SSB0a)), 6),col='#99999930')
     abline(v=CurrentYr+c(0,(1:100)*10),col='#99999930')
 
     matplot(yrs,t(SSB/SSB0an),col=cols,lty=1,type='l',yaxs='i',ylim=c(0, 1.1 * max(SSB/SSB0an)),
-            ylab=parse(text = paste0("SSB/Asymptotic~(", CurrentYr, ")~SSB[0]")))
+            ylab=parse(text = paste0("SSB/Equilibrium~(", CurrentYr, ")~SSB[0]")))
     abline(h=pretty(c(0,1.1 * max(SSB/SSB0an)), 6),col='#99999930')
     abline(v=CurrentYr+c(0,(1:100)*10),col='#99999930')
 
