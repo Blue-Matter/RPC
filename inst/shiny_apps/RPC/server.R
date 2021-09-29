@@ -947,7 +947,11 @@ server <- function(input, output, session) {
     updateSliderInput(session, "bio_schedule_nage", min = 2, max = MSEhist@OM@maxage+1,
                       value = MSEhist@OM@maxage+1, step = 1)
 
-    Frange_max <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash) %>% round(2)
+    Frange_max <- local({
+      Fcrash <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash)
+      M <- 3 * max(MSEhist@SampPars$Stock$Marray)
+      min(Fcrash, M) %>% round(2)
+    })
     updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
     updateSliderInput(session, "YC_y_bio", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
     updateSliderInput(session, "YC_y_sel", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
@@ -1020,7 +1024,6 @@ server <- function(input, output, session) {
     input$YC_Frange
     input$YC_y_bio
     input$YC_y_sel
-    #input$YC_calc
   }, {
 
     output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, #YC_type = input$YC_calc,

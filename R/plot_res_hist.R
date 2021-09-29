@@ -499,14 +499,17 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   # Apical F index
   Find <-  MSEhist@SampPars$Fleet$qs * MSEhist@TSdata$Find
 
-  # Year specific FMSY (constant R0, h)
+  # M of mature animals
+  M <- MSEhist@SampPars$Stock$Marray[, 1:MSEhist@OM@nyears]
+
+  # Year specific FMSY
   FMSY <- MSEhist@Ref$ByYear$FMSY[, 1:MSEhist@OM@nyears]
 
   if(figure) {
     if(is.na(prob_ratio)) {
       old_par <- par(no.readonly = TRUE)
       on.exit(par(old_par))
-      cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+      cols <- list(colm = "darkgreen", col50 = "lightgreen", col90 = "#40804025")
 
       # Total removals
       if(sum(MSEhist@TSdata$Discards)) {
@@ -517,7 +520,10 @@ hist_exp <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
         par(mfcol=c(2,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
         tsplot(apply(MSEhist@TSdata$Removals,1:2,sum), yrs, xlab="Year", ylab="Catch", cols=cols)
       }
-      tsplot(Find, yrs, xlab = "Year", ylab = "Apical F", cols=cols)
+
+      tsplot(M, yrs, xlab = "Year", ylab = "Apical F (green), M (blue)", ymax = 1.1 * max(Find, M))
+      plotquant(Find, yrs = yrs, cols = cols)
+
       tsplot(FMSY, yrs, xlab = "Year", ylab = expression(F[MSY]), cols=cols)
       tsplot(Find/FMSY, yrs, xlab = "Year", ylab = expression(F/F[MSY]), cols=cols)
     } else {

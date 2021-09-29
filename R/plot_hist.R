@@ -280,6 +280,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
                          Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
                          V_at_Age = V[x, ], maxage = StockPars$maxage,
                          R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+                         SSBpR = StockPars$SSBpR[x, 1],
                          opt = 2, plusgroup = StockPars$plusgroup)
     })
   })
@@ -293,7 +294,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
     }, numeric(1))
   }, numeric(length(F_search)))
 
-  Yield <- sapply(YC, function(x) x["Yield", ])
+  Y <- sapply(YC, function(x) x["Yield", ])
   SSB <- sapply(YC, function(x) x["SB", ])
   SSB_SSB0a <- sapply(YC, function(x) x["SB_SB0", ])
 
@@ -302,10 +303,10 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   par(mfrow = c(2, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
   cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
-  tsplot(t(Yield),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
-  tsplot(t(Yield),yrs=t(SPR_F),xlab="Spawning potential ratio (SPR)",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
-  tsplot(t(Yield),yrs=t(SSB),xlab="Spawning biomass (SSB)",ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
-  tsplot(t(Yield),yrs=t(SSB_SSB0a),xlab=expression(SSB~"/"~"Asymptotic"~SSB[0]),ylab="Yield",cols = cols, zeroyint=F, ymax = 1.1 * max(Yield))
+  tsplot(t(Y),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols)
+  tsplot(t(Y),yrs=t(SPR_F),xlab="Spawning potential ratio (SPR)",ylab="Yield",cols = cols)
+  tsplot(t(Y),yrs=t(SSB),xlab="Spawning biomass (SSB)",ylab="Yield",cols = cols)
+  tsplot(t(Y),yrs=t(SSB_SSB0a),xlab=expression(SSB~"/"~"Asymptotic"~SSB[0]),ylab="Yield",cols = cols)
 
 }
 

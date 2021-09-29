@@ -75,7 +75,7 @@ tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue",
   ymin <- ifelse(zeroyint, 0, 0.9 * min(x, na.rm = TRUE))
   if(is.null(ymax)) ymax <- 1.1 * max(x, na.rm = TRUE)
   plot(range(yrs), c(ymin, ymax), typ = "n",xlab=xlab,ylab=ylab,yaxs='i')
-  abline(h=pretty(seq(from=ymin,to=max(x)*1.25,length.out=20)),col="light grey")
+  abline(h=pretty(seq(ymin, ymax, length.out = 20)), col = "light grey")
   plotquant(x,yrs=yrs,cols=cols)
 
 }
