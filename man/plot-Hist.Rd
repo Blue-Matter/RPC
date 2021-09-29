@@ -5,6 +5,7 @@
 \alias{hist_bio}
 \alias{hist_future_recruit}
 \alias{hist_bio_schedule}
+\alias{hist_bio_change}
 \alias{hist_growth_I}
 \alias{hist_growth_II}
 \alias{hist_spatial}
@@ -22,6 +23,16 @@ hist_bio_schedule(
   n_age_plot,
   yr_plot,
   sim
+)
+
+hist_bio_change(
+  x,
+  var = c("Wt_age", "M_ageArray"),
+  change_mean = 0,
+  change_slope = 0,
+  n_age_plot = 10,
+  sim = 1,
+  figure = TRUE
 )
 
 hist_growth_I(x)
@@ -45,6 +56,12 @@ the Hist object.}
 \item{yr_plot}{The year (relative to OM@CurrentYr) to plot for the right figure.}
 
 \item{sim}{The simulation to plot for the left figure.}
+
+\item{change_mean}{The percent change in the mean of the new parameters relative to the old.}
+
+\item{change_slope}{The percent change year-over-year in the projection parameters relative to the last projection year.}
+
+\item{figure}{Logical, whether to return a figure (TRUE) or the updated array (FALSE) for \code{hist_bio_change}.}
 
 \item{type}{Type of spatial plot}
 
@@ -72,6 +89,8 @@ Various plots for plotting historical time series for the operating model.
 \code{hist_future_recruit} plots historical and future recruitment deviations.
 
 \code{hist_bio_schedule} plots in biological at age parameters.
+
+\code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope.
 
 \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 

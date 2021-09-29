@@ -53,7 +53,7 @@ fluidPage(
     verticalTabsetPanel(id="Main",selected=1,
       verticalTabPanel(h5("Home"),
                        column(12,
-                              h4("Welcome to the Alpha test of Reference Point Calculator: a simulation tool for informating the selection of reference points and harvest control rules."),
+                              h4("Welcome to the Beta test of Reference Point Calculator: a simulation tool for informating the selection of reference points and harvest control rules."),
                               h5("If possible please leave any feedback on the App in
                                  the", a("RPC Feedback google sheet",href="https://docs.google.com/spreadsheets/d/1rqB0719h5Wx7X9wdCaFJHzt3p91vV4bRQdFAm55J6AE/edit?usp=sharing", target="_blank")),
                               hr(),

@@ -43,7 +43,7 @@ tabsetPanel(id="OM_hist", selected = 1,
                      ),
                      value = 3),
 
-            tabPanel(h5("Future recruitment strength"),
+            tabPanel(h5("Recruitment deviations"),
                      p("The top row of figure shows the median (with 50% and 90% confidence intervals) of historical and projected log-recruitment deviations from the stock-recruit relationship.
                        The bottom row plots the annual mean deviation (in normal space). Thus, a stationary mean around one implies average productivity defined by the stock-recruit relationship,
                        with greater or lower recruitment productivity using means greater or smaller, respectively, than one."),
@@ -86,6 +86,33 @@ tabsetPanel(id="OM_hist", selected = 1,
                                    )
                             )
                      ),
+                     value = 6),
+
+            tabPanel(h5("Change projection dynamics"),
+                     column(12,
+                            column(3,
+                                   radioButtons("change_bio", "Type", choiceNames = c("Weight at age", "Natural mortality", "Recruitment deviations"),
+                                                choiceValues = c("Wt_age", "M_ageArray", "Perr_y"), inline = FALSE),
+                                   conditionalPanel("input.change_bio == 'Perr_y'",
+                                                    radioButtons("change_rec_dist", "Distribution", choices = c("Lognormal", "Pareto")),
+                                                    conditionalPanel("input.change_rec_dist == 'Lognormal'",
+                                                                     sliderInput("change_rec_sd", "Standard deviation", min = 0, max = 1.5, value = 0, step = 0.01),
+                                                                     sliderInput("change_rec_AC", "Autocorrelation", min = -1, max = 1, value = 0, step = 0.01)
+                                                    ),
+                                                    conditionalPanel("input.change_rec_dist == 'Pareto'",
+                                                                     sliderInput("change_rec_shape", "Shape parameter", min = 1, max = 4, value = 1.05, step = 0.01)
+                                                    )
+                                   ),
+                                   conditionalPanel("input.change_bio != 'Perr_y'",
+                                                    sliderInput("change_bio_slope", "Percent change year over year", min = -0.05, max = 0.05, value = 0, step = 0.001),
+                                                    sliderInput("change_bio_mean", "Percent change in mean", min = -1, max = 1, value = 0, step = 0.01)
+                                   )
+                            ),
+                            column(9,
+                                   plotOutput("plot_change_bio", height = 540)
+                            )
+                     ),
+                     actionButton("OM_change_bio", "Update operating model", icon = icon("cogs"), style = "color:red"),
                      value = 7)
 
 ) # tabsetpanel

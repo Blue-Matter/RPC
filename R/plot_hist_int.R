@@ -130,3 +130,31 @@ stock_recruit_int <- function(MSEhist) {
 
   list(R = R, SSB = SSB, predR_y = predR_y, predR = predR, predSSB = predSSB, yrs = yrs)
 }
+
+#' @importFrom EnvStats rpareto
+sample_pareto <- function(nsim, proyears, shape = 1.1, seed) {
+  if(!missing(seed)) set.seed(seed)
+  rpar <- generate_pareto_par(shape)
+  Perr_proj <- EnvStats::rpareto(nsim * proyears, location = rpar$location, shape = shape) %>%
+    matrix(nsim, proyears, byrow = TRUE)
+  return(Perr_proj)
+}
+
+generate_pareto_par <- function(shape) {
+  shape <- max(shape, 1.001)
+  if(shape <= 1) { #warning("Mean is infinite because shape <= 1.")
+    mu <- Inf
+    location <- NA
+  } else {
+    mu <- 1
+    location <- mu * (shape - 1) / shape
+  }
+
+  if(shape <= 2) { #warning("Variance is infinite because shape <= 2.")
+    variance <- Inf
+  } else {
+    variance <- location * shape / (shape - 1) / (shape - 1) / (shape - 2)
+  }
+
+  return(list(mu = mu, location = location, variance = variance))
+}

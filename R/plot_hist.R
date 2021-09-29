@@ -142,6 +142,129 @@ hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageA
 }
 
 #' @rdname plot-Hist
+#' @details \code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope.
+#' @param var A string to indicate which object to plot from OM@@cpars.
+#' @param change_mean The percent change in the mean of the new parameters relative to the old.
+#' @param change_slope The percent change year-over-year in the projection parameters relative to the last projection year.
+#' @param figure Logical, whether to return a figure (TRUE) or the updated array (FALSE) for \code{hist_bio_change}.
+#' @export
+hist_bio_change <- function(x, var = c("Wt_age", "M_ageArray"), change_mean = 0, change_slope = 0,
+                            n_age_plot = 10, sim = 1, figure = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+  var <- match.arg(var)
+  labs <- c(Wt_age = "Weight at age", M_ageArray = "Natural mortality")
+  ylab <- labs[match(var, names(labs))]
+
+  OM <- MSEhist@OM
+  sched <- sched_change <- getElement(MSEhist@SampPars$Stock, var)
+
+  yr_cal <- 1:(OM@nyears + OM@proyears) - OM@nyears + OM@CurrentYr
+
+  if(change_mean) {
+    sched_change[, , OM@nyears + 1:OM@proyears] <- (1 + change_mean) * sched[, , OM@nyears + 1:OM@proyears]
+  }
+  if(change_slope) {
+    slope_array <- array((1 + change_slope) ^ c(1:OM@proyears), c(OM@proyears, OM@maxage + 1, OM@nsim)) %>%
+      aperm(3:1)
+    slope_sched <- sched[, , OM@nyears] %>% array(c(OM@nsim, OM@maxage + 1, OM@proyears))
+    sched_change[, , OM@nyears + 1:OM@proyears] <- slope_sched * slope_array
+  }
+
+  if(figure) {
+    if(missing(n_age_plot)) {
+      n_age_plot <- OM@maxage + 1
+    } else {
+      n_age_plot <- max(n_age_plot, 2)
+    }
+    if(missing(sim)) {
+      sim <- 1
+    } else {
+      sim <- max(sim, 1)
+    }
+
+    age <- 1:dim(sched)[2] - 1
+    age_plot <- pretty(age, n_age_plot)
+    age_plot <- age_plot[age_plot <= max(age)]
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.6, 0.1), omi = c(0, 0, 0, 0))
+
+    matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, type = 'l', lty = 1,
+            xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
+    text(max(yr_cal), sched[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste0("Current operating model\nSimulation #", sim))
+
+    matplot(yr_cal, t(sched_change[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, type = 'l', lty = 1,
+            xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
+    text(max(yr_cal), sched_change[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste0("Updated operating model\nSimulation #", sim))
+  }
+  invisible(sched_change)
+}
+
+#' @export
+hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD = 0.7, LnAC = 0, Pshape = 1.1,
+                                      figure = TRUE, nsim_plot = 5) {
+  dist <- match.arg(dist)
+
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
+  Perr_y <- MSEhist@SampPars$Stock$Perr_y
+  nsim_plot <- min(nsim_plot, nrow(Perr_y))
+
+  if(dist == "Lognormal") {
+    Perr_new <- MSEtool:::sample_recruitment(Perr_hist = log(Perr_y[, 1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
+                                             proyears = MSEhist@OM@proyears, procsd = LnSD, AC = LnAC)
+    Perr_new <- exp(Perr_new)
+  } else {
+    Perr_new <- sample_pareto(nsim = nrow(Perr_y), proyears = MSEhist@OM@proyears, shape = Pshape)
+  }
+
+  Perr_y[, MSEhist@OM@nyears + MSEhist@OM@maxage + 1:MSEhist@OM@proyears] <- Perr_new
+
+  if(figure) {
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+
+    par(mfrow=c(1,2),mai=c(0.9,0.9,0.6,0.1),omi=c(0,0,0,0))
+
+    yrs_hist <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
+    yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
+    y <- c(yrs_hist, yrs_proj)
+
+    cur_dev <- MSEhist@TSdata$RecDev[1:nsim_plot, ]
+    matplot(y, t(cur_dev), lty = 1, type = "l",
+            ylim = c(0, 1.1 * max(cur_dev)), xlab = "Year", ylab = "Recruitment deviations")
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste("Current operating model\n", nsim_plot, "simulations"))
+
+    new_dev <- Perr_y[1:nsim_plot, ]
+    matplot(y, t(new_dev), lty = 1, type = "l",
+            ylim = c(0, 1.1 * max(new_dev)), xlab = "Year", ylab = "Recruitment deviations")
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste("Updated operating model\n", nsim_plot, "simulations"))
+  }
+
+  invisible(Perr_y)
+}
+
+#' @rdname plot-Hist
 #' @details \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 #' @export
 hist_growth_I <- function(x) {

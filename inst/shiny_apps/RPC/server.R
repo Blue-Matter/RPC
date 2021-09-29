@@ -946,6 +946,8 @@ server <- function(input, output, session) {
                       value = MSEhist@OM@CurrentYr, step = 1)
     updateSliderInput(session, "bio_schedule_nage", min = 2, max = MSEhist@OM@maxage+1,
                       value = MSEhist@OM@maxage+1, step = 1)
+    updateSliderInput(session, "change_rec_sd", value = mean(OBJs$MSEhist@SampPars$Stock$procsd))
+    updateSliderInput(session, "change_rec_AC", value = mean(OBJs$MSEhist@SampPars$Stock$AC))
 
     Frange_max <- local({
       Fcrash <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash)
@@ -1025,30 +1027,69 @@ server <- function(input, output, session) {
     input$YC_y_bio
     input$YC_y_sel
   }, {
-
-    output$hist_YC_plot <- renderPlot(hist_YieldCurve(OBJs, #YC_type = input$YC_calc,
-                                                      yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel,
-                                                      F_range = input$YC_Frange),
-                                      res = plotres)
-  }
-  )
-
-  observeEvent(input$sel_y, {
-    output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y),res=plotres)
+    output$hist_YC_plot <-
+      renderPlot(hist_YieldCurve(OBJs, yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel, F_range = input$YC_Frange),
+                 res = plotres)
   })
 
+  observeEvent(input$sel_y, {
+    output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y), res = plotres)
+  })
 
+  observeEvent({
+    input$change_bio
+    input$change_rec_dist
+    input$change_rec_sd
+    input$change_rec_AC
+    input$change_rec_shape
+    input$change_bio_slope
+    input$change_bio_mean
+  }, {
+    bio_mean <- bio_slope <- 0
+    if(input$change_bio_slope != 0) {
+      updateSliderInput(session, "change_bio_mean", value = 0)
+      bio_mean <- 0
+      bio_slope <- input$change_bio_slope
+    }
+    if(input$change_bio_mean != 0) {
+      updateSliderInput(session, "change_bio_slope", value = 0)
+      bio_mean <- input$change_bio_mean
+      bio_slope <- 0
+    }
+
+    if(input$change_bio == "Perr_y") {
+      output$plot_change_bio <-
+        renderPlot(hist_resample_recruitment(OBJs, dist = input$change_rec_dist, LnSD = input$change_rec_sd,
+                                             LnAC = input$change_rec_AC, Pshape = input$change_rec_shape),
+                   res = plotres)
+    } else {
+      output$plot_change_bio <- renderPlot(hist_bio_change(OBJs, var = input$change_bio, change_mean = bio_mean, change_slope = bio_slope),
+                                           res = plotres)
+    }
+  })
+
+  observeEvent(input$OM_change_bio, {
+    AM(paste("Updating projection dynamics for ", input$change_bio))
+    if(input$change_bio == "Perr_y") {
+      new_par <- hist_resample_recruitment(OBJs, dist = input$change_rec_dist, LnSD = input$change_rec_sd,
+                                           LnAC = input$change_rec_AC, Pshape = input$change_rec_shape, figure = FALSE)
+    } else {
+      new_par <- hist_bio_change(OBJs, var = input$change_bio, change_mean = input$change_bio_mean, change_slope = input$change_bio_slope,
+                                 figure = FALSE)
+    }
+    OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
+    OM@cpars[[input$change_bio]] <- new_par
+    OBJs$MSEhist <<- runMSEhist(OM)
+    AM("Update successful.")
+  })
 
   # Log  --------------------------------------------------------
 
-  output$Download_Log <-downloadHandler(
-
-    filename = function(){"RPC_Log.txt"}, #"report.html",
-
+  output$Download_Log <- downloadHandler(
+    filename = function() paste0("RPC-log-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".txt"),
     content = function(file) {
       writeLines(paste(Log_text$text, collapse = ", "), file)
     }
-
   )
 
 
