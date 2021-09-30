@@ -22,6 +22,8 @@ fluidPage(
 
       ")),
 
+    tags$style("td.OMtable {padding: 5px 20px 5px 5px;}"),
+
     tags$script('
                 var dimension = [0, 0];
                 $(document).on("shiny:connected", function(e) {
@@ -92,7 +94,9 @@ fluidPage(
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           selectInput("SelectOMDD", choices = OMs, label = NULL, selected = NULL)),
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
-                                                          actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px'))
+                                                          actionButton("SelectOM",label = "Select",style="color:red",icon=icon('cogs'),width='150px',height='20px')),
+                                                      #tableOutput("SelectOMinfo")
+                                                      uiOutput("SelectOMinfo")
                                                )
                               ),
 

@@ -18,9 +18,11 @@ Imports:
     utils,
     DLMtool,
     MSEtool (> 3.2.0),
+    MSEextra,
     SAMtool (>= 1.2.0),
     dplyr,
     DT,
+    EnvStats,
     ggplot2,
     ggpubr,
     ggrepel,
@@ -35,6 +37,7 @@ Imports:
     shinyWidgets
 Remotes: 
     github::pbs-assess/ggspider
+    github::Blue-Matter/MSEextra
 Suggests: knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true

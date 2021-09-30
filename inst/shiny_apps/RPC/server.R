@@ -5,9 +5,14 @@ options(shiny.maxRequestSize=1000*1024^2)
 
 server <- function(input, output, session) {
 
-  plotres<-100
-  OMs<<-unique(avail('OM', msg = FALSE)[avail('OM', msg = FALSE)!='testOM'],
-               c("DFO_BoF_Herring","DFO_DEMO1","DFO_DEMO2","DFO_Inside_YE_Rockfish"))
+  plotres <- 100
+  OMs <<- local({
+    RPC_OM <- avail("OM", package = "RPC", msg = FALSE)
+    DEMO_OM <- RPC_OM[grepl("DEMO", RPC_OM)]
+    DFO_OM <- RPC_OM[!grepl("DEMO", RPC_OM)]
+
+    c(DEMO_OM, DFO_OM, avail("OM", package = "MSEextra", msg = FALSE))
+  })
 
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
@@ -188,10 +193,56 @@ server <- function(input, output, session) {
   })
 
   # OM select
-  observeEvent(input$SelectOMDD,{
+  observeEvent(input$SelectOMDD, {
     OM_temp <- get(input$SelectOMDD)
     updateSliderInput(session, "DD_nsim", min = min(OM_temp@nsim, 3), max = OM_temp@nsim, value = min(OM_temp@nsim, nsim))
     updateSliderInput(session, "DD_proyears", min = min(OM_temp@proyears, 5), max = OM_temp@proyears, value = OM_temp@proyears)
+
+    output$SelectOMinfo <- renderUI({
+
+      if(any(input$SelectOMDD == avail("OM", "RPC", FALSE))) {
+        tags$table(style = "border-top: 1px solid grey; border-bottom: 1px solid grey;",
+          tags$tr(
+            tags$td(class = "OMtable", "Description"),
+            tags$td(class = "OMtable", OM_temp@Name)
+          ),
+          if(length(OM_temp@Region)) {
+            tags$tr(
+              tags$td(class = "OMtable", "Region"),
+              tags$td(class = "OMtable", OM_temp@Region)
+            )
+          },
+
+          if(length(OM_temp@Species) && !is.na(OM_temp@Species)) {
+            tags$tr(
+              tags$td(class = "OMtable", "Species"),
+              tags$td(class = "OMtable", em(OM_temp@Species))
+            )
+          },
+
+          if(sum(nchar(OM_temp@Source)) && !is.na(OM_temp@Source["ResDoc"])) {
+            tags$tr(
+              tags$td(class = "OMtable", "Research Document"),
+              tags$td(class = "OMtable", tags$a(OM_temp@Source["ResDoc"], href = OM_temp@Source["ResDoc"], target = "_blank"))
+            )
+          },
+          if(sum(nchar(OM_temp@Source)) && !is.na(OM_temp@Source["SAR"])) {
+            tags$tr(
+              tags$td(class = "OMtable", "Science Advisory Report"),
+              tags$td(class = "OMtable", tags$a(OM_temp@Source["SAR"], href = OM_temp@Source["SAR"], target = "_blank"))
+            )
+          },
+          if(sum(nchar(OM_temp@Source)) && !is.na(OM_temp@Source["SR"])) {
+            tags$tr(
+              tags$td(class = "OMtable", "Science Response"),
+              tags$td(class = "OMtable", tags$a(OM_temp@Source["SR"], href = OM_temp@Source["SR"], target = "_blank"))
+            )
+          }
+        )
+      }
+
+    })
+
     toggleDropdownButton("DD_Settings", session)
   })
 
