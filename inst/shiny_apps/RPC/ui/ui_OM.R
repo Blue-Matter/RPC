@@ -1,5 +1,17 @@
 tabsetPanel(id="OM_hist", selected = 1,
 
+            tabPanel(h5("Overview"),
+                     p("This tab provides detailed figures on the specification of the operating model, including the historical and projection dynamics, including:"),
+                     tags$ul(
+                       tags$li("Age schedules provide the biological parameters, including growth, maturity, and natural mortality, by simulation, age, and year"),
+                       tags$li("Selectivity figures compare fishery selectivity, retention (if modeled), and maturity"),
+                       tags$li("Yield curves which calculate the equilibrium catch using any year combination of biological parameters and selectivity."),
+                       tags$li("Recruitment deviations with the mean in normal and lognormal space"),
+                       tags$li("Spatial dynamics if using a multiple-area model"),
+                       tags$li("Options for changing the population dynamics in the projection period of the operating model")
+                     ),
+                     value = 1),
+
             tabPanel(h5("Age schedules"),
                      column(12,
                             column(3,
@@ -13,7 +25,7 @@ tabsetPanel(id="OM_hist", selected = 1,
                                    plotOutput("plot_hist_age_schedule", height = 540)
                             )
                      ),
-                     value = 1),
+                     value = 2),
 
             tabPanel(h5("Selectivity"),
                      column(12,
@@ -24,7 +36,7 @@ tabsetPanel(id="OM_hist", selected = 1,
                                    plotOutput("plot_hist_sel",height=520)
                             )
                      ),
-                     value = 2),
+                     value = 3),
 
             tabPanel(h5("Yield curve"),
                      column(12,
@@ -32,35 +44,31 @@ tabsetPanel(id="OM_hist", selected = 1,
                                    sliderInput("YC_Frange", "Fishing mortality range", min = 0, max = 3, value = c(0, 3), step = 0.01),
                                    sliderInput("YC_y_bio", textOutput("YC_bio_text"), min = 0, max = 0, value = 0, step = 1, sep = ""),
                                    sliderInput("YC_y_sel", "Year for selectivity", min = 0, max = 0, value = 0, step = 1, sep = "")
-                                   #radioButtons("YC_calc", "Calculation type",
-                                   #             choiceNames = list(HTML("Fixed R<sub>0</sub>, h"), HTML("Fixed stock-recruit &alpha;, &beta;")),
-                                   #             choiceValues = 1:2)
                             ),
 
                             column(9,
                                    plotOutput("hist_YC_plot", height = 520)
                             )
                      ),
-                     value = 3),
+                     value = 4),
 
             tabPanel(h5("Recruitment deviations"),
                      p("The top row of figure shows the median (with 50% and 90% confidence intervals) of historical and projected log-recruitment deviations from the stock-recruit relationship.
                        The bottom row plots the annual mean deviation (in normal space). Thus, a stationary mean around one implies average productivity defined by the stock-recruit relationship,
                        with greater or lower recruitment productivity using means greater or smaller, respectively, than one."),
                      plotOutput("plot_future_recruit", height = 540),
-                     value = 4),
-
-            tabPanel(h5("Growth"),
-
-                     tabsetPanel(id = "OM_growth", selected = 1,
-                                 tabPanel(h5("Parameter Means"),
-                                          plotOutput("plot_hist_growth_I",height=540),
-                                          value = 1),
-                                 tabPanel(h5("Time-varying values"),
-                                          plotOutput("plot_hist_growth_II",height=540),
-                                          value = 2)
-                                 ),
                      value = 5),
+
+            #tabPanel(h5("Growth"),
+            #         tabsetPanel(id = "OM_growth", selected = 1,
+            #                     tabPanel(h5("Parameter Means"),
+            #                              plotOutput("plot_hist_growth_I",height=540),
+            #                              value = 1),
+            #                     tabPanel(h5("Time-varying values"),
+            #                              plotOutput("plot_hist_growth_II",height=540),
+            #                              value = 2)
+            #                     ),
+            #         value = 5),
 
             tabPanel(h5("Spatial"),
                      p("Multiple-area spatial operating models can be used. A single-area (no spatial dynamics) model is effectively created with a 2-area model with all movement parameters set to 0.5."),
