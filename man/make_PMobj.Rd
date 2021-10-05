@@ -49,6 +49,9 @@ Provide the type with argument \code{SSB0_type}.
 \code{type = "SSBMSY"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{Chist_yr}.
 }
 \examples{
-MSE <- MSEtool::runMSE(MPs = c("NFref", "AvC"))
+\donttest{
+library(MSEtool)
+MSE <- MSEtool::runMSE(OM = MSEtool::testOM, MPs = c("NFref", "FMSYref"))
 PM <- make_PMobj(MSE, type = "SSB", frac = 0.75, year_range = 51:100, SSBhist_yr = 50)
+}
 }

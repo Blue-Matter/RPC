@@ -80,7 +80,7 @@ tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue",
 
 }
 
-
+#' @importFrom dplyr filter
 Rmax_regression <- function(R, SSB, S50, type = c("low", "high")) {
   type <- match.arg(type)
   if(type == "low") {

@@ -209,60 +209,6 @@ hist_bio_change <- function(x, var = c("Wt_age", "M_ageArray"), change_mean = 0,
   invisible(sched_change)
 }
 
-#' @export
-hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD = 0.7, LnAC = 0, Pshape = 1.1,
-                                      figure = TRUE, nsim_plot = 5) {
-  dist <- match.arg(dist)
-
-  if(inherits(x, "reactivevalues")) {
-    MSEhist <- x$MSEhist
-  } else {
-    MSEhist <- x
-  }
-
-  Perr_y <- MSEhist@SampPars$Stock$Perr_y
-  nsim_plot <- min(nsim_plot, nrow(Perr_y))
-
-  if(dist == "Lognormal") {
-    Perr_new <- MSEtool:::sample_recruitment(Perr_hist = log(Perr_y[, 1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
-                                             proyears = MSEhist@OM@proyears, procsd = LnSD, AC = LnAC)
-    Perr_new <- exp(Perr_new)
-  } else {
-    Perr_new <- sample_pareto(nsim = nrow(Perr_y), proyears = MSEhist@OM@proyears, shape = Pshape)
-  }
-
-  Perr_y[, MSEhist@OM@nyears + MSEhist@OM@maxage + 1:MSEhist@OM@proyears] <- Perr_new
-
-  if(figure) {
-
-    old_par <- par(no.readonly = TRUE)
-    on.exit(par(old_par))
-
-    par(mfrow=c(1,2),mai=c(0.9,0.9,0.6,0.1),omi=c(0,0,0,0))
-
-    yrs_hist <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
-    yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
-    y <- c(yrs_hist, yrs_proj)
-
-    cur_dev <- MSEhist@TSdata$RecDev[1:nsim_plot, ]
-    matplot(y, t(cur_dev), lty = 1, type = "l",
-            ylim = c(0, 1.1 * max(cur_dev)), xlab = "Year", ylab = "Recruitment deviations")
-    abline(h = 0, col = "grey")
-    abline(h = 1, lty = 3)
-    abline(v = MSEhist@OM@CurrentYr, lty = 3)
-    title(paste("Current operating model\n", nsim_plot, "simulations"))
-
-    new_dev <- Perr_y[1:nsim_plot, ]
-    matplot(y, t(new_dev), lty = 1, type = "l",
-            ylim = c(0, 1.1 * max(new_dev)), xlab = "Year", ylab = "Recruitment deviations")
-    abline(h = 0, col = "grey")
-    abline(h = 1, lty = 3)
-    abline(v = MSEhist@OM@CurrentYr, lty = 3)
-    title(paste("Updated operating model\n", nsim_plot, "simulations"))
-  }
-
-  invisible(Perr_y)
-}
 
 #' @rdname plot-Hist
 #' @details \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
@@ -433,3 +379,72 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
 
 }
 
+
+
+
+#' Resample recruitment deviations
+#'
+#' A function to generate new recruitment deviations (with mean = 1) for the projection period.
+#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
+#' the Hist object.
+#' @param dist Character to denote to sample either from a lognormal distribution or Pareto distribution.
+#' @param LnSD If Lognormal, the standard deviation.
+#' @param LnAC If Lognormal, the autocorrelation (in log-space).
+#' @param Pshape If Pareto, the shape parameter. See \link[EnvStats]{Pareto}. The location parameter is calculated such that the mean = 1.
+#' @param figure Whether to plot the sampled deviations.
+#' @param nsim_plot The number of simulations to plot if figure is TRUE.
+#' @return An updated matrix for \code{OM@cpars$Perr_y}.
+#' @export
+hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD = 0.7, LnAC = 0, Pshape = 1.1,
+                                      figure = TRUE, nsim_plot = 5) {
+  dist <- match.arg(dist)
+
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
+  Perr_y <- MSEhist@SampPars$Stock$Perr_y
+  nsim_plot <- min(nsim_plot, nrow(Perr_y))
+
+  if(dist == "Lognormal") {
+    Perr_new <- MSEtool:::sample_recruitment(Perr_hist = log(Perr_y[, 1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
+                                             proyears = MSEhist@OM@proyears, procsd = LnSD, AC = LnAC)
+    Perr_new <- exp(Perr_new)
+  } else {
+    Perr_new <- sample_pareto(nsim = nrow(Perr_y), proyears = MSEhist@OM@proyears, shape = Pshape)
+  }
+
+  Perr_y[, MSEhist@OM@nyears + MSEhist@OM@maxage + 1:MSEhist@OM@proyears] <- Perr_new
+
+  if(figure) {
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+
+    par(mfrow=c(1,2),mai=c(0.9,0.9,0.6,0.1),omi=c(0,0,0,0))
+
+    yrs_hist <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
+    yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
+    y <- c(yrs_hist, yrs_proj)
+
+    cur_dev <- MSEhist@TSdata$RecDev[1:nsim_plot, ]
+    matplot(y, t(cur_dev), lty = 1, type = "l",
+            ylim = c(0, 1.1 * max(cur_dev)), xlab = "Year", ylab = "Recruitment deviations")
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste("Current operating model\n", nsim_plot, "simulations"))
+
+    new_dev <- Perr_y[1:nsim_plot, ]
+    matplot(y, t(new_dev), lty = 1, type = "l",
+            ylim = c(0, 1.1 * max(new_dev)), xlab = "Year", ylab = "Recruitment deviations")
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste("Updated operating model\n", nsim_plot, "simulations"))
+  }
+
+  invisible(Perr_y)
+}

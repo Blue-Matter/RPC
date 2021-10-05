@@ -10,7 +10,7 @@ Maintainer: Quang Huynh <quang@bluematterscience.com>
 Description: A Shiny App for the exploration of fisheries reference points using operating models.
 License: GPL-3
 Depends:
-    R (>= 4.0.1),
+    R (>= 4.0.0),
     shiny
 Imports:
     methods,
@@ -41,6 +41,7 @@ Remotes:
 Suggests: knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: gzip
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr, rmarkdown
 URL: https://github.com/Blue-Matter/RPC

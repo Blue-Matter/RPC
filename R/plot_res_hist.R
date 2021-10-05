@@ -238,6 +238,7 @@ hist_BvsSP<-function(x, figure = TRUE) {
 #' @param SR_include A vector including any of c(1, 2, 3) that indicates what to plot in the stock-recruit figure. 1 = individual S-R pairs,
 #' 2 = stock-recruit relationship, 3 = reference recruits-per-spawner (R/S) lines
 #' (maximum R/S corresponding to stock-recruit alpha, median historical R/S, and year-specific unfished R/S).
+#' @importFrom ggrepel geom_text_repel
 #' @export
 hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS0, SR_include = 1:3) {
   if(inherits(x, "reactivevalues")) {

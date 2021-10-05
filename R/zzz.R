@@ -1,4 +1,10 @@
 
-#' @importFrom dplyr %>% filter bind_rows
-#' @import methods stats utils graphics ggplot2 ggpubr ggrepel grDevices reshape2 scales shiny MSEtool SAMtool MSEextra
+#' @rawNamespace import(stats, except = filter)
+#' @importFrom dplyr %>%
+#' @import methods utils graphics ggplot2 grDevices shiny MSEtool SAMtool MSEextra
 NULL
+
+if(getRversion() >= "2.15.1") {
+  utils::globalVariables(c(".", "AM", "MP", "PM", "Probability", "Quantile", "R", "SSB", "Type", "Year", "b", "value", "variable", "y"))
+}
+
