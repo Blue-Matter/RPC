@@ -1000,11 +1000,8 @@ server <- function(input, output, session) {
     updateSliderInput(session, "change_rec_sd", value = mean(OBJs$MSEhist@SampPars$Stock$procsd))
     updateSliderInput(session, "change_rec_AC", value = mean(OBJs$MSEhist@SampPars$Stock$AC))
 
-    Frange_max <- local({
-      Fcrash <- 1.1 * max(MSEhist@Ref$ByYear$Fcrash)
-      M <- 3 * max(MSEhist@SampPars$Stock$Marray)
-      min(Fcrash, M) %>% round(2)
-    })
+    Frange_max <- min(3 * max(MSEhist@Ref$ByYear$FMSY), 3, 1.1 * max(MSEhist@Ref$ByYear$Fcrash)) %>% round(2)
+
     updateSliderInput(session, "YC_Frange", min = 0, max = Frange_max, value = c(0, Frange_max), step = 0.01)
     updateSliderInput(session, "YC_y_bio", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
     updateSliderInput(session, "YC_y_sel", min = min(yr_cal), max = max(yr_cal), value = MSEhist@OM@CurrentYr)
