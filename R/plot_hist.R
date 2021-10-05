@@ -103,6 +103,15 @@ hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageA
   OM <- MSEhist@OM
   sched <- getElement(MSEhist@SampPars$Stock, var)
 
+  if(var == "Mat_age") {
+    Fec <- MSEhist@SampPars$Stock$Fec_Age
+    CalcProd <- MSEhist@SampPars$Stock$Mat_age * MSEhist@SampPars$Stock$Wt_age
+    if(!identical(Fec[, -1, ], CalcProd[, -1, ])) {
+      sched <- Fec
+      ylab <- "Fecundity"
+    }
+  }
+
   yr_cal <- 1:(OM@nyears + OM@proyears) - OM@nyears + OM@CurrentYr
 
   if(missing(yr_plot)) {
@@ -282,31 +291,51 @@ hist_sel <- function(x, yr, maturity = TRUE) {
   on.exit(par(old_par))
   #par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
   par(mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0.2,0))
-  layout(matrix(c(1:6, rep(7, 3)), nrow = 3), widths = c(1, 1, 0.5))
+  if(maturity) {
+    layout(matrix(c(1:6, rep(7, 3)), nrow = 3), widths = c(1, 1, 0.5))
+  } else {
+    layout(matrix(1:6, nrow = 3))
+  }
   cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
 
   for(y in 1:length(yind)) {
-    # Selectivity
+    # Selectivity with maturity/fecundity
+    if(maturity) {
+      Fec <- MSEhist@SampPars$Stock$Fec_Age
+      CalcProd <- MSEhist@SampPars$Stock$Mat_age * MSEhist@SampPars$Stock$Wt_age
+      if(identical(Fec[, -1, ], CalcProd[, -1, ])) {
+        mat_plot <- MSEhist@SampPars$Stock$Mat_age[, , yind[y]]
+        ylab_sel <- "Vulnerability with maturity"
+        legend_sel <- "Maturity"
+      } else {
+        mat_plot <- Fec[, , yind[y]]/max(Fec[, , yind[y]])
+        ylab_sel <- "Vulnerability with\nrelative fecundity"
+        legend_sel <- "Fecundity"
+      }
+    } else {
+      ylab_sel <- "Vulnerability"
+    }
     tsplot(MSEhist@SampPars$Fleet$V[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab=paste0("Vulnerability", ifelse(maturity, " with maturity", "")),
-           cols = cols, zeroyint=F, ymax = 1.1)
+           xlab="",ylab= ylab_sel,cols = cols, ymax = 1.1)
     mtext(paste("Year", yr[y]), 3, line = 1, font = 2)
     if(maturity) {
-      plotquant(MSEhist@SampPars$Stock$Mat_age[, , yind[y]], yrs=0:MSEhist@OM@maxage, addline = FALSE)
+      plotquant(mat_plot, yrs=0:MSEhist@OM@maxage, addline = FALSE)
     }
 
     # Retention
     tsplot(MSEhist@SampPars$Fleet$retA_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab="Retention",cols = cols, zeroyint=F, ymax = 1.1)
+           xlab="",ylab="Retention",cols = cols, ymax = 1.1)
 
     # Realized Selectivity
     tsplot(MSEhist@SampPars$Fleet$V_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab="Realized Selectivity",cols = cols, zeroyint=F, ymax = 1.1)
+           xlab="",ylab="Realized Selectivity",cols = cols, ymax = 1.1)
 
   }
-  plot(1, 1, axes = FALSE, typ = "n", ylab = "", xlab = "")
-  legend("left", c("Selectivity", "Maturity"), col = c("darkgreen", "darkblue"), lwd = 3, cex = 1.5, bty = "n")
-  mtext("Age", 1, outer = TRUE, line = 2)
+  if(maturity) {
+    plot(1, 1, axes = FALSE, typ = "n", ylab = "", xlab = "")
+    legend("left", c("Selectivity", legend_sel), col = c("darkgreen", "darkblue"), lwd = 3, cex = 1.5, bty = "n")
+    mtext("Age", 1, outer = TRUE, line = 2)
+  }
 }
 
 #' @rdname plot-Hist
