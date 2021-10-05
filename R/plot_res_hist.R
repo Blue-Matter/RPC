@@ -188,9 +188,11 @@ hist_BvsSP<-function(x, figure = TRUE) {
   ind2<-2:nyh
 
   SP<-B[, ind2]-B[, ind1]+catch[, ind1]
+  SPB <- SP/B[, ind1]
   medSP<-apply(SP, 2, median)
   medB<-apply(B[, ind1], 2, median)
   medSPB<-apply(SP/B[, ind1], 2, median)
+  yr_lab <- seq(1, nyh, by = 5)
 
   if(figure) {
     old_par <- par(no.readonly = TRUE)
@@ -199,28 +201,48 @@ hist_BvsSP<-function(x, figure = TRUE) {
 
     tsplot(SP,yrs=hy[ind1],xlab="Year",ylab="Surplus production",zeroyint=F)
     abline(h = 0, lty = 3)
-    tsplot(SP/B[,ind1],yrs=hy[ind1],xlab="Year",ylab="Surplus production / Biomass",zeroyint=F)
+
+    tsplot(SPB,yrs=hy[ind1],xlab="Year",ylab="Surplus production / Biomass",zeroyint=F)
     abline(h = 0, lty = 3)
 
-    plot(medB,medSP,type='l',xlim=quantile(B[,ind2],p=c(0.05,0.95)),ylim=quantile(SP,p=c(0.05,0.95)),xlab="Biomass",ylab="Surplus production")
-
-    matplot(B[,ind2],SP,col="#99999920",add=T,lty=1,pch=19,cex=0.9)
-    #matplot(t(B[1:3,ind2]),t(SP[1:3,]),col=c("red","green","blue"),add=T,lty=1,pch=19,cex=0.7)
-    #matplot(t(B[1:3,ind2]),t(SP[1:3,]),col=c("red","green","blue"),add=T,type="l")
+    plot(medB,medSP,type='l',
+         xlab="Biomass",ylab="Surplus production")
+    matpoints(B[,ind1],SP,col="#99999920",pch=19,cex=0.9)
     points(medB,medSP,pch=19,cex=0.9)
     lines(medB,medSP,lwd=2)
     abline(h = 0, lty = 3)
+    text(medB[yr_lab], medSP[yr_lab], labels = hy[yr_lab], pos = 2)
     legend('topright',legend=c("Median","All sims"),text.col=c("black","dark grey"),bty="n")
-    #legend('topright',legend=c("Median","Sim 1","Sim 2","Sim 3","All sims"),text.col=c("black","red","green","blue","dark grey"),bty="n")
 
-    plot(medB,medSPB,type='l',xlim=quantile(B[,ind2],p=c(0.05,0.95)),ylim=quantile(SP/B[, ind1],p=c(0.05,0.95)),
+    plot(medB,medSPB,type='l',
          xlab="Biomass",ylab="Surplus production / Biomass")
-    matplot(B[,ind2],SP/B[,ind1],col="#99999920",add=T,lty=1,pch=19,cex=0.9)
+    matplot(B[,ind1],SPB,col="#99999920",add=T,lty=1,pch=19,cex=0.9)
     points(medB,medSPB,pch=19,cex=0.9)
     lines(medB,medSPB,lwd=2)
     abline(h = 0, lty = 3)
+    text(medB[yr_lab], medSPB[yr_lab], labels = hy[yr_lab], pos = 2)
     legend('topright',legend=c("Median","All sims"),text.col=c("black","dark grey"),bty="n")
-    #legend('topright',legend=c("Median","Sim 1","Sim 2","Sim 3","All sims"),text.col=c("black","red","green","blue","dark grey"),bty="n")
+
+    #plot.new()
+    #vps <- gridBase::baseViewports()
+    #grid::pushViewport(vps$figure)
+    #vp1 <- grid::plotViewport(c(0.9, 0.9, 0.2, 0.1))
+    #g1 <- data.frame(Year = hy[ind1], Biomass = medB, SP = medSP) %>%
+    #  ggplot(aes(Biomass, SP)) +
+    #  geom_point(data = data.frame(Biomass = B[, ind1] %>% as.numeric(), SP = SP %>% as.numeric()),
+    #             colour = "#99999920", shape = 19) +
+    #  geom_path() + geom_point() + theme_bw() + geom_hline(yintercept = 0, linetype = 3) +
+    #  ggrepel::geom_text_repel(aes(label = Year)) +
+    #  theme_bw() + labs(y = "Surplus production")
+    #print(g1, vp = vp1)
+    #g2 <- data.frame(Year = hy[ind1], Biomass = medB, SP = medSPB) %>%
+    #  ggplot(aes(Biomass, SP)) +
+    #  geom_point(data = data.frame(Biomass = B[, ind1] %>% as.numeric(), SP = as.numeric(SP/B[, ind1])),
+    #             colour = "#99999920", shape = 19) +
+    #  geom_path() + geom_point() + theme_bw() + geom_hline(yintercept = 0, linetype = 3) +
+    #  ggrepel::geom_text_repel(aes(label = Year)) +
+    #  theme_bw() + labs(y = "Surplus production / Biomass")
+    #print(g2, vp = vp2)
 
   } else {
     out <- make_df(SP, hy[-length(hy)])

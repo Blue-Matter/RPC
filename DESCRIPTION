@@ -36,7 +36,7 @@ Imports:
     shinyjs,
     shinyWidgets
 Remotes: 
-    github::pbs-assess/ggspider
+    github::pbs-assess/ggspider,
     github::Blue-Matter/MSEextra
 Suggests: knitr, rmarkdown
 Encoding: UTF-8
