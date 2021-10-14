@@ -263,7 +263,7 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch",
   } else if(type == "SSB50%Rmax") {
     xout <- MSEproj@SSB
     ref <- calculate_SSB50(MSEproj@Hist)$SSB50
-    caption <- paste0("Probability~SSB/SSB[50%Rmax]>", frac)
+    caption <- paste0("Probability~SSB/SSB[\"50%Rmax\"]>", frac)
   } else if(type == "SSB90%R/S") {
     xout <- MSEproj@SSB
     ref <- local({
@@ -272,7 +272,7 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch",
       R_90 <- apply(out$R, 1, quantile, probs = 0.9)
       R_90/RpS_90
     })
-    caption <- paste0("Probability~SSB/SSB[90%R/S]>", frac)
+    caption <- paste0("Probability~SSB/SSB[\"90%R/S\"]>", frac)
   }
 
   if(missing(label)) label <- caption %>% strsplit("~") %>% getElement(1) %>% paste(collapse = " ")

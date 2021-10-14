@@ -24,8 +24,9 @@ DFO_Inside_QB_Rockfish_2020@Species <- "Sebastes maliger"
 usethis::use_data(DFO_Inside_QB_Rockfish_2020, overwrite = TRUE)
 
 # Pcod
+dir <- "G:\\Shared drives\\BM shared\\1. Projects\\RPC\\Operating models"
 set.seed(43)
-DFO_Pacific_Cod_2020 <- MSEtool::iSCAM2OM('0_1a_5ABCD_BASE_2020', nsim = 250, mcmc = TRUE)
+DFO_Pacific_Cod_2020 <- MSEtool::iSCAM2OM(file.path(dir, 'pcod/0_1a_5ABCD_BASE_2020'), nsim = 250, mcmc = TRUE)
 
 DFO_Pacific_Cod_2020@Name <- "Pacific Cod 5ABCD, 2020 update (MCMC from iSCAM assessment)"
 DFO_Pacific_Cod_2020@Agency <- "DFO"
@@ -39,8 +40,11 @@ usethis::use_data(DFO_Pacific_Cod_2020, overwrite = TRUE)
 
 # Pacific herring WCVI
 dir <- "G:\\Shared drives\\BM shared\\1. Projects\\Herring MICE\\Data\\Herring_iscam"
-DFO_WCVI_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "WCVI"), nsim = 250, mcmc = FALSE)
-DFO_WCVI_Herring_2019@Name <- "Pacific Herring, West Coast Vancouver Island, 2019 update (MPD from iSCAM assessment)"
+library(gfiscamutils)
+
+mcmc <- gfiscamutils::read.mcmc(file.path(dir, "WCVI"))
+DFO_WCVI_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "WCVI"), nsim = 250, mcmc = mcmc)
+DFO_WCVI_Herring_2019@Name <- "Pacific Herring, West Coast Vancouver Island, 2019 update (MCMC from iSCAM assessment)"
 DFO_WCVI_Herring_2019@Agency <- "DFO"
 DFO_WCVI_Herring_2019@Source <-
   c(ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2018/2018_028-eng.html",
@@ -54,8 +58,9 @@ usethis::use_data(DFO_WCVI_Herring_2019, overwrite = TRUE)
 
 
 # Pacific herring SoG
-DFO_SoG_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "SoG"), nsim = 250, mcmc = FALSE)
-DFO_SoG_Herring_2019@Name <- "Pacific Herring, Strait of Georgia, 2019 update (MPD from iSCAM assessment)"
+mcmc <- gfiscamutils::read.mcmc(file.path(dir, "SoG"))
+DFO_SoG_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "SoG"), nsim = 250, mcmc = mcmc)
+DFO_SoG_Herring_2019@Name <- "Pacific Herring, Strait of Georgia, 2019 update (MCMC from iSCAM assessment)"
 DFO_SoG_Herring_2019@Agency <- "DFO"
 DFO_SoG_Herring_2019@Source <-
   c(ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2018/2018_028-eng.html",
@@ -68,8 +73,9 @@ usethis::use_data(DFO_SoG_Herring_2019, overwrite = TRUE)
 
 
 # Pacific herring HG
-DFO_HG_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "HG"), nsim = 250, mcmc = FALSE)
-DFO_HG_Herring_2019@Name <- "Pacific Herring, Haida Gwaii, 2019 update (MPD from iSCAM assessment)"
+mcmc <- gfiscamutils::read.mcmc(file.path(dir, "HG"))
+DFO_HG_Herring_2019 <- MSEtool::iSCAM2OM(file.path(dir, "HG"), nsim = 250, mcmc = mcmc)
+DFO_HG_Herring_2019@Name <- "Pacific Herring, Haida Gwaii, 2019 update (MCMC from iSCAM assessment)"
 DFO_HG_Herring_2019@Agency <- "DFO"
 DFO_HG_Herring_2019@Source <-
   c(ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2018/2018_028-eng.html",
@@ -112,8 +118,8 @@ usethis::use_data(DFO_BoF_Herring_2018, overwrite = TRUE)
 
 # Arrowtooth flounder
 DFO_Arrowtooth_Flounder_2014 <-
-  MSEtool::iSCAM2OM("G:\\Shared drives\\BM shared\\1. Projects\\RPC\\Operating models\\arrowtooth_flounder_2014", nsim = 250, mcmc = FALSE)
-DFO_Arrowtooth_Flounder_2014@Name <- "BC Arrowtooth Flounder, 2014 assessment (MPD from iSCAM model)"
+  MSEtool::iSCAM2OM("G:\\Shared drives\\BM shared\\1. Projects\\RPC\\Operating models\\arrowtooth_flounder_2014", nsim = 250, mcmc = TRUE)
+DFO_Arrowtooth_Flounder_2014@Name <- "BC Arrowtooth Flounder, 2014 assessment (MCMC from iSCAM model)"
 DFO_Arrowtooth_Flounder_2014@Agency <- "DFO"
 DFO_Arrowtooth_Flounder_2014@Source <-
   c(ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2017/2017_025-eng.html",
