@@ -111,13 +111,13 @@ stock_recruit_int <- function(MSEhist) {
   predSSB <- seq(0, 1.1 * max(SSB), length.out = 100)
   predR <- matrix(0, MSEhist@OM@nsim, length(predSSB))
 
-  SRrel <- MSEhist@SampPars$Stock$SRrel[1]
+  SRrel <- MSEhist@OM@SRrel
   R0 <- MSEhist@SampPars$Stock$R0
   hs <- MSEhist@SampPars$Stock$hs
   phi <- MSEhist@SampPars$Stock$SSBpR[, 1]
 
   aR <- MSEhist@SampPars$Stock$aR[, 1]
-  bR <- MSEhist@SampPars$Stock$bR[, 1]
+  bR <- log(aR * phi)/MSEhist@Ref$ReferencePoints$SSB0
   for(i in 1:MSEhist@OM@nsim) {
     if(SRrel == 1) {
       predR[i, ] <- 4 * R0[i] * hs[i] * predSSB/(phi[i] * R0[i] * (1 - hs[i]) + (5 * hs[i] - 1) * predSSB)
@@ -127,8 +127,26 @@ stock_recruit_int <- function(MSEhist) {
       predR_y[i, ] <- aR[i] * SSB[i, ] * exp(-bR[i] * SSB[i, ])
     }
   }
-
   list(R = R, SSB = SSB, predR_y = predR_y, predR = predR, predSSB = predSSB, yrs = yrs)
+}
+
+
+calculate_SSB50 <- function(MSEhist) {
+  if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50) Myers et al. 1994
+    Rmax <-  4 * MSEhist@SampPars$Stock$R0 * MSEhist@SampPars$Stock$hs / (5 * MSEhist@SampPars$Stock$hs - 1)
+    Rmax50 <- 0.5 * Rmax
+    S50 <- MSEhist@SampPars$Stock$SSBpR[, 1] * MSEhist@SampPars$Stock$R0 * (1 - MSEhist@SampPars$Stock$hs) /
+      (5 * MSEhist@SampPars$Stock$hs - 1)
+  } else {
+    aR <- MSEhist@SampPars$Stock$aR[, 1]
+    phi <- MSEhist@SampPars$Stock$SSBpR[, 1]
+    bR <- log(aR * phi)/MSEhist@Ref$ReferencePoints$SSB0
+
+    Rmax <- aR/bR/exp(1)
+    Rmax50 <- 0.5 * Rmax
+    S50 <- 0.231961/bR
+  }
+  list(Rmax = Rmax, Rmax50 = Rmax50, SSB50 = S50)
 }
 
 #' @importFrom EnvStats rpareto

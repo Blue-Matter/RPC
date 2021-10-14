@@ -15,17 +15,10 @@ hist_Rmax <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
   }
   out <- stock_recruit_int(MSEhist)
 
-  if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50)
-    Rmax <-  4 * MSEhist@SampPars$Stock$R0 * MSEhist@SampPars$Stock$hs / (5 * MSEhist@SampPars$Stock$hs - 1)
-    Rmax50 <- 0.5 * Rmax
-    S50 <- (5 * MSEhist@SampPars$Stock$hs - 1) / (1 - MSEhist@SampPars$Stock$hs) /
-      (MSEhist@SampPars$Stock$SSBpR[, 1] * MSEhist@SampPars$Stock$R0)
-    S50 <- 1/S50  # Myers et al. 1994
-  } else {
-    Rmax <- apply(out$predR, 1, max)
-    Rmax50 <- 0.5 * Rmax
-    S50 <- 0.231961/MSEhist@SampPars$Stock$bR[, 1] # Myers et al. 1994
-  }
+  out_Rmax <- calculate_SSB50(MSEhist)
+  Rmax <- out_Rmax$Rmax
+  Rmax50 <- out_Rmax$Rmax50
+  S50 <- out_Rmax$SSB50
 
   medSSB <- apply(out$SSB, 2, median)
   medR <- apply(out$R, 2, median)

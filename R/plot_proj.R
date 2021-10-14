@@ -202,7 +202,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
 #' }
 #' @return A \linkS4class{PMobj} object.
 #' @export
-make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
+make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch", "SSB50%Rmax", "SSB90%R/S"),
                        frac = 0.4, year_range, label, ...) {
   type <- match.arg(type)
   dots <- list(...)
@@ -256,10 +256,23 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch")
     xout <- MSEproj@SPR$Equilibrium
     ref <- 1
     caption <- paste0("Probability~SPR>", frac)
-  } else {
+  } else if(type == "Catch") {
     xout <- MSEproj@Catch
     ref <- MSEproj@CB_hist[, match(dots$Chist_yr, seq(CurrentYr - nyh + 1, CurrentYr))]
     caption <- paste0("Probability~C/C[", dots$Chist_yr, "]>", frac)
+  } else if(type == "SSB50%Rmax") {
+    xout <- MSEproj@SSB
+    ref <- calculate_SSB50(MSEproj@Hist)$SSB50
+    caption <- paste0("Probability~SSB/SSB[50%Rmax]>", frac)
+  } else if(type == "SSB90%R/S") {
+    xout <- MSEproj@SSB
+    ref <- local({
+      out <- stock_recruit_int(MSEproj@Hist)
+      RpS_90 <- apply(out$R/out$SSB, 1, quantile, probs = 0.9)
+      R_90 <- apply(out$R, 1, quantile, probs = 0.9)
+      R_90/RpS_90
+    })
+    caption <- paste0("Probability~SSB/SSB[90%R/S]>", frac)
   }
 
   if(missing(label)) label <- caption %>% strsplit("~") %>% getElement(1) %>% paste(collapse = " ")
