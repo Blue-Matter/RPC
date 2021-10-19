@@ -4,7 +4,7 @@
 
 plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue", col50='light blue', col90='#60859925'), addline=T, ablines=NA){
 
-  x[x==Inf]<-NA
+  x[is.infinite(x)]<-NA
   qs <- apply(x, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
   qsi <- apply(x, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
 
@@ -38,7 +38,7 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
 plotquant2 <- function(x, p = c(0.05,0.25,0.75,0.95), yrs) { # For ggplot
 
-  x[x==Inf]<-NA
+  x[is.infinite(x)]<-NA
   qs <- apply(x, 2, quantile, p = p[c(1,4)], na.rm = TRUE, type = 3)
   qsi <- apply(x, 2, quantile, p = p[2:3], na.rm = TRUE, type = 3)
 
@@ -71,7 +71,7 @@ plotquant2 <- function(x, p = c(0.05,0.25,0.75,0.95), yrs) { # For ggplot
 
 tsplot<-function(x,yrs,xlab="",ylab="",zeroyint=TRUE,cols=list(colm="dark blue", col50='light blue', col90='#60859925'),
                  ymax = NULL){
-
+  x[is.infinite(x)] <- NA_real_
   ymin <- ifelse(zeroyint, 0, 0.9 * min(x, na.rm = TRUE))
   if(is.null(ymax)) ymax <- 1.1 * max(x, na.rm = TRUE)
   plot(range(yrs), c(ymin, ymax), typ = "n",xlab=xlab,ylab=ylab,yaxs='i')
