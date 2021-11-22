@@ -14,6 +14,9 @@ server <- function(input, output, session) {
     c(DEMO_OM, DFO_OM, avail("OM", package = "MSEextra", msg = FALSE))
   })
 
+  ##### Currently disable markdown report
+  shinyjs::disable("RPC_Rep")
+
   # ---- Initialize Reactive Values -----
   # Operating model selected, loaded or sketched
   OM_upload <- reactiveVal(0)
