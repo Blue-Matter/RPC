@@ -46,7 +46,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>):
                                                                                <ul>
                                                                                <li><strong>Equilibrium SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with stock recruit parameters &alpha; and &beta;. This is the expected SSB if the year-specific biological parameters persist.</li>
-                                                                               <li><strong>Initial SSB<sub>0</sub></strong> is the spawning biomass in the first year of the operating model</li>
+                                                                               <li><strong>Initial SSB<sub>0</sub></strong> is the equilibrium SSB<sub>0</sub> in the first year of the operating model</li>
                                                                                <li><strong>Dynamic SSB<sub>0</sub></strong> is the annual value calculated from reconstructing the model with zero catches and preserving the magnitude of the recruitment deviations. This is intended to characterize the natural temporal variability of the population in the absence of fishing.</li>
                                                                                </ul>
                                                                                </p>"),

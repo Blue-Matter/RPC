@@ -133,7 +133,7 @@ hist_SSB0 <- function(x, figure = TRUE, prob_ratio = NA, prob_ylim = c(0, 1)) {
 
   SSB<-apply(MSEhist@TSdata$SBiomass,1:2,sum)
 
-  SSB0h<-array(SSB[,1],dim(SSB))
+  SSB0h<-array(MSEhist@Ref$ByYear$SSB0[, 1], dim(SSB))
   SSB0a<-MSEhist@Ref$ByYear$SSB0
   SSB0d<-MSEhist@Ref$Dynamic_Unfished$SSB0
 
