@@ -102,6 +102,12 @@ fluidPage(
 
                               conditionalPanel("input.Select==2",
                                                h5("Load an openMSE compatible operating model object from file. Once the file is uploaded, update the name, and adjust the number of simulations and projection years, in order to build the operating model."),
+                                               tags$h5("Various functions are available in the MSEtool R package to generate an operating model from a stock assessment, including: ",
+                                                       tags$a("SS2OM()", target = "_blank", href = "https://msetool.openmse.com/reference/SS2MOM.html"),
+                                                       tags$a("iSCAM2OM()", target = "_blank", href = "https://msetool.openmse.com/reference/iSCAM2MOM.html"),
+                                                       tags$a("Awatea2OM()", target = "_blank", href = "https://msetool.openmse.com/reference/Awatea2OM.html"),
+                                                       ". More generally, an operating model can be generated from abundance-at-age arrays and biological parameters provided to function ",
+                                                       tags$a("Assess2OM()", target = "_blank", href = "https://msetool.openmse.com/reference/Assess2OM.html")),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
 
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
