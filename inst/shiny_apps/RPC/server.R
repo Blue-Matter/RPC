@@ -267,6 +267,7 @@ server <- function(input, output, session) {
     tryCatch({
       OM_temp <- readRDS(file=filey$datapath)
       stopifnot(inherits(OM_temp, "OM"))
+      if(!is.null(OM_temp@cpars$Data)) OM_temp@cpars$Data@LHYear <- OM_temp@cpars$Data@Year <- NA_real_
       OBJs$OM <<- OM_temp
 
       updateTextInput(session, "Load_OMname",
@@ -288,7 +289,7 @@ server <- function(input, output, session) {
     error = function(e){
 
       AM(paste0(e,"\n"))
-      shinyalert("File read error", "This does not appear to be a MSEtool OM object, saved by saveRDS()", type = "error")
+      shinyalert("File read error", "There was an error loading this OM object", type = "error")
       AM(paste0("Operating model failed to load: ", filey$name))
       return(0)
 
@@ -296,6 +297,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$Load_OM,{
+    filey <- input$Load_OMprelim
     tryCatch({
 
       OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
@@ -314,7 +316,7 @@ server <- function(input, output, session) {
     error = function(e) {
 
       AM(paste0(e,"\n"))
-      shinyalert("File read error", "This does not appear to be a MSEtool OM object, saved by saveRDS()", type = "error")
+      shinyalert("File read error", "There was an error loading this OM object", type = "error")
       AM(paste0("Operating model failed to load: ", filey$name))
       return(0)
 
