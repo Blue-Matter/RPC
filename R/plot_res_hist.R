@@ -337,7 +337,7 @@ hist_R <- function(x, figure = TRUE, SR_only = FALSE, SR_xlim, SR_ylim, SR_y_RPS
                                        "Median~hist.~R/S", "Maximum~R/S"))
 
         g <- g + geom_abline(data = ablines, aes(slope = b, colour = Type, intercept = a), size = 0.75, linetype = 2) +
-          scale_colour_manual(name = "R/S", values = c("blue", "black", "red"), labels = scales::label_parse())
+          scale_colour_manual(name = "Recruits per spawner", values = c("blue", "black", "red"), labels = scales::label_parse())
 
       }
       return(g)
