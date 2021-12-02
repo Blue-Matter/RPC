@@ -107,7 +107,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
     SSB0a <- data.frame(value = apply(MSEproj@RefPoint$ByYear$SSB0, 2, median),
                         Type = "Equilibrium~SSB[0]",
                         Year = ay)
-    SSB0i <- data.frame(value = rep(MSEproj@RefPoint$ByYear$SSB0[, 1], length(ay)),
+    SSB0i <- data.frame(value = median(MSEproj@RefPoint$ByYear$SSB0[, 1]),
                         Type = "Initial~SSB[0]",
                         Year = ay)
     SSBhist <- data.frame(value = hist,
@@ -376,7 +376,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "SP", 
     SSB0a <- array(MSEproj@RefPoint$ByYear$SSB0[, pyind], dim(SSB)[c(1, 3 ,2)]) %>% aperm(c(1, 3, 2))
 
     SSB0an <- array(MSEproj@RefPoint$ByYear$SSB0[, nyh], dim(SSB0a))
-    SSB0i <- array(MSEproj@RefPoints$ByYear$SSB0[, 1], dim(SSB0a))
+    SSB0i <- array(MSEproj@RefPoint$ByYear$SSB0[, 1], dim(SSB0a))
 
     refs <- list(SSB0i,SSB0an,SSB0a,SSB0d)
     nrr<-length(refs)
@@ -498,7 +498,7 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F",
     SSB0d<-MSEproj@RefPoint$Dynamic_Unfished$SSB0[sims, , drop = FALSE]
     SSB0a<-MSEproj@RefPoint$ByYear$SSB0[sims, , drop = FALSE]
     SSB0an <- array(MSEproj@RefPoint$ByYear$SSB0[sims, nyears], dim(SSB0a))
-    SSB0i<-MSEproj@RefPoint$ByYear$SSB0[sims, 1, drop = FALSE]
+    SSB0i<- array(MSEproj@RefPoint$ByYear$SSB0[sims, 1, drop = FALSE], dim(SSB0a))
 
     par(mai=c(0.3,0.6,0.1,0.05),omi=c(0.6,0,0,0))
     layout(matrix(c(1,1,2,3,4,4,5,6,6),nrow=3,byrow=T),widths=c(0.5,0.3,0.2),heights=c(1.5,1,1))
@@ -507,7 +507,7 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F",
     abline(v=CurrentYr+c(0,(1:100)*10),col='grey')
     #matlines(yrs,t(SSB0a),col=cols,lty=2, pch = 1, typ = 'o')
     matlines(yrs,t(SSB),col=makeTransparent(cols,80),type='l',lty=1,lwd=5)
-    matlines(yrs, matrix(SSB0i, length(yrs), length(sims), byrow = TRUE), lty = 1, col=cols)
+    matlines(yrs, t(SSB0i), lty = 1, col=cols)
   } else if(type == "SSBMSY") {
 
     SSB <- cbind(MSEproj@SSB_hist[sims, , drop = FALSE], MSEproj@SSB[, MPind, ][sims, , drop = FALSE])
