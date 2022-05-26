@@ -2,7 +2,7 @@
 
 fluidPage(
   useShinyjs(),
-  useShinyalert(),
+  useShinyalert(force = TRUE),
   includeScript(path = "www/js/js4checkbox.js"),
   includeScript(path = "www/js/index.js"),
   tags$head(
