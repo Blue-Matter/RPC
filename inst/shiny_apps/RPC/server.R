@@ -396,13 +396,23 @@ server <- function(input, output, session) {
     updateSliderInput(session, "SR_xrange", min = 0, max = SSB_max, value = c(0, 1.1 * SSB_max), step = SSB_max/100)
     updateSliderInput(session, "SR_yrange", min = 0, max = R_max, value = c(0, 1.1 * R_max), step = R_max/100)
     updateSliderInput(session, "SR_y_RPS0", min = min(Hist_yr), max = max(Hist_yr), value = max(Hist_yr))
+
   })
 
-  output$hist_SSB_plot <- renderPlot(hist_SSB(OBJs), res = plotres)
-  output$hist_SSB_table <- renderTable(hist_SSB(OBJs, figure = FALSE), rownames = TRUE)
+  observeEvent({
+    input$SSB_y
+  }, {
+    req(OBJs$MSEhist)
 
-  output$hist_SSB0_plot<-renderPlot(hist_SSB0(OBJs),res=plotres)
-  output$hist_SSBMSY_plot <- renderPlot(hist_SSBMSY(OBJs), res = plotres)
+    output$hist_SSB_plot <- renderPlot(LRP_SSBhist(OBJs, figure = "ts", SSB_y = input$SSB_y), res = plotres)
+    output$hist_SSB_table <- renderTable(LRP_SSBhist(OBJs, figure = "none", SSB_y = input$SSB_y)$Quantile, rownames = TRUE)
+  })
+
+  output$hist_SSB0_eq_plot<-renderPlot(LRP_SSB0(OBJs, figure = "ts", type = "equilibrium"),res=plotres)
+  output$hist_SSB0_init_plot<-renderPlot(LRP_SSB0(OBJs, figure = "ts", type = "initial"),res=plotres)
+  output$hist_SSB0_dyn_plot<-renderPlot(LRP_SSB0(OBJs, figure = "ts", type = "dynamic"),res=plotres)
+
+  output$hist_SSBMSY_plot <- renderPlot(LRP_SSBMSY(OBJs, figure = "ts"), res = plotres)
 
   observeEvent({
     input$SSB_prob_type
@@ -410,49 +420,60 @@ server <- function(input, output, session) {
     input$SSB_prob
     input$SSB_yrange
   }, {
-    if(input$SSB_prob_type == 1) {
+    if(input$SSB_prob_type == "hist") {
+
       updateSliderInput(session, "SSB_prob", max = 2)
-      output$hist_SSB_prob <- renderPlot(hist_SSB(OBJs, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
+      output$hist_SSB_prob <- renderPlot(LRP_SSBhist(OBJs, figure = "prob", prob_ratio = input$SSB_prob,
+                                                     SSB_y = input$SSB_y, prob_ylim = input$SSB_yrange),
                                          res = plotres)
-      output$hist_SSB_prob_table <- renderTable(hist_SSB(OBJs, figure = FALSE, prob_ratio = input$SSB_prob, SSB_y = input$SSB_y),
+      output$hist_SSB_prob_table <- renderTable(LRP_SSBhist(OBJs, figure = "none", prob_ratio = input$SSB_prob, SSB_y = input$SSB_y)[["Prob"]],
                                                 rownames = TRUE)
       output$SSB_threshold_label <- renderUI("Historical SSB threshold")
-    } else if(input$SSB_prob_type == 2) {
-      updateSliderInput(session, "SSB_prob", max = 1)
-      output$hist_SSB_prob <- renderPlot(hist_SSB0(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
-                                         res = plotres)
-      output$hist_SSB_table <- renderTable(hist_SSB0(OBJs, figure = FALSE, prob_ratio = input$SSB0_prob), rownames = TRUE)
-      output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>0</sub> threshold</p>"))
-    } else {
+
+    } else if(input$SSB_prob_type == "MSY") {
+
       updateSliderInput(session, "SSB_prob", max = 2)
-      output$hist_SSB_prob <- renderPlot(hist_SSBMSY(OBJs, prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
-                                            res = plotres)
-      output$hist_SSB_table <- renderTable(hist_SSBMSY(OBJs, figure = FALSE, prob_ratio = input$SSBMSY_prob), rownames = TRUE)
+      output$hist_SSB_prob <- renderPlot(LRP_SSBMSY(OBJs, figure = "prob", prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+                                         res = plotres)
+      output$hist_SSB_table <- renderTable(LRP_SSBMSY(OBJs, figure = "none", prob_ratio = input$SSBMSY_prob)[["Prob"]], rownames = TRUE)
       output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>MSY</sub> threshold</p>"))
+
+    } else {
+
+      updateSliderInput(session, "SSB_prob", max = 1)
+      output$hist_SSB_prob <- renderPlot(LRP_SSB0(OBJs, figure = "prob", type = input$SSB_prob_type,
+                                                  prob_ratio = input$SSB_prob, prob_ylim = input$SSB_yrange),
+                                         res = plotres)
+      output$hist_SSB_table <- renderTable(hist_SSB0(OBJs, figure = "none", type = input$SSB_prob_type,
+                                                     prob_ratio = input$SSB0_prob)[["Prob"]], rownames = TRUE)
+      output$SSB_threshold_label <- renderUI(HTML("<p>SSB/SSB<sub>0</sub> threshold</p>"))
+
     }
 
     output$hist_SSB_prob_table_label <- renderUI({
       SSB_prob_type <- switch(input$SSB_prob_type,
-                              "1" = paste("SSB in ", input$SSB_y),
-                              "2" = "SSB<sub>0</sub>",
-                              "3" = "SSB<sub>MSY</sub>"
+                              "hist" = paste("SSB in ", input$SSB_y),
+                              "equilibrium" = "Equilibrium SSB<sub>0</sub>",
+                              "initial" = "Initial SSB<sub>0</sub>",
+                              "dynamic" = "Dynamic SSB<sub>0</sub>",
+                              "MSY" = "SSB<sub>MSY</sub>"
       )
       HTML(paste0("<p>Annual probability that SSB has exceeded ", 100 * input$SSB_prob, "% ", SSB_prob_type, "</p>"))
     })
 
   })
 
-  output$hist_R_plot<-renderPlot(hist_R(OBJs),res=plotres)
-  output$hist_R_table<-renderTable(hist_R(OBJs, figure = FALSE), rownames = TRUE, digits = 2)
+  output$hist_R_plot<-renderPlot(LRP_R(OBJs, figure = "ts"),res=plotres)
+  output$hist_R_table<-renderTable(LRP_R(OBJs, figure = "none")$Quantile, rownames = TRUE, digits = 2)
 
-  output$hist_exp <- renderPlot(hist_exp(OBJs),res=plotres)
-  output$hist_exp2 <- renderTable(hist_exp(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_exp <- renderPlot(LRP_FMSY(OBJs, figure = "ts"),res=plotres)
+  output$hist_exp2 <- renderTable(LRP_FMSY(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
-  output$hist_Fmed <- renderPlot(hist_Fmed(OBJs), res = plotres)
-  output$hist_Fmed2 <- renderTable(hist_Fmed(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_Fmed <- renderPlot(LRP_Fmed(OBJs, figure = "ts"), res = plotres)
+  output$hist_Fmed2 <- renderTable(LRP_Fmed(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
-  output$hist_SPR <- renderPlot(hist_SPR(OBJs),res=plotres)
-  output$hist_SPR2 <- renderTable(hist_SPR(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_SPR <- renderPlot(LRP_SPR(OBJs, figure = "ts"),res=plotres)
+  output$hist_SPR2 <- renderTable(LRP_SPR(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
   # Probability
   observeEvent({
@@ -462,18 +483,28 @@ server <- function(input, output, session) {
     input$exp_yrange
   }, {
     if(input$exp_type == "FMSY") {
-      output$hist_exp_prob <- renderPlot(hist_exp(OBJs, prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_prob <- renderPlot(LRP_FMSY(OBJs, figure = "prob", prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
         paste0("Annual probability that F/FMSY < ", 100 * input$FMSY_prob, "%.")
       })
-      output$hist_exp_table <- renderTable(hist_exp(OBJs, figure = FALSE, prob_ratio = input$FMSY_prob),
+      output$hist_exp_table <- renderTable(LRP_FMSY(OBJs, figure = "none", prob_ratio = input$FMSY_prob)[["Prob"]],
                                            rownames = TRUE)
+    } else if(input$exp_type == "Fmed") {
+
+      output$hist_exp_prob <- renderPlot(LRP_Fmed(OBJs, figure = "prob", prob_ratio = input$FMSY_prob, prob_ylim = input$exp_yrange))
+      output$hist_exp_table_label <- renderText({
+        paste0("Annual probability that F/Fmed < ", 100 * input$FMSY_prob, "%.")
+      })
+      output$hist_exp_table <- renderTable(LRP_Fmed(OBJs, figure = "none", prob_ratio = input$FMSY_prob)[["Prob"]],
+                                           rownames = TRUE)
+
     } else {
-      output$hist_exp_prob <- renderPlot(hist_SPR(OBJs, prob_ratio = input$SPR_prob, prob_ylim = input$exp_yrange))
+
+      output$hist_exp_prob <- renderPlot(LRP_SPR(OBJs, figure = "prob", prob_ratio = input$SPR_prob, prob_ylim = input$exp_yrange))
       output$hist_exp_table_label <- renderText({
         paste0("Annual probability that equilibrium SPR > ", input$SPR_prob)
       })
-      output$hist_exp_table <- renderTable(hist_SPR(OBJs, figure = FALSE, prob_ratio = input$SPR_prob),
+      output$hist_exp_table <- renderTable(LRP_SPR(OBJs, figure = "none", prob_ratio = input$SPR_prob)[["Prob"]],
                                            rownames = TRUE)
     }
   })
@@ -486,45 +517,51 @@ server <- function(input, output, session) {
     input$SR_y_RPS0
   }, {
     y_RPS0 <- input$SR_y_RPS0
-
-    output$hist_SR_plot <- renderPlot(hist_R(OBJs, SR_only = TRUE,
-                                             SR_xlim = input$SR_xrange, SR_ylim = input$SR_yrange, SR_y_RPS0 = y_RPS0,
-                                             SR_include = input$SR_plot_options),
+    output$hist_SR_plot <- renderPlot(LRP_R(OBJs, figure = "SR",
+                                            SR_xlim = input$SR_xrange, SR_ylim = input$SR_yrange, SR_y_RPS0 = y_RPS0,
+                                            SR_include = input$SR_plot_options),
                                       res = plotres)
   })
 
-  output$hist_BvsSP_plot<-renderPlot(hist_BvsSP(OBJs),res=plotres)
-  output$hist_BvsSP_table<-renderTable(hist_BvsSP(OBJs, figure = FALSE), rownames = TRUE, digits = 0)
+  observeEvent({
+    input$hist_SP_Bunit
+  }, {
+    output$hist_SP_plot<-renderPlot(LRP_SP(OBJs, figure = "ts", Bunit = input$hist_SP_Bunit),res=plotres)
+    output$hist_SP_plot_phase<-renderPlot(LRP_SP(OBJs, figure = "phase", Bunit = input$hist_SP_Bunit),res=plotres)
+    output$hist_SP_table<-renderTable(LRP_SP(OBJs, figure = "none", Bunit = input$hist_SP_Bunit)$Quantile, rownames = TRUE, digits = 0)
+  })
 
-  output$hist_RpS_plot<-renderPlot(hist_RpS(OBJs),res=plotres)
-  output$hist_RpS_table<-renderTable(hist_RpS(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_RPS_plot<-renderPlot(LRP_RPS(OBJs, figure = "ts"),res=plotres)
+  output$hist_RPS_table<-renderTable(LRP_RPS(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
-  output$hist_Rmax_plot<-renderPlot(hist_Rmax(OBJs),res=plotres)
-  output$hist_Rmax_table<-renderTable(hist_Rmax(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_Rmax_plot<-renderPlot(LRP_50Rmax(OBJs, figure = "ts"),res=plotres)
+  output$hist_Rmax_table<-renderTable(LRP_50Rmax(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
   observeEvent({
     input$HistRes1
     input$Rmax_prob
     input$Rmax_yrange
   }, {
-    output$hist_Rmax_prob <- renderPlot(hist_Rmax(OBJs, prob_ratio = input$Rmax_prob, prob_ylim = input$Rmax_yrange), res = plotres)
-    output$hist_Rmax_prob_table <- renderTable(hist_Rmax(OBJs, figure = FALSE, prob_ratio = input$Rmax_prob), rownames = TRUE)
+    output$hist_Rmax_prob <- renderPlot(LRP_50Rmax(OBJs, figure = "prob", prob_ratio = input$Rmax_prob,
+                                                   prob_ylim = input$Rmax_yrange), res = plotres)
+    output$hist_Rmax_prob_table <- renderTable(LRP_50Rmax(OBJs, figure = "none", prob_ratio = input$Rmax_prob)[["Prob"]],
+                                               rownames = TRUE)
 
     output$hist_Rmax_prob_table_label <- renderUI({
       HTML(paste0("<p>Annual probability that SSB/SSB<sub>50% Rmax</sub> > ", 100 * input$Rmax_prob, "%</p>"))
     })
   })
 
-  output$hist_RpS90_plot<-renderPlot(hist_RpS90(OBJs),res=plotres)
-  output$hist_RpS90_table<-renderTable(hist_RpS90(OBJs, figure = FALSE), rownames = TRUE)
+  output$hist_RpS90_plot<-renderPlot(LRP_RPS90(OBJs, figure = "ts"),res=plotres)
+  output$hist_RpS90_table<-renderTable(LRP_RPS90(OBJs, figure = "none")$Quantile, rownames = TRUE)
 
   observeEvent({
     input$HistRes1
     input$RpS90_prob
     input$RpS90_yrange
   }, {
-    output$hist_RpS90_prob <- renderPlot(hist_RpS90(OBJs, prob_ratio = input$RpS90_prob, prob_ylim = input$RpS90_yrange), res = plotres)
-    output$hist_RpS90_prob_table <- renderTable(hist_RpS90(OBJs, figure = FALSE, prob_ratio = input$RpS90_prob), rownames = TRUE)
+    output$hist_RpS90_prob <- renderPlot(LRP_RPS90(OBJs, figure = "prob", prob_ratio = input$RpS90_prob, prob_ylim = input$RpS90_yrange), res = plotres)
+    output$hist_RpS90_prob_table <- renderTable(LRP_RPS90(OBJs, figure = "none", prob_ratio = input$RpS90_prob)[["Prob"]], rownames = TRUE)
 
     output$hist_RpS90_prob_table_label <- renderUI({
       HTML(paste0("<p>Annual probability that SSB/SSB<sub>90%ile R/S</sub> > ", 100 * input$RpS90_prob, "%</p>"))

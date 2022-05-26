@@ -111,7 +111,7 @@ stock_recruit_int <- function(MSEhist) {
   predSSB <- seq(0, 1.1 * max(SSB), length.out = 100)
   predR <- matrix(0, MSEhist@OM@nsim, length(predSSB))
 
-  SRrel <- MSEhist@OM@SRrel
+  SRrel <- unique(MSEhist@OM@SRrel)
   R0 <- MSEhist@SampPars$Stock$R0
   hs <- MSEhist@SampPars$Stock$hs
   phi <- MSEhist@SampPars$Stock$SSBpR[, 1]
@@ -132,7 +132,7 @@ stock_recruit_int <- function(MSEhist) {
 
 
 calculate_SSB50 <- function(MSEhist) {
-  if(MSEhist@OM@SRrel == 1) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50) Myers et al. 1994
+  if(all(MSEhist@OM@SRrel == 1)) { # Calculate 50% maximum recruitment from the S-R function and corresponding SSB (S50) Myers et al. 1994
     Rmax <-  4 * MSEhist@SampPars$Stock$R0 * MSEhist@SampPars$Stock$hs / (5 * MSEhist@SampPars$Stock$hs - 1)
     Rmax50 <- 0.5 * Rmax
     S50 <- MSEhist@SampPars$Stock$SSBpR[, 1] * MSEhist@SampPars$Stock$R0 * (1 - MSEhist@SampPars$Stock$hs) /
@@ -177,73 +177,73 @@ generate_pareto_par <- function(shape, mu = 1) {
   return(list(mu = mu, location = location, variance = variance))
 }
 
-#' @importFrom changepoint cpt.mean
-do_cp <- function(x, type = c("SP", "SPB"), ncp = 1, med_only = FALSE, figure = TRUE) {
-  if(inherits(x, "reactivevalues")) {
-    MSEhist <- x$MSEhist
-  } else {
-    MSEhist <- x
-  }
-  type <- match.arg(type)
-  nyh<-MSEhist@OM@nyears
-  hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
-
-  if(type == "SP") {
-    B <- apply(MSEhist@TSdata$Biomass,1:2,sum)
-    catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
-    ind1<-2:nyh-1
-    ind2<-2:nyh
-
-    #SP<-B[, ind2]-B[, ind1]+catch[, ind1]
-    #SPB <- SP/B[, ind1]
-    #medSP<-apply(SP, 2, median)
-    #medB<-apply(B[, ind1], 2, median)
-    #medSPB<-apply(SP/B[, ind1], 2, median)
-    #yr_lab <- seq(1, nyh, by = 5)
-
-    y1 <- B[, ind2]-B[, ind1]+catch[, ind1] # SP
-    ylab <- "Surplus production"
-
-    yr <- hy[-length(hy)]
-
-  } else if(type == "SPB") {
-    B <- apply(MSEhist@TSdata$Biomass,1:2,sum)
-    catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
-    ind1<-2:nyh-1
-    ind2<-2:nyh
-
-    y1 <- B[, ind2]-B[, ind1]+catch[, ind1] # SP
-    y1 <- y1/B[, ind1]
-    ylab <- "Surplus production / Biomass"
-
-    yr <- hy[-length(hy)]
-  }
-  y1m <- apply(y1, 2, median)
-
-  if(med_only) {
-    cp <- changepoint::cpt.mean(y1m, method = "BinSeg", penalty = "AIC", Q = ncp)
-
-    if(figure) {
-      plot(yr, y1m, typ = "o", xlab = "Year", ylab = ylab)
-      means <- cp@param.est$mean
-      nseg <- length(means)
-      cpts.to.plot <- c(0, cp@cpts)
-      for (i in 1:nseg) {
-        segments(yr[cpts.to.plot[i] + 1], means[i], yr[cpts.to.plot[i + 1]], means[i], col = "red")
-      }
-    }
-
-  } else {
-    cp <- changepoint::cpt.mean(y1, method = "BinSeg", penalty = "AIC", Q = ncp)
-
-    cp_vals <- sapply(cp, function(x) {
-      cpts.to.plot <- c(0, x@cpts)
-      means <- x@param.est$mean
-      means[findInterval(1:max(cpts.to.plot) - 1, cpts.to.plot)]
-    })
-
-    RPC:::tsplot(y1, yr, xlab = "Year", ylab = ylab, zeroyint = FALSE)
-    lines(yr, apply(cp_vals, 1, median), col = "red", lwd = 3)
-  }
-  return(invisible(cp))
-}
+# #' @importFrom changepoint cpt.mean
+# do_cp <- function(x, type = c("SP", "SPB"), ncp = 1, med_only = FALSE, figure = TRUE) {
+#   if(inherits(x, "reactivevalues")) {
+#     MSEhist <- x$MSEhist
+#   } else {
+#     MSEhist <- x
+#   }
+#   type <- match.arg(type)
+#   nyh<-MSEhist@OM@nyears
+#   hy<-MSEhist@OM@CurrentYr - (nyh:1) + 1
+#
+#   if(type == "SP") {
+#     B <- apply(MSEhist@TSdata$Biomass,1:2,sum)
+#     catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
+#     ind1<-2:nyh-1
+#     ind2<-2:nyh
+#
+#     #SP<-B[, ind2]-B[, ind1]+catch[, ind1]
+#     #SPB <- SP/B[, ind1]
+#     #medSP<-apply(SP, 2, median)
+#     #medB<-apply(B[, ind1], 2, median)
+#     #medSPB<-apply(SP/B[, ind1], 2, median)
+#     #yr_lab <- seq(1, nyh, by = 5)
+#
+#     y1 <- B[, ind2]-B[, ind1]+catch[, ind1] # SP
+#     ylab <- "Surplus production"
+#
+#     yr <- hy[-length(hy)]
+#
+#   } else if(type == "SPB") {
+#     B <- apply(MSEhist@TSdata$Biomass,1:2,sum)
+#     catch <- apply(MSEhist@TSdata$Removals,1:2,sum)
+#     ind1<-2:nyh-1
+#     ind2<-2:nyh
+#
+#     y1 <- B[, ind2]-B[, ind1]+catch[, ind1] # SP
+#     y1 <- y1/B[, ind1]
+#     ylab <- "Surplus production / Biomass"
+#
+#     yr <- hy[-length(hy)]
+#   }
+#   y1m <- apply(y1, 2, median)
+#
+#   if(med_only) {
+#     cp <- changepoint::cpt.mean(y1m, method = "BinSeg", penalty = "AIC", Q = ncp)
+#
+#     if(figure) {
+#       plot(yr, y1m, typ = "o", xlab = "Year", ylab = ylab)
+#       means <- cp@param.est$mean
+#       nseg <- length(means)
+#       cpts.to.plot <- c(0, cp@cpts)
+#       for (i in 1:nseg) {
+#         segments(yr[cpts.to.plot[i] + 1], means[i], yr[cpts.to.plot[i + 1]], means[i], col = "red")
+#       }
+#     }
+#
+#   } else {
+#     cp <- changepoint::cpt.mean(y1, method = "BinSeg", penalty = "AIC", Q = ncp)
+#
+#     cp_vals <- sapply(cp, function(x) {
+#       cpts.to.plot <- c(0, x@cpts)
+#       means <- x@param.est$mean
+#       means[findInterval(1:max(cpts.to.plot) - 1, cpts.to.plot)]
+#     })
+#
+#     tsplot(y1, yr, xlab = "Year", ylab = ylab, zeroyint = FALSE)
+#     lines(yr, apply(cp_vals, 1, median), col = "red", lwd = 3)
+#   }
+#   return(invisible(cp))
+# }

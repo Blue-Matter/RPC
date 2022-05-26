@@ -1,5 +1,5 @@
 
-#' @name plot-Hist
+#' @name plot-hist
 #' @title Plot historical dynamics
 #' @description Various plots for plotting historical time series for the operating model.
 #' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
@@ -14,7 +14,7 @@
 #' @author Q. Huynh
 NULL
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_bio} returns time series of spawning biomass (SBiomass), total biomass (Biomass), abundance (Number),
 #' recruitment (Rec), and recruitment deviates (RecDev).
 #' @export
@@ -48,14 +48,14 @@ hist_bio<-function(x, figure = TRUE) {
     tsplot(bio$RecDev, bio$Year_RecDev,
            xlab="Historical Year", ylab="Recruitment strength", zeroyint=F)
     abline(h = 0, lty = 3)
-    tsplot(Rec, bio$Year, xlab="Historical Year", ylab="Recruitment")
+    tsplot(bio$Rec, bio$Year, xlab="Historical Year", ylab="Recruitment")
 
   }
 
   invisible(bio)
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_future_recruit} returns historical and future recruitment deviations.
 #' @export
 hist_future_recruit <- function(x, figure = TRUE) {
@@ -105,7 +105,7 @@ hist_future_recruit <- function(x, figure = TRUE) {
 }
 
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_bio_schedule} plots in biological at age parameters. The corresponding array is indexed by simulation, age, and year.
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param n_age_plot The number of ages to plot in the left figure.
@@ -178,7 +178,7 @@ hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageA
   invisible(bio)
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope. Returns an updated array of
 #' parameters.
 #' @param var A string to indicate which object to plot from OM@@cpars.
@@ -249,7 +249,7 @@ hist_bio_change <- function(x, var = c("Wt_age", "M_ageArray"), change_mean = 0,
 }
 
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 #' @export
 hist_growth_I <- function(x) {
@@ -263,7 +263,7 @@ hist_growth_I <- function(x) {
   plot('Growth', MSEhist, plot.num=1)
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_growth_II} plots histograms of von Bertalanffy parameters by year.
 #' @export
 hist_growth_II <- function(x) {
@@ -277,7 +277,7 @@ hist_growth_II <- function(x) {
   plot('Growth', MSEhist, plot.num=2)
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_spatial} plots histograms of the parameters for spatial movement in a two-area model (set all to 0.5 to functionally create a single area model).
 #' @param type Type of spatial plot
 #' @param ... arguments to \link[MSEtool]{plot_mov}
@@ -299,7 +299,7 @@ hist_spatial <- function(x, type = c("par", "matrix", "all"), ...) {
 
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_sel} plots selectivity/retention at age for two different years in the OM. Returns an array indexed by simulation,
 #' age, year.
 #' @param yr A length-2 vector for the years (relative to OM@@CurrentYr) to plot selectivity.
@@ -377,7 +377,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
   invisible(bio)
 }
 
-#' @rdname plot-Hist
+#' @rdname plot-hist
 #' @details \code{hist_YieldCurve} plots the yield curve as a function of F, SPR (spawning potential ratio), spawning biomass (SBiomass),
 #' and spawning depletion (SB_SB0). Matrices are indexed by simulation (rows) and F (columns).
 #' @param yr_bio The year (relative to OM@@CurrentYr) for the biological parameters (growth, M, maturity).
@@ -460,20 +460,15 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 
 
 
-
-#' Resample recruitment deviations
-#'
-#' A function to generate new recruitment deviations (with mean = 1) for the projection period.
-#' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
-#' the Hist object.
+#' @rdname plot-hist
+#' @details \code{hist_resample_recruit} generates new recruitment deviations (with mean = 1) for the projection period. Returns
+#' a list with an updated matrix for \code{OM@cpars$Perr_y}.
 #' @param dist Character to denote to sample either from a lognormal distribution or Pareto distribution.
 #' @param mu The mean of the distribution (default = 1).
 #' @param LnSD If Lognormal, the standard deviation.
 #' @param LnAC If Lognormal, the autocorrelation (in log-space).
 #' @param Pshape If Pareto, the shape parameter. See \link[EnvStats]{Pareto}. The location parameter is calculated such that the mean = 1.
-#' @param figure Whether to plot the sampled deviations.
 #' @param nsim_plot The number of simulations to plot if figure is TRUE.
-#' @return A list with an updated matrix for \code{OM@cpars$Perr_y}.
 #' @export
 hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1, LnSD = 0.7, LnAC = 0, Pshape = 1.1,
                                       figure = TRUE, nsim_plot = 5) {
