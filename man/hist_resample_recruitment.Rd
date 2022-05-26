@@ -7,6 +7,7 @@
 hist_resample_recruitment(
   x,
   dist = c("Lognormal", "Pareto"),
+  mu = 1,
   LnSD = 0.7,
   LnAC = 0,
   Pshape = 1.1,
@@ -19,6 +20,8 @@ hist_resample_recruitment(
 the Hist object.}
 
 \item{dist}{Character to denote to sample either from a lognormal distribution or Pareto distribution.}
+
+\item{mu}{The mean of the distribution (default = 1).}
 
 \item{LnSD}{If Lognormal, the standard deviation.}
 

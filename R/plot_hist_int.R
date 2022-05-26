@@ -150,21 +150,21 @@ calculate_SSB50 <- function(MSEhist) {
 }
 
 #' @importFrom EnvStats rpareto
-sample_pareto <- function(nsim, proyears, shape = 1.1, seed) {
+sample_pareto <- function(nsim, proyears, shape = 1.1, mu = 1, seed) {
   if(!missing(seed)) set.seed(seed)
-  rpar <- generate_pareto_par(shape)
+  rpar <- generate_pareto_par(shape, mu)
   Perr_proj <- EnvStats::rpareto(nsim * proyears, location = rpar$location, shape = shape) %>%
     matrix(nsim, proyears, byrow = TRUE)
   return(Perr_proj)
 }
 
-generate_pareto_par <- function(shape) {
+generate_pareto_par <- function(shape, mu = 1) {
   shape <- max(shape, 1.001)
   if(shape <= 1) { #warning("Mean is infinite because shape <= 1.")
     mu <- Inf
     location <- NA
   } else {
-    mu <- 1
+    #mu <- 1
     location <- mu * (shape - 1) / shape
   }
 

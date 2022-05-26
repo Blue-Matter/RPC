@@ -1094,6 +1094,7 @@ server <- function(input, output, session) {
     input$change_rec_dist
     input$change_rec_sd
     input$change_rec_AC
+    input$change_rec_mean
     input$change_rec_shape
     input$change_bio_slope
     input$change_bio_mean
@@ -1112,7 +1113,7 @@ server <- function(input, output, session) {
 
     if(input$change_bio == "Perr_y") {
       output$plot_change_bio <-
-        renderPlot(hist_resample_recruitment(OBJs, dist = input$change_rec_dist, LnSD = input$change_rec_sd,
+        renderPlot(hist_resample_recruitment(OBJs, dist = input$change_rec_dist, mu = input$change_rec_mean, LnSD = input$change_rec_sd,
                                              LnAC = input$change_rec_AC, Pshape = input$change_rec_shape),
                    res = plotres)
     } else {
@@ -1124,7 +1125,7 @@ server <- function(input, output, session) {
   observeEvent(input$OM_change_bio, {
     AM(paste("Updating projection dynamics for ", input$change_bio))
     if(input$change_bio == "Perr_y") {
-      new_par <- hist_resample_recruitment(OBJs, dist = input$change_rec_dist, LnSD = input$change_rec_sd,
+      new_par <- hist_resample_recruitment(OBJs, dist = input$change_rec_dist, mu = input$change_rec_mean, LnSD = input$change_rec_sd,
                                            LnAC = input$change_rec_AC, Pshape = input$change_rec_shape, figure = FALSE)[[2]]
     } else {
       new_par <- hist_bio_change(OBJs, var = input$change_bio, change_mean = input$change_bio_mean, change_slope = input$change_bio_slope,

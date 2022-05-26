@@ -103,6 +103,7 @@ tabsetPanel(id="OM_hist", selected = 1,
                                                 choiceValues = c("Wt_age", "M_ageArray", "Perr_y"), inline = FALSE),
                                    conditionalPanel("input.change_bio == 'Perr_y'",
                                                     radioButtons("change_rec_dist", "Distribution", choices = c("Lognormal", "Pareto")),
+                                                    sliderInput("change_rec_mean", "Mean", min = 0, max = 3, value = 1, step = 0.01),
                                                     conditionalPanel("input.change_rec_dist == 'Lognormal'",
                                                                      sliderInput("change_rec_sd", "Standard deviation", min = 0, max = 1.5, value = 0, step = 0.01),
                                                                      sliderInput("change_rec_AC", "Autocorrelation", min = -1, max = 1, value = 0, step = 0.01)

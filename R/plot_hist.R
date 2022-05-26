@@ -467,6 +467,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 #' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
 #' the Hist object.
 #' @param dist Character to denote to sample either from a lognormal distribution or Pareto distribution.
+#' @param mu The mean of the distribution (default = 1).
 #' @param LnSD If Lognormal, the standard deviation.
 #' @param LnAC If Lognormal, the autocorrelation (in log-space).
 #' @param Pshape If Pareto, the shape parameter. See \link[EnvStats]{Pareto}. The location parameter is calculated such that the mean = 1.
@@ -474,7 +475,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 #' @param nsim_plot The number of simulations to plot if figure is TRUE.
 #' @return A list with an updated matrix for \code{OM@cpars$Perr_y}.
 #' @export
-hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD = 0.7, LnAC = 0, Pshape = 1.1,
+hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1, LnSD = 0.7, LnAC = 0, Pshape = 1.1,
                                       figure = TRUE, nsim_plot = 5) {
   dist <- match.arg(dist)
 
@@ -490,9 +491,9 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD =
   if(dist == "Lognormal") {
     Perr_new <- MSEtool:::sample_recruitment(Perr_hist = log(Perr_y[, 1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
                                              proyears = MSEhist@OM@proyears, procsd = LnSD, AC = LnAC)
-    Perr_new <- exp(Perr_new)
+    Perr_new <- exp(Perr_new) * mu
   } else {
-    Perr_new <- sample_pareto(nsim = nrow(Perr_y), proyears = MSEhist@OM@proyears, shape = Pshape)
+    Perr_new <- sample_pareto(nsim = nrow(Perr_y), proyears = MSEhist@OM@proyears, shape = Pshape, mu = mu)
   }
 
   Perr_y[, MSEhist@OM@nyears + MSEhist@OM@maxage + 1:MSEhist@OM@proyears] <- Perr_new
