@@ -13,16 +13,17 @@
 \alias{hist_YieldCurve}
 \title{Plot historical dynamics}
 \usage{
-hist_bio(x)
+hist_bio(x, figure = TRUE)
 
-hist_future_recruit(x)
+hist_future_recruit(x, figure = TRUE)
 
 hist_bio_schedule(
   x,
   var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"),
   n_age_plot,
   yr_plot,
-  sim
+  sim,
+  figure = TRUE
 )
 
 hist_bio_change(
@@ -41,13 +42,15 @@ hist_growth_II(x)
 
 hist_spatial(x, type = c("par", "matrix", "all"), ...)
 
-hist_sel(x, yr, maturity = TRUE)
+hist_sel(x, yr, maturity = TRUE, figure = TRUE)
 
-hist_YieldCurve(x, yr_bio, yr_sel, F_range)
+hist_YieldCurve(x, yr_bio, yr_sel, F_range, figure = TRUE)
 }
 \arguments{
 \item{x}{An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
 the Hist object.}
+
+\item{figure}{Logical, whether to return a figure (TRUE) or the updated array (FALSE) for \code{hist_bio_change}.}
 
 \item{var}{A string to indicate which object to plot from OM@cpars.}
 
@@ -60,8 +63,6 @@ the Hist object.}
 \item{change_mean}{The percent change in the mean of the new parameters relative to the old.}
 
 \item{change_slope}{The percent change year-over-year in the projection parameters relative to the last projection year.}
-
-\item{figure}{Logical, whether to return a figure (TRUE) or the updated array (FALSE) for \code{hist_bio_change}.}
 
 \item{type}{Type of spatial plot}
 
@@ -78,19 +79,22 @@ the Hist object.}
 \item{F_range}{Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.}
 }
 \value{
-Various plots using base graphics
+Various plots using base graphics. Returns invisibly a named list invisibly, where each entry is usually a matrix with rows indexing simulation
+and columns indexing year.
 }
 \description{
 Various plots for plotting historical time series for the operating model.
 }
 \details{
-\code{hist_bio} plots time series of biomass, abundance, and recruitment.
+\code{hist_bio} returns time series of spawning biomass (SBiomass), total biomass (Biomass), abundance (Number),
+recruitment (Rec), and recruitment deviates (RecDev).
 
-\code{hist_future_recruit} plots historical and future recruitment deviations.
+\code{hist_future_recruit} returns historical and future recruitment deviations.
 
-\code{hist_bio_schedule} plots in biological at age parameters.
+\code{hist_bio_schedule} plots in biological at age parameters. The corresponding array is indexed by simulation, age, and year.
 
-\code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope.
+\code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope. Returns an updated array of
+parameters.
 
 \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 
@@ -98,13 +102,16 @@ Various plots for plotting historical time series for the operating model.
 
 \code{hist_spatial} plots histograms of the parameters for spatial movement in a two-area model (set all to 0.5 to functionally create a single area model).
 
-\code{hist_sel} plots selectivity/retention at age for two different years in the OM.
+\code{hist_sel} plots selectivity/retention at age for two different years in the OM. Returns an array indexed by simulation,
+age, year.
 
-\code{hist_YieldCurve} plots the yield curve.
+\code{hist_YieldCurve} plots the yield curve as a function of F, SPR (spawning potential ratio), spawning biomass (SBiomass),
+and spawning depletion (SB_SB0). Matrices are indexed by simulation (rows) and F (columns).
 }
 \examples{
 Hist <- MSEtool::runMSE(Hist = TRUE)
-hist_bio(Hist)
+bio <- hist_bio(Hist)
+bio$SBiomass
 }
 \author{
 Q. Huynh

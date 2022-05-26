@@ -1125,10 +1125,10 @@ server <- function(input, output, session) {
     AM(paste("Updating projection dynamics for ", input$change_bio))
     if(input$change_bio == "Perr_y") {
       new_par <- hist_resample_recruitment(OBJs, dist = input$change_rec_dist, LnSD = input$change_rec_sd,
-                                           LnAC = input$change_rec_AC, Pshape = input$change_rec_shape, figure = FALSE)
+                                           LnAC = input$change_rec_AC, Pshape = input$change_rec_shape, figure = FALSE)[[2]]
     } else {
       new_par <- hist_bio_change(OBJs, var = input$change_bio, change_mean = input$change_bio_mean, change_slope = input$change_bio_slope,
-                                 figure = FALSE)
+                                 figure = FALSE)[[2]]
     }
     OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
     OM@cpars[[input$change_bio]] <- new_par

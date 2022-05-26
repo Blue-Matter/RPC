@@ -4,92 +4,116 @@
 #' @description Various plots for plotting historical time series for the operating model.
 #' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
 #' the Hist object.
-#' @return Various plots using base graphics
+#' @param figure Logical, whether to generate a figure or just return a list of values (invisibly).
+#' @return Various plots using base graphics. Returns invisibly a named list invisibly, where each entry is usually a matrix with rows indexing simulation
+#' and columns indexing year.
 #' @examples
 #' Hist <- MSEtool::runMSE(Hist = TRUE)
-#' hist_bio(Hist)
+#' bio <- hist_bio(Hist)
+#' bio$SBiomass
 #' @author Q. Huynh
 NULL
 
 #' @rdname plot-Hist
-#' @details \code{hist_bio} plots time series of biomass, abundance, and recruitment.
+#' @details \code{hist_bio} returns time series of spawning biomass (SBiomass), total biomass (Biomass), abundance (Number),
+#' recruitment (Rec), and recruitment deviates (RecDev).
 #' @export
-hist_bio<-function(x) {
+hist_bio<-function(x, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
 
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
+  bio <- list(Year = MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1,
+              SBiomass = apply(MSEhist@TSdata$SBiomass,1:2,sum),
+              Biomass = apply(MSEhist@TSdata$Biomass,1:2,sum),
+              Number = apply(MSEhist@TSdata$Number,1:2,sum),
+              VBiomass = apply(MSEhist@TSdata$VBiomass,1:2,sum),
+              Rec = apply(MSEhist@AtAge$Number[,1,,],1:2,sum),
+              Year_RecDev = MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1,
+              RecDev = log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)])
+              )
 
-  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
 
-  par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
-  tsplot(x=apply(MSEhist@TSdata$SBiomass,1:2,sum), yrs, xlab="Historical Year", ylab="Spawning biomass")
-  tsplot(apply(MSEhist@TSdata$Biomass,1:2,sum), yrs, xlab="Historical Year", ylab="Biomass")
-  tsplot(apply(MSEhist@TSdata$Number,1:2,sum), yrs, xlab="Historical Year", ylab="Numbers")
-  tsplot(apply(MSEhist@TSdata$VBiomass,1:2,sum), yrs, xlab="Historical Year", ylab="Vulnerable Biomass")
+    par(mfcol=c(2,3),mai=c(0.3,0.6,0.2,0.1),omi=c(0.6,0,0,0))
+    tsplot(bio$SBiomass, bio$Year, xlab="Historical Year", ylab="Spawning biomass")
+    tsplot(bio$Biomass, bio$Year, xlab="Historical Year", ylab="Biomass")
+    tsplot(bio$Number, bio$Year, xlab="Historical Year", ylab="Numbers")
+    tsplot(bio$VBiomass, bio$Year, xlab="Historical Year", ylab="Vulnerable Biomass")
 
-  yrs_rec_dev <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
-  tsplot(x=log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]), yrs_rec_dev,
-         xlab="Historical Year", ylab="Recruitment strength", zeroyint=F)
-  abline(h = 0, lty = 3)
-  tsplot(apply(MSEhist@AtAge$Number[,1,,],1:2,sum), yrs, xlab="Historical Year", ylab="Recruitment")
+    tsplot(bio$RecDev, bio$Year_RecDev,
+           xlab="Historical Year", ylab="Recruitment strength", zeroyint=F)
+    abline(h = 0, lty = 3)
+    tsplot(Rec, bio$Year, xlab="Historical Year", ylab="Recruitment")
 
+  }
+
+  invisible(bio)
 }
 
 #' @rdname plot-Hist
-#' @details \code{hist_future_recruit} plots historical and future recruitment deviations.
+#' @details \code{hist_future_recruit} returns historical and future recruitment deviations.
 #' @export
-hist_future_recruit <- function(x) {
+hist_future_recruit <- function(x, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
     MSEhist <- x
   }
 
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
+  bio <- list(Year_Hist = MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1,
+              RecDev_Hist = log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]),
+              Year_Proj = MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears,
+              RecDev_Proj = log(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))])
+              )
 
-  yrs <- MSEhist@OM@CurrentYr - MSEhist@OM@nyears:1 + 1
-  par(mfrow=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
 
-  yrs_rec_dev <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
-  tsplot(x=log(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)]), yrs_rec_dev,
-         xlab="Historical Year", ylab="Log-recruitment deviation", zeroyint=F)
-  abline(h = 0, lty = 3)
+    par(mfrow=c(2,2),mai=c(0.9,0.9,0.2,0.1),omi=c(0,0,0,0))
 
-  yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
-  tsplot(x=log(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))]), yrs_proj,
-         xlab="Projection Year", ylab="Log-recruitment deviation", zeroyint=F)
-  abline(h = 0, lty = 3)
+    tsplot(bio$RecDev_Hist, bio$Year_Hist,
+           xlab="Historical Year", ylab="Log-recruitment deviation", zeroyint=F)
+    abline(h = 0, lty = 3)
 
-  hist_mean <- apply(MSEhist@TSdata$RecDev[,1:(MSEhist@OM@nyears+MSEhist@OM@maxage)], 2, mean)
-  plot(yrs_rec_dev, hist_mean,
-       xlab = "Historical Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
-       ylim = c(0, 1.1 * max(hist_mean)))
-  abline(h = 0, col = "grey")
-  abline(h = 1, lty = 3)
+    tsplot(bio$RecDev_Proj, bio$Year_Proj,
+           xlab="Projection Year", ylab="Log-recruitment deviation", zeroyint=F)
+    abline(h = 0, lty = 3)
 
-  pro_mean <- apply(MSEhist@TSdata$RecDev[,-c(1:(MSEhist@OM@nyears+MSEhist@OM@maxage))], 2, mean)
-  plot(yrs_proj, pro_mean,
-       xlab = "Projection Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
-       yli = c(0, 1.1 * max(pro_mean)))
-  abline(h = 0, col = "grey")
-  abline(h = 1, lty = 3)
+    hist_mean <- apply(exp(bio$RecDev_Hist), 2, mean)
+    plot(bio$Year_Hist, hist_mean,
+         xlab = "Historical Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
+         ylim = c(0, 1.1 * max(hist_mean)))
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+
+    pro_mean <- apply(exp(bio$RecDev_Proj), 2, mean)
+    plot(bio$Year_Proj, pro_mean,
+         xlab = "Projection Year", ylab = "Annual mean deviation\n(normal space)", typ = "o", pch = 16,
+         yli = c(0, 1.1 * max(pro_mean)))
+    abline(h = 0, col = "grey")
+    abline(h = 1, lty = 3)
+  }
+
+  invisible(bio)
+
 }
 
 
 #' @rdname plot-Hist
-#' @details \code{hist_bio_schedule} plots in biological at age parameters.
+#' @details \code{hist_bio_schedule} plots in biological at age parameters. The corresponding array is indexed by simulation, age, and year.
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param n_age_plot The number of ages to plot in the left figure.
 #' @param yr_plot The year (relative to OM@@CurrentYr) to plot for the right figure.
 #' @param sim The simulation to plot for the left figure.
 #' @export
-hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"), n_age_plot, yr_plot, sim) {
+hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"), n_age_plot, yr_plot, sim,
+                              figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -114,44 +138,49 @@ hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageA
 
   yr_cal <- 1:(OM@nyears + OM@proyears) - OM@nyears + OM@CurrentYr
 
-  if(missing(yr_plot)) {
-    yr_plot <- OM@nyears
-  } else {
-    yr_plot <- max(1, yr_plot - OM@CurrentYr + OM@nyears)
+  bio <- list(yr_cal, sched) %>% structure(names = c("Year", var))
+
+  if(figure) {
+    if(missing(yr_plot)) {
+      yr_plot <- OM@nyears
+    } else {
+      yr_plot <- max(1, yr_plot - OM@CurrentYr + OM@nyears)
+    }
+    if(missing(n_age_plot)) {
+      n_age_plot <- OM@maxage + 1
+    } else {
+      n_age_plot <- max(n_age_plot, 2)
+    }
+    if(missing(sim)) {
+      sim <- 1
+    } else {
+      sim <- max(sim, 1)
+    }
+
+    age <- 1:dim(sched)[2] - 1
+    age_plot <- pretty(age, n_age_plot)
+    age_plot <- age_plot[age_plot <= max(age)]
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+
+    matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, type = 'l', lty = 1,
+            xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
+    text(max(yr_cal), sched[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
+    abline(v = MSEhist@OM@CurrentYr, lty = 3)
+    title(paste0("Simulation #", sim))
+
+    tsplot(sched[, , yr_plot], age, xlab = "Age", ylab = ylab, ymax = 1.1 * max(sched[, , yr_plot]))
+    title(paste("Year", yr_cal[yr_plot]))
   }
-  if(missing(n_age_plot)) {
-    n_age_plot <- OM@maxage + 1
-  } else {
-    n_age_plot <- max(n_age_plot, 2)
-  }
-  if(missing(sim)) {
-    sim <- 1
-  } else {
-    sim <- max(sim, 1)
-  }
 
-  age <- 1:dim(sched)[2] - 1
-  age_plot <- pretty(age, n_age_plot)
-  age_plot <- age_plot[age_plot <= max(age)]
-
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
-  par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
-
-  matplot(yr_cal, t(sched[sim, age_plot + 1, ]), xlab = "Year", ylab = ylab, type = 'l', lty = 1,
-          xlim = c(min(yr_cal), max(yr_cal) + 0.1 * length(yr_cal)))
-  text(max(yr_cal), sched[sim, age_plot + 1, length(yr_cal)], labels = age_plot, col = 1:6, pos = 4)
-  abline(v = MSEhist@OM@CurrentYr, lty = 3)
-  title(paste0("Simulation #", sim))
-
-  tsplot(sched[, , yr_plot], age, xlab = "Age", ylab = ylab, ymax = 1.1 * max(sched[, , yr_plot]))
-  title(paste("Year", yr_cal[yr_plot]))
-
-  invisible()
+  invisible(bio)
 }
 
 #' @rdname plot-Hist
-#' @details \code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope.
+#' @details \code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope. Returns an updated array of
+#' parameters.
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param change_mean The percent change in the mean of the new parameters relative to the old.
 #' @param change_slope The percent change year-over-year in the projection parameters relative to the last projection year.
@@ -215,7 +244,8 @@ hist_bio_change <- function(x, var = c("Wt_age", "M_ageArray"), change_mean = 0,
     abline(v = MSEhist@OM@CurrentYr, lty = 3)
     title(paste0("Updated operating model\nSimulation #", sim))
   }
-  invisible(sched_change)
+
+  invisible(list(yr_cal, sched_change) %>% structure(names = c("Year", var)))
 }
 
 
@@ -270,11 +300,12 @@ hist_spatial <- function(x, type = c("par", "matrix", "all"), ...) {
 }
 
 #' @rdname plot-Hist
-#' @details \code{hist_sel} plots selectivity/retention at age for two different years in the OM.
+#' @details \code{hist_sel} plots selectivity/retention at age for two different years in the OM. Returns an array indexed by simulation,
+#' age, year.
 #' @param yr A length-2 vector for the years (relative to OM@@CurrentYr) to plot selectivity.
 #' @param maturity Logical, whether to plot maturity along with selectivity.
 #' @export
-hist_sel <- function(x, yr, maturity = TRUE) {
+hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -287,64 +318,73 @@ hist_sel <- function(x, yr, maturity = TRUE) {
   }
   yind <- yr - MSEhist@OM@CurrentYr + MSEhist@OM@nyears # Length 2 vector
 
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
-  #par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
-  par(mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0.2,0))
-  if(maturity) {
-    layout(matrix(c(1:6, rep(7, 3)), nrow = 3), widths = c(1, 1, 0.5))
-  } else {
-    layout(matrix(1:6, nrow = 3))
-  }
-  cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
-
-  for(y in 1:length(yind)) {
-    # Selectivity with maturity/fecundity
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    #par(mfcol=c(3,2),mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0,0))
+    par(mai=c(0.3,0.6,0.3,0.1),omi=c(0.5,0,0.2,0))
     if(maturity) {
-      Fec <- MSEhist@SampPars$Stock$Fec_Age
-      CalcProd <- MSEhist@SampPars$Stock$Mat_age * MSEhist@SampPars$Stock$Wt_age
-      if(identical(Fec[, -1, ], CalcProd[, -1, ])) {
-        mat_plot <- MSEhist@SampPars$Stock$Mat_age[, , yind[y]]
-        ylab_sel <- "Vulnerability with maturity"
-        legend_sel <- "Maturity"
-      } else {
-        mat_plot <- Fec[, , yind[y]]/max(Fec[, , yind[y]])
-        ylab_sel <- "Vulnerability with\nrelative fecundity"
-        legend_sel <- "Fecundity"
-      }
+      layout(matrix(c(1:6, rep(7, 3)), nrow = 3), widths = c(1, 1, 0.5))
     } else {
-      ylab_sel <- "Vulnerability"
+      layout(matrix(1:6, nrow = 3))
     }
-    tsplot(MSEhist@SampPars$Fleet$V[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab= ylab_sel,cols = cols, ymax = 1.1)
-    mtext(paste("Year", yr[y]), 3, line = 1, font = 2)
+    cols=list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+    for(y in 1:length(yind)) {
+      # Selectivity with maturity/fecundity
+      if(maturity) {
+        Fec <- MSEhist@SampPars$Stock$Fec_Age
+        CalcProd <- MSEhist@SampPars$Stock$Mat_age * MSEhist@SampPars$Stock$Wt_age
+        if(identical(Fec[, -1, ], CalcProd[, -1, ])) {
+          mat_plot <- MSEhist@SampPars$Stock$Mat_age[, , yind[y]]
+          ylab_sel <- "Vulnerability with maturity"
+          legend_sel <- "Maturity"
+        } else {
+          mat_plot <- Fec[, , yind[y]]/max(Fec[, , yind[y]])
+          ylab_sel <- "Vulnerability with\nrelative fecundity"
+          legend_sel <- "Fecundity"
+        }
+      } else {
+        ylab_sel <- "Vulnerability"
+      }
+      tsplot(MSEhist@SampPars$Fleet$V[, , yind[y]], yrs=0:MSEhist@OM@maxage,
+             xlab="",ylab= ylab_sel,cols = cols, ymax = 1.1)
+      mtext(paste("Year", yr[y]), 3, line = 1, font = 2)
+      if(maturity) {
+        plotquant(mat_plot, yrs=0:MSEhist@OM@maxage, addline = FALSE)
+      }
+
+      # Retention
+      tsplot(MSEhist@SampPars$Fleet$retA_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
+             xlab="",ylab="Retention",cols = cols, ymax = 1.1)
+
+      # Realized Selectivity
+      tsplot(MSEhist@SampPars$Fleet$V_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
+             xlab="",ylab="Realized Selectivity",cols = cols, ymax = 1.1)
+
+    }
     if(maturity) {
-      plotquant(mat_plot, yrs=0:MSEhist@OM@maxage, addline = FALSE)
+      plot(1, 1, axes = FALSE, typ = "n", ylab = "", xlab = "")
+      legend("left", c("Selectivity", legend_sel), col = c("darkgreen", "darkblue"), lwd = 3, cex = 1.5, bty = "n")
+      mtext("Age", 1, outer = TRUE, line = 2)
     }
-
-    # Retention
-    tsplot(MSEhist@SampPars$Fleet$retA_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab="Retention",cols = cols, ymax = 1.1)
-
-    # Realized Selectivity
-    tsplot(MSEhist@SampPars$Fleet$V_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-           xlab="",ylab="Realized Selectivity",cols = cols, ymax = 1.1)
-
   }
-  if(maturity) {
-    plot(1, 1, axes = FALSE, typ = "n", ylab = "", xlab = "")
-    legend("left", c("Selectivity", legend_sel), col = c("darkgreen", "darkblue"), lwd = 3, cex = 1.5, bty = "n")
-    mtext("Age", 1, outer = TRUE, line = 2)
-  }
+
+  bio <- list(Year = seq(MSEhist@OM@CurrentYr - MSEhist@OM@nyears + 1, MSEhist@OM@CurrentYr + MSEhist@OM@proyears),
+              Vulnerability = MSEhist@SampPars$Fleet$V,
+              Retention = MSEhist@SampPars$Fleet$retA_real)
+
+  invisible(bio)
 }
 
 #' @rdname plot-Hist
-#' @details \code{hist_YieldCurve} plots the yield curve.
+#' @details \code{hist_YieldCurve} plots the yield curve as a function of F, SPR (spawning potential ratio), spawning biomass (SBiomass),
+#' and spawning depletion (SB_SB0). Matrices are indexed by simulation (rows) and F (columns).
 #' @param yr_bio The year (relative to OM@@CurrentYr) for the biological parameters (growth, M, maturity).
 #' @param yr_sel The year (relative to OM@@CurrentYr) for the selectivity parameters.
 #' @param F_range Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.
 #' @export
-hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
+hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -396,15 +436,25 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
   SSB <- sapply(YC, function(x) x["SB", ])
   SSB_SSB0a <- sapply(YC, function(x) x["SB_SB0", ])
 
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par))
-  par(mfrow = c(2, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
-  cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+  out <- list(FM = F_search,
+              Yield = t(Y),
+              SPR = t(SPR_F),
+              SBiomass = t(SSB),
+              SB_SB0 = t(SSB_SSB0a))
 
-  tsplot(t(Y),yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols)
-  tsplot(t(Y),yrs=t(SPR_F),xlab="Spawning potential ratio (SPR)",ylab="Yield",cols = cols)
-  tsplot(t(Y),yrs=t(SSB),xlab="Spawning biomass (SSB)",ylab="Yield",cols = cols)
-  tsplot(t(Y),yrs=t(SSB_SSB0a),xlab=expression(SSB~"/"~"Equilibrium"~SSB[0]),ylab="Yield",cols = cols)
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow = c(2, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+    cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+    tsplot(out$Yield,yrs=F_search,xlab="Fishing mortality",ylab="Yield",cols = cols)
+    tsplot(out$Yield,yrs=out$SPR,xlab="Spawning potential ratio (SPR)",ylab="Yield",cols = cols)
+    tsplot(out$Yield,yrs=out$SBiomass,xlab="Spawning biomass (SSB)",ylab="Yield",cols = cols)
+    tsplot(out$Yield,yrs=out$SB_SB0,xlab=expression(SSB~"/"~"Equilibrium"~SSB[0]),ylab="Yield",cols = cols)
+  }
+
+  invisible(out)
 
 }
 
@@ -422,7 +472,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range) {
 #' @param Pshape If Pareto, the shape parameter. See \link[EnvStats]{Pareto}. The location parameter is calculated such that the mean = 1.
 #' @param figure Whether to plot the sampled deviations.
 #' @param nsim_plot The number of simulations to plot if figure is TRUE.
-#' @return An updated matrix for \code{OM@cpars$Perr_y}.
+#' @return A list with an updated matrix for \code{OM@cpars$Perr_y}.
 #' @export
 hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD = 0.7, LnAC = 0, Pshape = 1.1,
                                       figure = TRUE, nsim_plot = 5) {
@@ -447,6 +497,12 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD =
 
   Perr_y[, MSEhist@OM@nyears + MSEhist@OM@maxage + 1:MSEhist@OM@proyears] <- Perr_new
 
+  yrs_hist <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
+  yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
+  y <- c(yrs_hist, yrs_proj)
+
+  bio <- list(Year = y, RecDev = Perr_y)
+
   if(figure) {
 
     old_par <- par(no.readonly = TRUE)
@@ -454,12 +510,8 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD =
 
     par(mfrow=c(1,2),mai=c(0.9,0.9,0.6,0.1),omi=c(0,0,0,0))
 
-    yrs_hist <- MSEhist@OM@CurrentYr - (MSEhist@OM@nyears+MSEhist@OM@maxage):1 + 1
-    yrs_proj <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
-    y <- c(yrs_hist, yrs_proj)
-
     cur_dev <- MSEhist@TSdata$RecDev[1:nsim_plot, ]
-    matplot(y, t(cur_dev), lty = 1, type = "l",
+    matplot(bio$Year, t(cur_dev), lty = 1, type = "l",
             ylim = c(0, 1.1 * max(cur_dev)), xlab = "Year", ylab = "Recruitment deviations")
     abline(h = 0, col = "grey")
     abline(h = 1, lty = 3)
@@ -467,7 +519,7 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD =
     title(paste("Current operating model\n", nsim_plot, "simulations"))
 
     new_dev <- Perr_y[1:nsim_plot, ]
-    matplot(y, t(new_dev), lty = 1, type = "l",
+    matplot(bio$Year, t(new_dev), lty = 1, type = "l",
             ylim = c(0, 1.1 * max(new_dev)), xlab = "Year", ylab = "Recruitment deviations")
     abline(h = 0, col = "grey")
     abline(h = 1, lty = 3)
@@ -475,5 +527,5 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), LnSD =
     title(paste("Updated operating model\n", nsim_plot, "simulations"))
   }
 
-  invisible(Perr_y)
+  invisible(bio)
 }

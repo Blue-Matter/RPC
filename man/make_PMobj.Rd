@@ -6,7 +6,7 @@
 \usage{
 make_PMobj(
   x,
-  type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch"),
+  type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch", "SSB50\%Rmax", "SSB90\%R/S"),
   frac = 0.4,
   year_range,
   label,

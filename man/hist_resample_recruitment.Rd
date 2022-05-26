@@ -31,7 +31,7 @@ the Hist object.}
 \item{nsim_plot}{The number of simulations to plot if figure is TRUE.}
 }
 \value{
-An updated matrix for \code{OM@cpars$Perr_y}.
+A list with an updated matrix for \code{OM@cpars$Perr_y}.
 }
 \description{
 A function to generate new recruitment deviations (with mean = 1) for the projection period.
