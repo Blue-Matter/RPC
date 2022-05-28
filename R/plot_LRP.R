@@ -409,7 +409,7 @@ LRP_R <- function(x, figure = c("ts", "SR", "none"), SR_xlim, SR_ylim, SR_y_RPS0
       RpS_crash <- median(1/MSEhist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
 
       RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
-        MSEtool:::Ref_int_cpp(1e-8, M_at_Age = StockPars$M_ageArray[x, , y],
+        MSEtool:::Ref_int_cpp(0, M_at_Age = StockPars$M_ageArray[x, , y],
                               Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
                               Fec_at_Age = StockPars$Fec_Age[x, , y],
                               V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],

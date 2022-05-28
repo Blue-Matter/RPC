@@ -117,7 +117,7 @@ stock_recruit_int <- function(MSEhist) {
   phi <- MSEhist@SampPars$Stock$SSBpR[, 1]
 
   aR <- MSEhist@SampPars$Stock$aR[, 1]
-  bR <- log(aR * phi)/MSEhist@Ref$ReferencePoints$SSB0
+  bR <- 1/rowSums(1/MSEhist@SampPars$Stock$bR)
   for(i in 1:MSEhist@OM@nsim) {
     if(SRrel == 1) {
       predR[i, ] <- 4 * R0[i] * hs[i] * predSSB/(phi[i] * R0[i] * (1 - hs[i]) + (5 * hs[i] - 1) * predSSB)
@@ -176,6 +176,12 @@ generate_pareto_par <- function(shape, mu = 1) {
 
   return(list(mu = mu, location = location, variance = variance))
 }
+
+
+calc_phi0 <- function(M, Wt, Mat, Fec, plusgroup) {
+  1/MSEtool:::Ref_int_cpp(0, M, Wt, Mat, Fec, rep(0, length(M)), length(M) - 1, plusgroup)[3, 1]
+}
+
 
 # #' @importFrom changepoint cpt.mean
 # do_cp <- function(x, type = c("SP", "SPB"), ncp = 1, med_only = FALSE, figure = TRUE) {

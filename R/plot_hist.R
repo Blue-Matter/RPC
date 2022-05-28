@@ -424,12 +424,10 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   })
 
   SPR_F <- vapply(1:MSEhist@OM@nsim, function(x) {
-    vapply(F_search, function(y) {
-      MSEtool:::Ref_int_cpp(y, M_at_Age = M[x, ],
-                            Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                            V_at_Age = V[x, ], maxage = StockPars$maxage,
-                            plusgroup = StockPars$plusgroup)[2, ]
-    }, numeric(1))
+    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
+                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                          V_at_Age = V[x, ], maxage = StockPars$maxage,
+                          plusgroup = StockPars$plusgroup)[2, ]
   }, numeric(length(F_search)))
 
   Y <- sapply(YC, function(x) x["Yield", ])
@@ -524,4 +522,242 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
   }
 
   invisible(bio)
+}
+
+#' @rdname plot-hist
+#' @details \code{hist_SRR_change} re-fits stock recruit function and generates a list with new stock-recruitment parameters \code{OM@SRrel}, \code{OM@cpars$R0}, \code{OM@cpars$hs},
+#' and historical recruitment deviations \code{OM@cpars$Perr_y}.
+#' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
+#' @param h_mult Scalar for the new steepness value (a multiple of the old steepness parameter).
+#' @param y_fit Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.
+#' @export
+hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
+  #SR_new <- match.arg(SR_new)
+  SRR <- switch(SR_new,
+                "1" = "BH",
+                "2" = "Ricker")
+
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
+  if(missing(y_fit)) {
+    y <- 1:MSEhist@OM@nyears
+  } else {
+    stopifnot(length(y_fit) == 2)
+    stopifnot(diff(y_fit) >= 3)
+    y_fit <- seq(y_fit[1], y_fit[2])
+    y <- y_fit - MSEhist@OM@CurrentYr + MSEhist@OM@nyears
+  }
+
+  if(all(SR_new == MSEhist@OM@SRrel) && h_mult == 1 && length(y) == MSEhist@OM@nyears) { # Do nothing
+
+    h_new <- MSEhist@SampPars$Stock$hs
+    R0_new <- MSEhist@SampPars$Stock$R0
+    Perr_y_new <- MSEhist@SampPars$Stock$Perr_y[, 1:(MSEhist@OM@maxage + MSEhist@OM@nyears)]
+
+  } else {
+
+    SBiomass <- apply(MSEhist@TSdata$SBiomass, 1:2, sum)
+    Rec <- apply(MSEhist@AtAge$Number[, 1, , ], 1:2, sum)
+
+    newSR <- lapply(1:MSEhist@OM@nsim, function(x) {
+      phi0 <- MSEhist@SampPars$Stock$SSBpR[x, 1]
+
+      h <- MSEhist@SampPars$Stock$hs[x]
+
+      h_new <- h * h_mult
+      if(h_new < 0.21) h_new <- 0.21
+      if(SR_new == 1 && h_new > 0.99) h_new <- 0.99
+
+      opt <- optimize(SAMtool:::get_SR, interval = c(-100, 100), E = SBiomass[x, y], R = Rec[x, y], EPR0 = phi0,
+                      type = SRR, fix_h = TRUE, h = h_new)
+
+      SAMtool:::get_SR(opt$minimum, E = SBiomass[x, ], R = Rec[x, ], EPR0 = phi0, type = SRR,
+                       fix_h = TRUE, h = h_new, opt = FALSE)
+    })
+
+    h_new <- sapply(newSR, getElement, "h")
+    R0_new <- sapply(newSR, getElement, "R0")
+
+    Rpred_new <- sapply(newSR, getElement, "Rpred") %>% t()
+    RecDev <- Rec/Rpred_new
+
+    Perr_y_new <- local({ # See MSEtool::Assess2OM
+      maxage <- MSEhist@OM@maxage
+      n_age <- maxage + 1
+      nsim <- MSEhist@OM@nsim
+      nyears <- MSEhist@OM@nyears
+
+      surv <- sapply(1:nsim, function(x) {
+        SAMtool:::calc_NPR(exp(-MSEhist@SampPars$Stock$M_ageArray[x, , 1]), n_age, MSEhist@SampPars$Stock$plusgroup)
+      }) %>% t()
+
+      N <- apply(MSEhist@AtAge$Number, 1:3, sum)
+      Perr <- array(NA_real_, c(nsim, maxage + nyears))
+
+      Perr[, n_age:1] <- N[, , 1]/(R0_new * surv)
+      Perr[, maxage + 2:nyears] <- RecDev[, 2:nyears]
+      Perr
+    })
+
+  }
+
+  bio <- list(SRrel = SR_new, R0 = R0_new, h = h_new, Perr_y = Perr_y_new)
+
+  if(figure) {
+
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+
+    par(mfcol=c(2,2),mai=c(0.9,0.9,0.6,0.1),omi=c(0,0,0,0))
+
+    out <- stock_recruit_int(MSEhist)
+    medSSB <- apply(out$SSB, 2, median)
+    medR <- apply(out$R, 2, median)
+
+    ##### Plot old stock-recruit relationship
+    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+            xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "Current operating model")
+    plotquant(out$predR, yrs = out$predSSB, addline=T)
+    points(medSSB, medR, pch = 19)
+    abline(h = 0, v = 0, col = "grey")
+
+    # log-recruitment deviation
+    tsplot(log(MSEhist@SampPars$Stock$Perr_y[, MSEhist@OM@maxage + 1:MSEhist@OM@nyears]),
+           yrs=out$yrs,xlab="Year",ylab="Log recruitment deviation",zeroyint=FALSE)
+    abline(h = 0, lty = 3)
+    title("Current operating model")
+
+    ##### Plot new
+    out2 <- local({
+      MSEhist@SampPars$Stock$R0 <- R0_new
+      MSEhist@SampPars$Stock$hs <- h_new
+      stock_recruit_int(MSEhist)
+    })
+
+    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+            xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "New operating model")
+    plotquant(out2$predR, yrs = out2$predSSB, addline=T)
+    points(medSSB, medR, pch = 19)
+    abline(h = 0, v = 0, col = "grey")
+
+    if(length(y) < MSEhist@OM@nyears) {
+      text(medSSB[y], medR[y], label = y_fit, pos = 3)
+    }
+
+    # log-recruitment deviation
+    tsplot(log(Perr_y_new[, MSEhist@OM@maxage + 1:MSEhist@OM@nyears]),
+           yrs=out$yrs,xlab="Year",ylab="Log recruitment deviation",zeroyint=FALSE)
+    abline(h = 0, lty = 3)
+    title("New operating model")
+
+  }
+
+  invisible(bio)
+}
+
+#' @rdname plot-hist
+#' @details \code{hist_phi0} returns a list containing a matrix (by simulation and year)
+#' of unfished spawning biomass per recruit (\code{phi0}).
+#' @export
+hist_phi0 <- function(x, figure = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
+  phi0 <- sapply(1:MSEhist@OM@nsim, function(x) {
+    sapply(1:(MSEhist@OM@nyears + MSEhist@OM@proyears), function(y) {
+      calc_phi0(M = MSEhist@SampPars$Stock$M_ageArray[x, , y],
+                Wt = MSEhist@SampPars$Stock$Wt_age[x, , y],
+                Mat = MSEhist@SampPars$Stock$Mat_age[x, , y],
+                Fec = MSEhist@SampPars$Stock$Fec_Age[x, , y],
+                plusgroup = MSEhist@SampPars$Stock$plusgroup)
+    })
+  }) %>% t()
+
+  nyh <- MSEhist@OM@nyears
+  hy <- MSEhist@OM@CurrentYr - (nyh:1) + 1
+  py <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears
+
+  bio <- list(Year = c(hy, py), phi0 = phi0)
+
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow=c(1,2),mai=c(0.3,0.9,0.2,0.1),omi=c(0.6,0,0,0))
+
+    tsplot(bio$phi0[, 1:MSEhist@OM@nyears], yrs = hy, xlab = "Year", ylab = expression(phi[0]),
+           ymax = 1.1 * max(bio$phi0))
+    tsplot(bio$phi0[, MSEhist@OM@nyears + 1:MSEhist@OM@proyears], yrs = py, xlab = "Year", ylab = expression(phi[0]),
+           ymax = 1.1 * max(bio$phi0))
+    mtext("Year", side = 1, outer = TRUE, line = 1)
+  }
+
+  invisible(bio)
+}
+
+
+#' @rdname plot-hist
+#' @details \code{hist_per_recruit} returns a list containing a matrix (by simulation and F)
+#' of yield per recruit (YPR) and spawning potential ratio (SPR).
+#' @export
+hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
+  if(inherits(x, "reactivevalues")) {
+    MSEhist <- x$MSEhist
+  } else {
+    MSEhist <- x
+  }
+
+  if(missing(yr_bio)) {
+    yr_bio <- MSEhist@OM@nyears
+  } else {
+    yr_bio <- max(1, yr_bio - MSEhist@OM@CurrentYr + MSEhist@OM@nyears)
+  }
+  if(missing(yr_sel)) {
+    yr_sel <- MSEhist@OM@nyears
+  } else {
+    yr_sel <- max(1, yr_sel - MSEhist@OM@CurrentYr + MSEhist@OM@nyears)
+  }
+
+  StockPars <- MSEhist@SampPars$Stock
+  FleetPars <- MSEhist@SampPars$Fleet
+  M <- StockPars$M_ageArray[, , yr_bio]
+  Mat_age <- StockPars$Mat_age[, , yr_bio]
+  Wt_age <- StockPars$Wt_age[, , yr_bio]
+  Fec_age <- StockPars$Fec_Age[, , yr_bio]
+  V <- FleetPars$V[, , yr_sel]
+
+  if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
+  F_search <- seq(min(F_range), max(F_range), length.out = 50)
+
+  per_recruit <- sapply(1:MSEhist@OM@nsim, function(x) {
+    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
+                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+                          V_at_Age = V[x, ], maxage = StockPars$maxage,
+                          plusgroup = StockPars$plusgroup)[1:2, ]
+  }, simplify = "array")
+
+  YPR <- per_recruit[1, , ]
+  SPR_F <- per_recruit[2, , ]
+  out <- list(FM = F_search,
+              YPR = t(YPR),
+              SPR = t(SPR_F))
+
+  if(figure) {
+    old_par <- par(no.readonly = TRUE)
+    on.exit(par(old_par))
+    par(mfrow = c(1, 2), mai = c(0.9, 0.9, 0.2, 0.1), omi = c(0, 0, 0, 0))
+    cols <- list(colm="darkgreen",col50='lightgreen',col90='#40804025')
+
+    tsplot(out$SPR,yrs=out$FM,xlab="Fishing mortality",ylab="Spawning potential ratio",cols = cols)
+    tsplot(out$YPR,yrs=out$FM,xlab="Fishing mortality",ylab="Yield per recruit",cols = cols)
+  }
+
+  invisible(out)
+
 }

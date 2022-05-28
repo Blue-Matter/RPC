@@ -1054,6 +1054,9 @@ server <- function(input, output, session) {
     updateSliderInput(session, "spatial_year", min = min(yr_cal), max = max(yr_cal),
                       value = MSEhist@OM@CurrentYr)
     updateSliderInput(session, "spatial_age", min = 0, max = MSEhist@OM@maxage, value = 1)
+
+    updateSliderInput(session, "change_SRR_y", min = min(yr_cal), max = MSEhist@OM@CurrentYr,
+                      value = c(min(yr_cal), MSEhist@OM@CurrentYr))
   })
 
   output$bio_year_text <- renderText({
@@ -1120,10 +1123,45 @@ server <- function(input, output, session) {
     output$hist_YC_plot <-
       renderPlot(hist_YieldCurve(OBJs, yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel, F_range = input$YC_Frange),
                  res = plotres)
+
+    output$hist_per_recruit_plot <-
+      renderPlot(hist_per_recruit(OBJs, yr_bio = input$YC_y_bio, yr_sel = input$YC_y_sel, F_range = input$YC_Frange),
+                 res = plotres)
   })
+
+  output$hist_phi0_plot <- renderPlot(hist_phi0(OBJs), res = plotres)
 
   observeEvent(input$sel_y, {
     output$plot_hist_sel <- renderPlot(hist_sel(OBJs, input$sel_y), res = plotres)
+  })
+
+  observeEvent({
+    input$change_SRR
+    input$change_SRR_steepness
+    input$change_SRR_y
+  }, {
+    output$plot_hist_SRR <- renderPlot(hist_SRR_change(OBJs, SR_new = input$change_SRR, h_mult = input$change_SRR_steepness,
+                                                       y_fit = input$change_SRR_y),
+                                       res = plotres)
+  })
+
+  observeEvent(input$OM_change_SRR, {
+    AM("Updating stock recruit parameters")
+
+    new_par <- hist_SRR_change(OBJs, SR_new = input$change_SRR, h_mult = input$change_SRR_steepness, y_fit = input$change_SRR_y,
+                               figure = FALSE)
+
+    OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
+    OM@cpars[["R0"]] <- new_par$R0
+    OM@cpars[["hs"]] <- new_par$h
+    OM@SRrel <- new_par$SRrel
+    if(is.null(OM@cpars[["Perr_y"]])) {
+      OM@cpars[["Perr_y"]] <- OBJs$MSEhist@SampPars$Stock$Perr_y
+    }
+    OM@cpars[["Perr_y"]][, 1:(OM@maxage + OM@nyears)] <- new_par$Perr_y
+
+    OBJs$MSEhist <<- runMSEhist(OM)
+    AM("Update successful.")
   })
 
   observeEvent({

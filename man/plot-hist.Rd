@@ -12,6 +12,9 @@
 \alias{hist_sel}
 \alias{hist_YieldCurve}
 \alias{hist_resample_recruitment}
+\alias{hist_SRR_change}
+\alias{hist_phi0}
+\alias{hist_per_recruit}
 \title{Plot historical dynamics}
 \usage{
 hist_bio(x, figure = TRUE)
@@ -57,6 +60,12 @@ hist_resample_recruitment(
   figure = TRUE,
   nsim_plot = 5
 )
+
+hist_SRR_change(x, SR_new = c(1, 2), h_mult = 1, y_fit, figure = TRUE)
+
+hist_phi0(x, figure = TRUE)
+
+hist_per_recruit(x, yr_bio, yr_sel, F_range, figure = TRUE)
 }
 \arguments{
 \item{x}{An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
@@ -101,6 +110,12 @@ the Hist object.}
 \item{Pshape}{If Pareto, the shape parameter. See \link[EnvStats]{Pareto}. The location parameter is calculated such that the mean = 1.}
 
 \item{nsim_plot}{The number of simulations to plot if figure is TRUE.}
+
+\item{SR_new}{A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)}
+
+\item{h_mult}{Scalar for the new steepness value (a multiple of the old steepness parameter).}
+
+\item{y_fit}{Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.}
 }
 \value{
 Various plots using base graphics. Returns invisibly a named list invisibly, where each entry is usually a matrix with rows indexing simulation
@@ -134,6 +149,15 @@ and spawning depletion (SB_SB0). Matrices are indexed by simulation (rows) and F
 
 \code{hist_resample_recruit} generates new recruitment deviations (with mean = 1) for the projection period. Returns
 a list with an updated matrix for \code{OM@cpars$Perr_y}.
+
+\code{hist_SRR_change} re-fits stock recruit function and generates a list with new stock-recruitment parameters \code{OM@SRrel}, \code{OM@cpars$R0}, \code{OM@cpars$hs},
+and historical recruitment deviations \code{OM@cpars$Perr_y}.
+
+\code{hist_phi0} returns a list containing a matrix (by simulation and year)
+of unfished spawning biomass per recruit (\code{phi0}).
+
+\code{hist_per_recruit} returns a list containing a matrix (by simulation and F)
+of yield per recruit (YPR) and spawning potential ratio (SPR).
 }
 \examples{
 Hist <- MSEtool::runMSE(Hist = TRUE)

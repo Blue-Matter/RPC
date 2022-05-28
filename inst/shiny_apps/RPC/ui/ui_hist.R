@@ -52,11 +52,13 @@ tabsetPanel(id="HistRes1", selected=1,
                                           HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>). <strong>Equilibrium SSB<sub>0</sub></strong> is the value calculated from year-specific &#120601<sub>0</sub> (unfished spawners per recruit) with stock recruit parameters &alpha; and &beta;. This is the expected SSB with no fishing if the year-specific biological parameters persist.</p>"),
                                           HTML("<p>Twenty to thirty percent (20-30%) SSB<sub>0</sub> has been suggested as a limit reference point that would avoid recruitment overfishing, with higher thresholds needed for lower productivity stocks (Beddington and Cooke 1983, as cited in <a target = \"_blank\" href=\"https://doi.org/10.1139/f94-013\">Mace (1994)</a>; <a target = \"_blank\" href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). These
                                                                     recommendations have ostensibly been developed in the absence of time-varying parameters, which would correspond to the asymptotic SSB<sub>0</sub> presented here.</p>"),
+                                          HTML("<p>Altnerative stock-recruit parameters can be explored under the <strong>Detailed operating model</strong> tab.</p>"),
                                           plotOutput("hist_SSB0_eq_plot",height=520),
                                           value = 2),
 
                                  tabPanel(HTML("<h5>Initial SSB<sub>0</sub></h5>"),
                                           HTML("<p>Spawning biomass relative to several definitions of unfished biomass (SSB<sub>0</sub>). <strong>Initial SSB<sub>0</sub></strong> is the equilibrium SSB<sub>0</sub> in the first year of the operating model. Unfished biomass is based on initial conditions at the start of the operating model.</p>"),
+
                                           plotOutput("hist_SSB0_init_plot",height=520),
                                           value = 3),
 
@@ -72,6 +74,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a target = \"_blank\" href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
                                                                     the limit reference point is set below SSB<sub>MSY</sub>, e.g., 0.5 SSB<sub>MSY</sub> or (1-M) SSB<sub>MSY</sub> in recognition that the population will naturally fluctuate above and below
                                                                     SSB<sub>MSY</sub> when fishing at F<sub>MSY</sub> (<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>).</p>"),
+                                          HTML("<p>Altnerative stock-recruit parameters can be explored under the <strong>Detailed operating model</strong> tab.</p>"),
                                           plotOutput("hist_SSBMSY_plot", height = 520),
                                           value = 5),
 
@@ -113,6 +116,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                                    (&#120601<sub>0</sub> is very low). On the other hand, large values of F<sub>MSY</sub> may imply that there is no optimum in the yield curve. MSY may not be a suitable concept for stocks at these extremes. Double-check the yield curve under the <strong>Detailed Operating Model Info</strong> tab."),
                                               HTML("<p>Use of MSY-based reference points implies the social choice of optimal yield as a management objective (<a target = \"_blank\" href=\"Sainsbury2008_refPts.pdf\">Sainsbury 2008</a>). Typically,
                                                     a conservative limit reference point for fishing mortality should not exceed F<sub>MSY</sub> (<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1999.0546\">Restrepo and Powers 1999</a>).</p>"),
+                                              HTML("<p>Altnerative stock-recruit parameters can be explored under the <strong>Detailed operating model</strong> tab.</p>"),
                                               tabsetPanel(id = "exp_hist", selected = 1,
                                                           tabPanel(h5("Figure"),
                                                                    plotOutput("hist_exp",height=540),
@@ -247,6 +251,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                                                           <li><strong>Type 6:</strong> Narrow range in SSB with no evidence of impaired recruitment. No clear guidance on the LRP here, potentially the lowest observed SSB</li>
                                                                           </ul>
                                                                           </p>"),
+
                          column(12,
                                 column(3,
                                        checkboxGroupInput("SR_plot_options", "Plot options", selected = 1:3,
@@ -318,8 +323,9 @@ tabsetPanel(id="HistRes1", selected=1,
                                               HTML("<p><a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> developed a diagnostic procedure to determine the appropriateness of SSB<sub>50%Rmax</sub>, and potentially any candidate LRP (see their Figure 2 reproduced below). The slope of
                                                                           a regression line of log(R) vs. log(SSB) with points above the LRP should be lower than from points below. If the slope-above is steeper than the slope-below, then the candidate LRP may not be high enough.
                                                                           On the other hand, if the slope-above and slope-below are both negative, then the candidate LRP may be overly cautious.</p>"),
-                                              HTML("<p>The left figure below shows the stock-recruit relationship (lines) along with historical value scatter points (median in black points). The right shows the log(R) and log(SSB) with the regression lines above and below SSB<sub>50%Rmax</sub>.
-                                                                          For both, vertical lines indicate SSB<sub>50%Rmax</sub>.</p>"),
+                                              HTML("<p>The left figure below shows the stock-recruit relationship (lines) along with historical value scatter points (median in black points). The vertical lines indicate SSB<sub>50%Rmax</sub>.</p>"),
+                                              HTML("<p>Altnerative stock-recruit parameters can be explored under the <strong>Detailed operating model</strong> tab.</p>"),
+
                                               plotOutput("hist_Rmax_plot",height=520),
                                               p("Image below taken from Myers et al. (1994)."),
                                               img(src = "Myers_figure2.png")

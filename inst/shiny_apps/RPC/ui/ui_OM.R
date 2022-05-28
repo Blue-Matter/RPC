@@ -47,7 +47,19 @@ tabsetPanel(id="OM_hist", selected = 1,
                             ),
 
                             column(9,
-                                   plotOutput("hist_YC_plot", height = 520)
+                                   tabsetPanel(id = "OM_YC", selected = 1,
+                                               tabPanel(h5("With density-dependence"),
+                                                        plotOutput("hist_YC_plot", height = 520),
+                                                        value = 1),
+
+                                               tabPanel(h5("Per-recruit"),
+                                                        plotOutput("hist_per_recruit_plot", height = 520),
+                                                        value = 2),
+
+                                               tabPanel(HTML("<h5>Unfished spawners per recruit </h5>"),
+                                                        plotOutput("hist_phi0_plot", height = 520),
+                                                        value = 3)
+                                   )
                             )
                      ),
                      value = 4),
@@ -96,6 +108,21 @@ tabsetPanel(id="OM_hist", selected = 1,
                      ),
                      value = 6),
 
+            tabPanel(h5("Change stock-recruitment"),
+                     p("This panel re-fits stock recruit parameters. Historical numbers-at-age are preserved, but associated reference points will be re-calculated."),
+                     column(12,
+                            column(3,
+                                   radioButtons("change_SRR", "Stock-recruit function", choiceNames = c("Beverton-Holt", "Ricker"), choiceValues = 1:2),
+                                   sliderInput("change_SRR_steepness", "Re-scale alpha parameter", min = 0, max = 5, value = 1, step = 0.01),
+                                   sliderInput("change_SRR_y", "Year range for re-fitting", min = 0, max = 1, value = c(0, 1), step = 1, sep = ""),
+                            ),
+                            column(9,
+                                   plotOutput("plot_hist_SRR", height = 540),
+                            )
+                     ),
+                     actionButton("OM_change_SRR", "Update operating model", icon = icon("cogs"), style = "color:red"),
+                     value = 7),
+
             tabPanel(h5("Change projection dynamics"),
                      column(12,
                             column(3,
@@ -122,6 +149,7 @@ tabsetPanel(id="OM_hist", selected = 1,
                             )
                      ),
                      actionButton("OM_change_bio", "Update operating model", icon = icon("cogs"), style = "color:red"),
-                     value = 7)
+                     value = 8)
+
 
 ) # tabsetpanel
