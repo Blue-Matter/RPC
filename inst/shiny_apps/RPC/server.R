@@ -1143,6 +1143,10 @@ server <- function(input, output, session) {
     output$plot_hist_SRR <- renderPlot(hist_SRR_change(OBJs, SR_new = input$change_SRR, h_mult = input$change_SRR_steepness,
                                                        y_fit = input$change_SRR_y),
                                        res = plotres)
+
+    output$hist_SRR_table <- renderTable(hist_SRR_change(OBJs, SR_new = input$change_SRR, h_mult = input$change_SRR_steepness,
+                                                         y_fit = input$change_SRR_y, figure = FALSE)$Quantile,
+                                         rownames = TRUE)
   })
 
   observeEvent(input$OM_change_SRR, {

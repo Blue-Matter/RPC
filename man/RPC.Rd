@@ -2,13 +2,36 @@
 % Please edit documentation in R/RPC.R
 \name{RPC}
 \alias{RPC}
+\alias{load_session}
 \title{Reference Point Calculator (RPC)}
 \usage{
 RPC(...)
+
+load_session(filename)
 }
 \arguments{
 \item{...}{Arguments to \link[shiny]{runApp}.}
+
+\item{filename}{Name of file of saved RPC session}
 }
 \description{
 Launches the RPC Shiny App.
+}
+\details{
+\code{RPC} opens up the App in the user browser.
+
+\code{load_session} returns a named list of openMSE objects saved in an RPC session. Objects include:
+\itemize{
+\item \code{\linkS4class{OM}} the original operating model uploaded to the App
+\item \code{\linkS4class{Hist}} containing the historical reconstruction of the stock
+\item \code{\linkS4class{MSE}} containing the projection results from closed-loop simulation of management procedures
+\item \code{MPs} A list of management procedure functions that return catch advice from data.
+\item \code{PMs} A list of performance measure functions that evaluates management procedures in the MSE object.
+}
+These objects can be used to re-create figures, obtain LRP estimates, etc. in the R console,
+for example, see \link{plot_hist} and \link{plot_LRP}.
+}
+\examples{
+RPC(launch.browser = TRUE)
+
 }

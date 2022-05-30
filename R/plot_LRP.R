@@ -1,16 +1,15 @@
 
-#' @name plot-LRP
-#' @title Plot historical dynamics with probabilities
-#' @description Generate figures associated with probabilities
+#' @name plot_LRP
+#' @title Plot historical dynamics relative to candidate limit reference points
+#' @description Generate LRP figures. See details below on various functions.
 #' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} containing
 #' the Hist object.
 #' @param figure Character, whether to return a time series plot (\code{"ts"}), probability plot (\code{"prob"}), or no figure (\code{"none"}).
 #' @param prob_ratio Numeric. If \code{figure = "prob"}, numeric that indicates a threshold. Functions return
 #' annual probabilities of exceeding this threshold.
 #' @param prob_ylim The y-axis range of the figure if \code{figure = "prob"}.
-#' @return If \code{figure = TRUE}, various plots using either base graphics or ggplot2 showing annual values (\code{prob_ratio = NA}) or
-#' probabilities (\code{prob_ratio} is numeric). If \code{figure = FALSE}, returns a data frame displaying quantiles (\code{prob_ratio = NA})
-#' or probabilities (\code{prob_ratio} is numeric).
+#' @return Returns invisibly a list with matrices and arrays used to generate various plots associated with
+#' time series and probabilities.
 #' @examples
 #' Hist <- MSEtool::runMSE(MSEtool::testOM, Hist = TRUE)
 #'
@@ -26,7 +25,7 @@
 #' @author Q. Huynh
 NULL
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_SSBhist} returns annual spawning biomass (SSB) relative to the annual probability that SSB exceeds some historical value
 #' (corresponding to the year in \code{SSB_y}).
 #' @param SSB_y The year (relative to OM@@CurentYr) to compare annual SSB values (only if prob_ratio is a numeric).
@@ -85,7 +84,7 @@ LRP_SSBhist <- function(x, figure = c("ts", "prob", "none"), SSB_y, prob_ratio =
 }
 
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_SSBMSY} returns annual SSB/SSBMSY or the annual probability that SSB/SSBMSY exceeds \code{prob_ratio}.
 #' @export
 LRP_SSBMSY <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
@@ -142,7 +141,7 @@ LRP_SSBMSY <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
   invisible(LRP)
 }
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_SSB0} returns annual SSB/SSB0 or the annual probability that SSB/SSB0 exceeds \code{prob_ratio}.
 #' @param type For \code{LRP_SSB0}, whether the SSB0 is the equilibrium, initial, or dynamic value (see App for description).
 #' @export
@@ -225,7 +224,7 @@ LRP_SSB0 <- function(x, figure = c("ts", "prob", "none"), type = c("equilibrium"
 
 }
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_SP} returns annual surplus production (annual change in biomass - catch) and per capita surplus production.
 #' @param Bunit The metric for stock biomass, either total biomass, vulnerable biomass, or spawning biomass.
 #' @export
@@ -308,7 +307,7 @@ LRP_SP <- function(x, figure = c("ts", "phase", "none"), Bunit = c("B", "VB", "S
   invisible(LRP)
 }
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_R} returns either annual recruitment (as a figure or table) or a stock recruit figure.
 #' @param SR_xlim Optional x-axis range for the stock recruit plot. Only used if \code{figure = "SR"}.
 #' @param SR_ylim Optional y-axis range for the stock recruit plot. Only used if \code{figure = "SR"}.
@@ -435,7 +434,7 @@ LRP_R <- function(x, figure = c("ts", "SR", "none"), SR_xlim, SR_ylim, SR_y_RPS0
   invisible(LRP)
 }
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_RPS} returns annual recruits-per-spawner.
 #' @export
 LRP_RPS <- function(x, figure = c("ts", "none")) {
@@ -491,7 +490,7 @@ LRP_RPS <- function(x, figure = c("ts", "none")) {
 
 
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_SPR} returns annual spawning potential ratio.
 #' @export
 LRP_SPR <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 0.4, prob_ylim = c(0, 1)) {
@@ -552,7 +551,7 @@ LRP_SPR <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 0.4, prob_
 }
 
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_FMSY} returns annual F and F/FMSY.
 #' @export
 LRP_FMSY <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
@@ -627,7 +626,7 @@ LRP_FMSY <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_y
 
 
 
-#' @rdname plot-LRP
+#' @rdname plot_LRP
 #' @details \code{LRP_Fmed} returns F and Fmed (the fishing mortality corresponding to the historical median recruits per spawner,
 #' frequently also referred to as the F-replacement F).
 #' @export
@@ -693,10 +692,8 @@ LRP_Fmed <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_y
 }
 
 
-#' @rdname plot-LRP
-#' @details \code{LRP_50Rmax} returns either \code{SSB50\%Rmax}, the SSB corresponding to 50% of maximum recruitment from the stock-recruit relationship
-#' (with regression lines of recruits vs. spawners above and below this value), or the annual probability of exceeding some ratio of
-#' \code{SSB50\%Rmax}.
+#' @rdname plot_LRP
+#' @details \code{LRP_50Rmax} returns  \code{SSB50\%Rmax}, the SSB corresponding to 50% of maximum recruitment from the stock-recruit relationship.
 #' @export
 LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
   figure <- match.arg(figure)
@@ -776,9 +773,9 @@ LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
   invisible(LRP)
 }
 
-#' @rdname plot-LRP
-#' @details \code{LRP_RPS90} returns either \code{SSB 90\%ile R/S}, the SSB corresponding to the intersection of the 90the percentile of both historical recruitment
-#' and recruits-per-spawner, or the annual probability of exceeding some ratio of \code{SSB 90\%ile R/S}.
+#' @rdname plot_LRP
+#' @details \code{LRP_RPS90} returns \code{SSB 90\%ile R/S}, the SSB corresponding to the intersection of the 90the percentile of both historical recruitment
+#' and recruits-per-spawner.
 #' @export
 #' @export
 LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {

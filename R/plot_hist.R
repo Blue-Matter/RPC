@@ -1,11 +1,11 @@
 
-#' @name plot-hist
-#' @title Plot historical dynamics
+#' @name plot_hist
+#' @title Plot historical dynamics of the operating model. See details below.
 #' @description Various plots for plotting historical time series for the operating model.
 #' @param x An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is
 #' the Hist object.
 #' @param figure Logical, whether to generate a figure or just return a list of values (invisibly).
-#' @return Various plots using base graphics. Returns invisibly a named list invisibly, where each entry is usually a matrix with rows indexing simulation
+#' @return Various plots using base graphics. Returns invisibly a named list, where each entry is usually a matrix with rows indexing simulation
 #' and columns indexing year.
 #' @examples
 #' Hist <- MSEtool::runMSE(Hist = TRUE)
@@ -14,7 +14,7 @@
 #' @author Q. Huynh
 NULL
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_bio} returns time series of spawning biomass (SBiomass), total biomass (Biomass), abundance (Number),
 #' recruitment (Rec), and recruitment deviates (RecDev).
 #' @export
@@ -55,7 +55,7 @@ hist_bio<-function(x, figure = TRUE) {
   invisible(bio)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_future_recruit} returns historical and future recruitment deviations.
 #' @export
 hist_future_recruit <- function(x, figure = TRUE) {
@@ -105,7 +105,7 @@ hist_future_recruit <- function(x, figure = TRUE) {
 }
 
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_bio_schedule} plots in biological at age parameters. The corresponding array is indexed by simulation, age, and year.
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param n_age_plot The number of ages to plot in the left figure.
@@ -178,7 +178,7 @@ hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageA
   invisible(bio)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_bio_change} plots alternative projection dynamics by changing either the mean or slope. Returns an updated array of
 #' parameters.
 #' @param var A string to indicate which object to plot from OM@@cpars.
@@ -249,7 +249,7 @@ hist_bio_change <- function(x, var = c("Wt_age", "M_ageArray"), change_mean = 0,
 }
 
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_growth_I} plots histograms of von Bertalanffy parameters.
 #' @export
 hist_growth_I <- function(x) {
@@ -263,7 +263,7 @@ hist_growth_I <- function(x) {
   plot('Growth', MSEhist, plot.num=1)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_growth_II} plots histograms of von Bertalanffy parameters by year.
 #' @export
 hist_growth_II <- function(x) {
@@ -277,7 +277,7 @@ hist_growth_II <- function(x) {
   plot('Growth', MSEhist, plot.num=2)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_spatial} plots histograms of the parameters for spatial movement in a two-area model (set all to 0.5 to functionally create a single area model).
 #' @param type Type of spatial plot
 #' @param ... arguments to \link[MSEtool]{plot_mov}
@@ -299,7 +299,7 @@ hist_spatial <- function(x, type = c("par", "matrix", "all"), ...) {
 
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_sel} plots selectivity/retention at age for two different years in the OM. Returns an array indexed by simulation,
 #' age, year.
 #' @param yr A length-2 vector for the years (relative to OM@@CurrentYr) to plot selectivity.
@@ -377,7 +377,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
   invisible(bio)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_YieldCurve} plots the yield curve as a function of F, SPR (spawning potential ratio), spawning biomass (SBiomass),
 #' and spawning depletion (SB_SB0). Matrices are indexed by simulation (rows) and F (columns).
 #' @param yr_bio The year (relative to OM@@CurrentYr) for the biological parameters (growth, M, maturity).
@@ -458,7 +458,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 
 
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_resample_recruit} generates new recruitment deviations (with mean = 1) for the projection period. Returns
 #' a list with an updated matrix for \code{OM@cpars$Perr_y}.
 #' @param dist Character to denote to sample either from a lognormal distribution or Pareto distribution.
@@ -524,7 +524,7 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
   invisible(bio)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_SRR_change} re-fits stock recruit function and generates a list with new stock-recruitment parameters \code{OM@SRrel}, \code{OM@cpars$R0}, \code{OM@cpars$hs},
 #' and historical recruitment deviations \code{OM@cpars$Perr_y}.
 #' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
@@ -552,11 +552,17 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
     y <- y_fit - MSEhist@OM@CurrentYr + MSEhist@OM@nyears
   }
 
+  SSBpR <- MSEhist@SampPars$Stock$SSBpR[, 1]
+
   if(all(SR_new == MSEhist@OM@SRrel) && h_mult == 1 && length(y) == MSEhist@OM@nyears) { # Do nothing
 
     h_new <- MSEhist@SampPars$Stock$hs
     R0_new <- MSEhist@SampPars$Stock$R0
     Perr_y_new <- MSEhist@SampPars$Stock$Perr_y[, 1:(MSEhist@OM@maxage + MSEhist@OM@nyears)]
+
+    Arec_new <- switch(SR_new,
+                       "1" = 4 * h_new/(1 - h_new)/SSBpR,
+                       "2" = MSEhist@SampPars$Stock$aR[, 1])
 
   } else {
 
@@ -564,7 +570,7 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
     Rec <- apply(MSEhist@AtAge$Number[, 1, , ], 1:2, sum)
 
     newSR <- lapply(1:MSEhist@OM@nsim, function(x) {
-      phi0 <- MSEhist@SampPars$Stock$SSBpR[x, 1]
+      phi0 <- SSBpR[x]
 
       h <- MSEhist@SampPars$Stock$hs[x]
 
@@ -581,6 +587,7 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
 
     h_new <- sapply(newSR, getElement, "h")
     R0_new <- sapply(newSR, getElement, "R0")
+    Arec_new <- sapply(newSR, getElement, "Arec")
 
     Rpred_new <- sapply(newSR, getElement, "Rpred") %>% t()
     RecDev <- Rec/Rpred_new
@@ -606,6 +613,8 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
   }
 
   bio <- list(SRrel = SR_new, R0 = R0_new, h = h_new, Perr_y = Perr_y_new)
+  bio$Quantile <- cbind(Arec_new, h_new, SSBpR) %>%
+    make_df(c("SRR alpha", "Steepness", "Corresponding phi_0")) %>% round(digits = 2)
 
   if(figure) {
 
@@ -659,7 +668,7 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
   invisible(bio)
 }
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_phi0} returns a list containing a matrix (by simulation and year)
 #' of unfished spawning biomass per recruit (\code{phi0}).
 #' @export
@@ -702,7 +711,7 @@ hist_phi0 <- function(x, figure = TRUE) {
 }
 
 
-#' @rdname plot-hist
+#' @rdname plot_hist
 #' @details \code{hist_per_recruit} returns a list containing a matrix (by simulation and F)
 #' of yield per recruit (YPR) and spawning potential ratio (SPR).
 #' @export
