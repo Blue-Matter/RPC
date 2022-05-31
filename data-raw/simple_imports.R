@@ -99,7 +99,8 @@ usethis::use_data(DFO_Pacific_Hake_2019, overwrite = TRUE)
 DFO_Inside_YE_Rockfish_2019 <- readRDS("data-raw/DFO_IYRF.rds")
 DFO_Inside_YE_Rockfish_2019@Name <- "Inside Yelloweye Rockfish, 2019 operating model"
 DFO_Inside_YE_Rockfish_2019@Agency <- "DFO"
-DFO_Inside_YE_Rockfish_2019@Source <- c(SAR = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2020/2020_056-eng.html")
+DFO_Inside_YE_Rockfish_2019@Source <- c(SAR = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2020/2020_056-eng.html",
+                                        ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2021/2021_008-eng.html")
 DFO_Inside_YE_Rockfish_2019@Common_Name <- "Yelloweye Rockfish"
 DFO_Inside_YE_Rockfish_2019@Species <- "Sebastes ruberrimus"
 
@@ -142,3 +143,13 @@ DFO_POP_2016@Source <-
     SAR = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2017/2017_043-eng.html")
 
 usethis::use_data(DFO_POP_2016, overwrite = TRUE)
+
+# EGB Cod
+DFO_EGB_Haddock_2019 <- readRDS("data-raw/OM_HH.rda")
+DFO_EGB_Haddock_2019@Name <- "Eastern Georges Bank Haddock, 2022 WHAM assessment"
+DFO_EGB_Haddock_2019@Common_Name <- "Haddock"
+DFO_EGB_Haddock_2019@Species <- "Melanogrammus aeglefinus"
+DFO_EGB_Haddock_2019@Agency <- "DFO"
+DFO_EGB_Haddock_2019@Region <- "NAFO 5Zjm (E. Georges Bank)"
+
+usethis::use_data(DFO_EGB_Haddock_2019, overwrite = TRUE)
