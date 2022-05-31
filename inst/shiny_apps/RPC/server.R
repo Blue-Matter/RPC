@@ -381,8 +381,8 @@ server <- function(input, output, session) {
 
   observeEvent({
     input$HistRes1
-    input$SSB
-    input$SSBhist
+    #input$SSB
+    #input$SSBhist
   }, {
     req(OBJs$MSEhist)
 
@@ -1054,6 +1054,8 @@ server <- function(input, output, session) {
     updateSliderInput(session, "spatial_year", min = min(yr_cal), max = max(yr_cal),
                       value = MSEhist@OM@CurrentYr)
     updateSliderInput(session, "spatial_age", min = 0, max = MSEhist@OM@maxage, value = 1)
+
+    updateRadioButtons(session, "change_SRR", selected = unique(OBJs$OM@SRrel))
 
     updateSliderInput(session, "change_SRR_y", min = min(yr_cal), max = MSEhist@OM@CurrentYr,
                       value = c(min(yr_cal), MSEhist@OM@CurrentYr))
