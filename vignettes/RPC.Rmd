@@ -1,5 +1,5 @@
 ---
-title: "Reference Point Calculator"
+title: "Reference Point Calculator version 0.3.1"
 subtitle: "User Guide"
 author: 
 - "Quang Huynh (<quang@bluematterscience.com>)"
@@ -120,6 +120,7 @@ Users can upload an operating model (saved using the `saveRDS` R function) devel
 
 As an extension of developing an OM from scratch, RPC imports the [MERA App](https://www.merafish.org/) to develop OMs from a mandatory questionnaire and an optional dataset. For more information, see the [MERA User Guide](https://dlmtool.github.io/DLMtool/MERA/MERA_User_Guide_v6.html)
 
+
 # Examine Historical Fishery
 
 The historical dynamics will be re-constructed once the OM is selected. This panel explores methods explored the scientific literature for setting reference points (either a limit or a target) from various management settings around the world. These method tend to fall into one (or more) of several categories:
@@ -141,7 +142,8 @@ Additional figures are available to explore the specification of the operating m
 
 * **Biological schedules** that plot maturity, length, weight, natural mortality at age and at year
 * **Fleet selectivity at age**
-* **Yield curve dynamics** arising from the combination of the preceding biological and fleet parameters
+* **Yield curve dynamics** arising from the combination of the preceding biological and fleet parameters. Yield per recruit and spawning potential ratio curves are also presented here.
+* **Alternative stock-recruit relationships** can change the presumed productivity of the operating model, which will also update related reference points, e.g, FMSY.
 * **Future recruitment strength relative to historical**. This can be used to explore an operating model that focuses on future recruitment scenarios, e.g., poor recruitment or specific recruitment pulses.
 
 ![*Operating model yield curve*](yield_curve.png)
@@ -195,6 +197,39 @@ Upon running the closed-loop simulations, outcomes related to biomass, fishing m
 Users can define performance metrics (PMs) to compare MP performance. PMs for limit and target reference points can be defined relative to historical biomass, unfished biomass, or MSY values. Additional PMs can be generated for catch and fishing mortality objectives. PMs are defined by the threshold and the range of years in the projection period, with the resulting probability that the operating model has exceeded such thresholds over the time period. Once a suite of PMs are generated, summary plots (spider/radar plots, tradeoff plots, etc.) allow comparison of the tested MPs.
 
 ![*Presentation of three performance metrics for five management procedures*](performance_measures.png)
+
+# Migrating to the R console
+
+At a certain point, it may be desirable to move to the back-end and work with the operating models and estimates of reference points in R to create custom figures and analyses (test custom management procedures, explore dynamics not reported in the App, etc.).
+
+An RPC session, once saved, can subsequently be loaded into a local R session. After installing the RPC package locally (see Introduction above), the `RPC::load_session` function can be used to grab a list of objects used in the App:
+
+```{r eval = FALSE}
+devtools::install_github("Blue-Matter/RPC")
+library(RPC)
+
+output <- load_session("RPC_session.rpc")
+```
+
+The operating model, historical reconstruction, MSE projections, management procedure functions, and performance measure functions are now available in the `output` list.
+
+RPC contains functions that are used the App and can directly be called in R. For example,
+
+```{r eval = FALSE}
+x <- LRP_SP(output$Hist, figure = "phase")
+```
+will return a phase plot of historical surplus production vs. biomass displayed in the App. 
+
+![*Figures in the App, such as the surplus production phase plot here, can be called in R.*](LRP_SP.png)
+
+The function will also return the values by simulation and year in a list: 
+
+```{r eval = FALSE}
+x$SP
+```
+
+Various figures in the LRP panel (Step 1) can be recreated using the `LRP_` functions, see `?plot_LRP` for details. Similarly, figures in the detailed operating model panel can be obtained with the `hist_` functions, see `?plot_hist`.
+
 
 # Appendix
 
