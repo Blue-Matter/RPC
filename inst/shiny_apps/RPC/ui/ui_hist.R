@@ -16,6 +16,8 @@ tabsetPanel(id="HistRes1", selected=1,
                                             for example, if the assumptions with a given method are not met."),
                                           p("Additional figures describing the specification of the operating model are available under the \"Detailed Operating Model Info\" tab,
                                           with some options for adjusting the dynamics of the projections for Steps 3 and 4."),
+                                          HTML("<p>Further discussion of many of these reference points in the DFO context is in
+                                               <a target = \"_blank\" href=\"https://www.dfo-mpo.gc.ca/csas-sccs/publications/resdocs-docrech/2002/2002_084-eng.htm\">Shelton and Rice 2002</a>.</p>")
                                           value = 1),
                                  tabPanel(h5("Figure"),
                                           plotOutput("plot_hist_bio", height = 540),
@@ -362,9 +364,9 @@ tabsetPanel(id="HistRes1", selected=1,
 
             tabPanel(h5("90% R/S"),
                      tabsetPanel(id="RpS90hist", selected=1,
-                                 tabPanel(h5("Diagnostic"),
-                                          HTML("<a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, SSB<sub>90%ile R/S</sub> relatively good recruitment has still been observed in light of high fishing mortality. Median values of the 90th percentile R/S, R, and SSB are in dark dashed lines, while values from individual simulations are shown in light, transparent colors.
-                                               The stock-recruit relationship is plotted here for reference but is not considered in this LRP."),
+                                 tabPanel(h5("Time Series"),
+                                          HTML("<a target = \"_blank\" href=\"https://archive.nafo.int/open/studies/s16/serebrya.pdf\">Serebryakov (1991)</a> proposed an LRP to be the SSB (left figure) at the intersection of the 90th percentile of observed recruitment and 90th percentile of recruits per spawner (right figure). The idea is that at this biomass, SSB<sub>90%ile R/S</sub> relatively good recruitment has still been observed in light of high fishing mortality. Median values of the 90th percentile R/S, R, and SSB are in dark dashed lines, while values from individual simulations are shown in light, transparent colors.
+                                               The stock-recruit relationship is plotted here for reference but is not considered in this LRP. See <a target = \"_blank\" href=\"https://doi.org/10.1006/jmsc.1994.1020\">Myers et al. (1994)</a> for more discussion."),
                                           plotOutput("hist_RpS90_plot",height=520),
                                           value=1),
 
