@@ -837,6 +837,10 @@ LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_
            lwd = c(NA, NA, 2, 2, 2), lty = c(NA, NA, 4, 4, 4))
     abline(h = 0, v = 0, col = "grey")
 
+    # Historical SSB/SSB 50%Rmax
+    tsplot(x = LRP$SBiomass/LRP$SSB_90RPS, yrs = LRP$Year, xlab = "Year", ylab = expression(SSB["90%"~"R/S"]))
+
+
   } else if(figure == "prob") {
 
     plot(LRP$Year, LRP$Prob,
