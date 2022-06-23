@@ -17,7 +17,7 @@ tabsetPanel(id="HistRes1", selected=1,
                                           p("Additional figures describing the specification of the operating model are available under the \"Detailed Operating Model Info\" tab,
                                           with some options for adjusting the dynamics of the projections for Steps 3 and 4."),
                                           HTML("<p>Further discussion of many of these reference points in the DFO context is in
-                                               <a target = \"_blank\" href=\"https://www.dfo-mpo.gc.ca/csas-sccs/publications/resdocs-docrech/2002/2002_084-eng.htm\">Shelton and Rice 2002</a>.</p>")
+                                               <a target = \"_blank\" href=\"https://www.dfo-mpo.gc.ca/csas-sccs/publications/resdocs-docrech/2002/2002_084-eng.htm\">Shelton and Rice 2002</a>.</p>"),
                                           value = 1),
                                  tabPanel(h5("Figure"),
                                           plotOutput("plot_hist_bio", height = 540),
