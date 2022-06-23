@@ -23,6 +23,7 @@ RPC <- function(...) shiny::runApp(system.file("shiny_apps/RPC", package = "RPC"
 #' }
 #' These objects can be used to re-create figures, obtain LRP estimates, etc. in the R console,
 #' for example, see \link{plot_hist} and \link{plot_LRP}.
+#' @seealso \link{OM} for operating models included in this package.
 #' @export
 load_session <- function(filename) {
   prev_session <- readRDS(file = filename)

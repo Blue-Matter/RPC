@@ -26,7 +26,9 @@
 #' \item \code{DFO_4X5Y_Haddock_2015}: 2015 VPA assessment imported by \link[MSEtool]{VPA2OM}
 #' \item \code{DFO_Arrowtooth_Flounder_2014}: 2014 assessment, MPD estimates imported by \link[MSEtool]{iSCAM2OM}
 #' \item \code{DFO_BoF_Herring_2018}: operating model conditioned by \link[SAMtool]{RCM}
-#' \item \code{DFO_GSL_SS_Herring_2019}: SCA assessment of southern Gulf of St. Lawrence Atlantic Herring, Spring Spawning Component, imported by \link[MSEtool]{VPA2OM}
+#' \item \code{DFO_EGB_Haddock_2019}: 2022 assessment (data up to 2019) imported by \link[MSEtool]{WHAM2OM}.
+#' \item \code{DFO_GSL_Atlantic_Cod_2018}: 2018 assessment, imported by \link[MSEtool]{Assess2OM}.
+#' \item \code{DFO_GSL_SS_Herring_2019}: SCA assessment of southern Gulf of St. Lawrence Atlantic Herring, Spring Spawning Component, imported by \link[MSEtool]{Assess2OM}
 #' \item \code{DFO_HG_Herring_2019}: 2019 iSCAM assessment update, MPD estimates imported by \link[MSEtool]{iSCAM2OM}
 #' \item \code{DFO_Inside_QB_Rockfish_2020}: Preliminary inside quillback rockfish operating model, conditioned by \link[SAMtool]{RCM}
 #' \item \code{DFO_Inside_YE_Rockfish_2019}: Base 2019 inside yelloweye rockfish operating model, conditioned by \link[SAMtool]{RCM}

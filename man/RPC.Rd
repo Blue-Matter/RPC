@@ -35,3 +35,6 @@ for example, see \link{plot_hist} and \link{plot_LRP}.
 RPC(launch.browser = TRUE)
 
 }
+\seealso{
+\link{OM} for operating models included in this package.
+}
