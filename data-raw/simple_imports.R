@@ -126,7 +126,7 @@ DFO_Arrowtooth_Flounder_2014@Source <-
   c(ResDoc = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/ResDocs-DocRech/2017/2017_025-eng.html",
     SAR = "https://www.dfo-mpo.gc.ca/csas-sccs/Publications/SAR-AS/2015/2015_055-eng.html")
 DFO_Arrowtooth_Flounder_2014@Common_Name <- "Arrowtooth Flounder"
-DFO_Arrowtooth_Flounder_2014@Species <- "Atheresthes stomas"
+DFO_Arrowtooth_Flounder_2014@Species <- "Atheresthes stomias"
 
 usethis::use_data(DFO_Arrowtooth_Flounder_2014, overwrite = TRUE)
 
