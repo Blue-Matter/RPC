@@ -90,6 +90,8 @@ fluidPage(
                               radioButtons('Select',label=NULL,choiceNames=c('Select','Load','Sketch'),choiceValues=c(1,2,3),inline=T),
                               conditionalPanel("input.Select==1",
                                                h5("Select an example operating model, and update the number of simulations and projection years as desired."),
+                                               tags$h5("Documentation of these operating models are available at: ",
+                                                       tags$a("https://blue-matter.github.io/openMSE/RPC_OM/index.html", target = "_blank", href = "https://blue-matter.github.io/openMSE/RPC_OM/index.html")),
                                                column(12,style="padding-top:30px;padding-bottom:10px;padding-left:50px",
                                                       div(style="display: inline-block;vertical-align:top; width: 250px;",
                                                           selectInput("SelectOMDD", choices = OMs, label = NULL, selected = NULL)),
