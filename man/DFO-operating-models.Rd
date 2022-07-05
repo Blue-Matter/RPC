@@ -7,6 +7,8 @@
 \alias{DFO_4X5Y_Haddock_2015}
 \alias{DFO_Arrowtooth_Flounder_2014}
 \alias{DFO_BoF_Herring_2018}
+\alias{DFO_EGB_Haddock_2019}
+\alias{DFO_GSL_Atlantic_Cod_2018}
 \alias{DFO_GSL_SS_Herring_2019}
 \alias{DFO_HG_Herring_2019}
 \alias{DFO_Inside_QB_Rockfish_2020}

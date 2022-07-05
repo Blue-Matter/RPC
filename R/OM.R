@@ -6,6 +6,8 @@
 #' DFO_4X5Y_Haddock_2015
 #' DFO_Arrowtooth_Flounder_2014
 #' DFO_BoF_Herring_2018
+#' DFO_EGB_Haddock_2019
+#' DFO_GSL_Atlantic_Cod_2018
 #' DFO_GSL_SS_Herring_2019
 #' DFO_HG_Herring_2019
 #' DFO_Inside_QB_Rockfish_2020
