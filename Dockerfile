@@ -18,7 +18,10 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libssh2-1-dev \
 	libfontconfig1-dev \
-	libxml2-dev
+	libxml2-dev \
+	libharfbuzz-dev
+
+
 
 # install basic shiny functionality to R
 RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools'), repos='https://cloud.r-project.org/')"
