@@ -1,6 +1,4 @@
 # build the Docker image from the base image 'openanalytics/r-base'
-# this is an Ubuntu 16.04 LTS with a recent R version.
-# this image is available on Docker hub at https://hub.docker.com/r/openanalytics/r-base/
 FROM openanalytics/r-base
 
 # add the maintainer of this Docker image (this should be you in this case)
@@ -25,12 +23,12 @@ RUN apt-get update && apt-get install -y \
 
 
 # install basic shiny functionality to R
-RUN R -e "install.packages(c('shiny', 'rmarkdown', 'devtools'), repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages(c('shiny', 'rmarkdown', 'remotes'), repos='https://cloud.r-project.org/')"
 
 # Note: all R dependencies for RPC shiny app must be DESCRIPTION !!
 
 # install RPC package - shiny_live branch
-RUN R -e "devtools::install_github('blue-matter/RPC', 'shiny_live', dependencies=TRUE, upgrade='never')"
+RUN R -e "remotes::install_github('blue-matter/RPC', 'shiny_live', dependencies=TRUE, upgrade='never')"
 
 # instruct Docker to expose port 3838 to the outside world
 # (otherwise it will not be possible to connect to the Shiny application)
