@@ -19,7 +19,8 @@ RUN apt-get update && apt-get install -y \
     libssh2-1-dev \
 	libfontconfig1-dev \
 	libxml2-dev \
-	libharfbuzz-dev
+	libharfbuzz-dev \
+  libfribidi-dev
 
 
 
