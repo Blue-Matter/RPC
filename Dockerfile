@@ -18,7 +18,13 @@ RUN apt-get update && apt-get install -y \
 # install basic shiny functionality to R, including remotes to install from GitHub
 RUN R -e "install.packages(c('shiny', 'rmarkdown', 'remotes'), repos='https://cloud.r-project.org/')"
 
-# install R package - shiny_live branch
+# install openMSE packages from CRAN
+RUN R -e "install.packages(c('openMSE'), repos='https://cloud.r-project.org/')"
+
+# install MSEextra from GitHub (require by RPC)
+RUN R -e "remotes::install_github('blue-matter/MSEextra', dependencies=TRUE, upgrade='never')"
+
+# install R package from shiny_live branch
 RUN R -e "remotes::install_github('blue-matter/RPC', 'shiny_live', dependencies=TRUE, upgrade='never')"
 
 # instruct Docker to expose port 3838 to the outside world
