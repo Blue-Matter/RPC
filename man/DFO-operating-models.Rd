@@ -18,6 +18,7 @@
 \alias{DFO_POP_2016}
 \alias{DFO_SoG_Herring_2019}
 \alias{DFO_WCVI_Herring_2019}
+\alias{Peruvian_Anchoveta_2008}
 \alias{OM}
 \title{Pre-built operating models}
 \format{
@@ -26,7 +27,7 @@ An object of class \linkS4class{OM}.
 \description{
 A set of operating models built into RPC.
 }
-\section{Operating models}{
+\section{Operating models for Canadian fisheries}{
 
 \itemize{
 \item \code{DFO_DEMO_decreaseM}: Example OM with decreasing M over time
@@ -45,6 +46,13 @@ A set of operating models built into RPC.
 \item \code{DFO_POP_2016}: Assessment with MCMC output imported by \link[MSEtool]{Awatea2OM}
 \item \code{DFO_SoG_Herring_2019}: 2019 iSCAM assessment update, MPD estimates imported by \link[MSEtool]{iSCAM2OM}
 \item \code{DFO_WCVI_Herring_2019}: 2019 iSCAM assessment update, MPD estimates imported by \link[MSEtool]{iSCAM2OM}
+}
+}
+
+\section{Other operating models}{
+
+\itemize{
+\item \code{Peruvian_Anchoveta_2008}
 }
 }
 
