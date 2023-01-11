@@ -679,15 +679,7 @@ hist_phi0 <- function(x, figure = TRUE) {
     MSEhist <- x
   }
 
-  phi0 <- sapply(1:MSEhist@OM@nsim, function(x) {
-    sapply(1:(MSEhist@OM@nyears + MSEhist@OM@proyears), function(y) {
-      calc_phi0(M = MSEhist@SampPars$Stock$M_ageArray[x, , y],
-                Wt = MSEhist@SampPars$Stock$Wt_age[x, , y],
-                Mat = MSEhist@SampPars$Stock$Mat_age[x, , y],
-                Fec = MSEhist@SampPars$Stock$Fec_Age[x, , y],
-                plusgroup = MSEhist@SampPars$Stock$plusgroup)
-    })
-  }) %>% t()
+  phi0 <- MSEhist@Ref$ByYear$SSB0/MSEhist@Ref$ByYear$R0
 
   nyh <- MSEhist@OM@nyears
   hy <- MSEhist@OM@CurrentYr - (nyh:1) + 1

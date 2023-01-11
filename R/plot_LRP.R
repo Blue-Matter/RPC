@@ -406,16 +406,7 @@ LRP_R <- function(x, figure = c("ts", "SR", "none"), SR_xlim, SR_ylim, SR_y_RPS0
       FleetPars <- MSEhist@SampPars$Fleet
 
       RpS_crash <- median(1/MSEhist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
-
-      RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
-        MSEtool:::Ref_int_cpp(0, M_at_Age = StockPars$M_ageArray[x, , y],
-                              Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-                              Fec_at_Age = StockPars$Fec_Age[x, , y],
-                              V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-                              maxage = StockPars$maxage,
-                              plusgroup = StockPars$plusgroup)[3, ]
-      }, numeric(1), y = SR_y_RPS0) %>% median()
-
+      RpS_0 <- median(MSEhist@Ref$ByYear$R0[, SR_y_RPS0]/MSEhist@Ref$ByYear$SSB0[, SR_y_RPS0])
       RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
 
       abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")

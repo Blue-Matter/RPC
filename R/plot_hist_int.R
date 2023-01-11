@@ -178,11 +178,6 @@ generate_pareto_par <- function(shape, mu = 1) {
 }
 
 
-calc_phi0 <- function(M, Wt, Mat, Fec, plusgroup) {
-  1/MSEtool:::Ref_int_cpp(0, M, Wt, Mat, Fec, rep(0, length(M)), length(M) - 1, plusgroup)[3, 1]
-}
-
-
 # #' @importFrom changepoint cpt.mean
 # do_cp <- function(x, type = c("SP", "SPB"), ncp = 1, med_only = FALSE, figure = TRUE) {
 #   if(inherits(x, "reactivevalues")) {
