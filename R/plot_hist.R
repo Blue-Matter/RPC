@@ -414,20 +414,24 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
   YC <- lapply(1:MSEhist@OM@nsim, function(x) {
     sapply(log(F_search), function(y) {
-      MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
-                         Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                         V_at_Age = V[x, ], maxage = StockPars$maxage,
-                         R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                         SSBpR = StockPars$SSBpR[x, 1],
-                         opt = 2, plusgroup = StockPars$plusgroup)
+      MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+               SSBpR = StockPars$SSBpR[x, 1],
+               opt = 2, plusgroup = StockPars$plusgroup)
     })
   })
 
   SPR_F <- vapply(1:MSEhist@OM@nsim, function(x) {
-    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
-                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                          V_at_Age = V[x, ], maxage = StockPars$maxage,
-                          plusgroup = StockPars$plusgroup)[2, ]
+    vapply(log(F_search), function(ff) {
+      MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = 1, SRrelx = 4L, hx = 1,
+               SSBpR = 0,
+               opt = 2, plusgroup = StockPars$plusgroup)["SB_SB0"]
+    }, numeric(1))
   }, numeric(length(F_search)))
 
   Y <- sapply(YC, function(x) x["Yield", ])
@@ -737,14 +741,18 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
 
   per_recruit <- sapply(1:MSEhist@OM@nsim, function(x) {
-    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
-                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                          V_at_Age = V[x, ], maxage = StockPars$maxage,
-                          plusgroup = StockPars$plusgroup)[1:2, ]
+    vapply(log(F_search), function(ff) {
+      MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = 1, SRrelx = 4L, hx = 1,
+               SSBpR = 0,
+               opt = 2, plusgroup = StockPars$plusgroup)[c("Yield", "SB_SB0")]
+    }, numeric(2))
   }, simplify = "array")
 
-  YPR <- per_recruit[1, , ]
-  SPR_F <- per_recruit[2, , ]
+  YPR <- per_recruit["Yield", , ]
+  SPR_F <- per_recruit["SB_SB0", , ]
   out <- list(FM = F_search,
               YPR = t(YPR),
               SPR = t(SPR_F))
