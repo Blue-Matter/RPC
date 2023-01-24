@@ -1,5 +1,5 @@
 ---
-title: "Reference Point Calculator version 0.3.1"
+title: "Reference Point Calculator version 0.4.0"
 subtitle: "User Guide"
 author: 
 - "Quang Huynh (<quang@bluematterscience.com>)"
@@ -81,7 +81,7 @@ This document:
 
 ## Quick Start
 
-For a demonstration of the RPC, go to the [online app](https://apps.bluematterscience.com/RPC/). RPC is under active development with a separate [RPCdev](https://apps.bluematterscience.com/RPCdev/) website that hosts new features as they are added and tested.
+For a demonstration of the RPC, go to the [online app](https://apps.bluematterscience.com/RPC/). 
 
 Alternatively, the RPC can be run on a local computer in R:
 
