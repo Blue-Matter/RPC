@@ -5,6 +5,7 @@ The source code of the `RPC` package is available for download from [GitHub](htt
 
 - Forwards compatibility for MSEtool 3.6.1
 - Remove 'beta' designation.
+- Grid lines with plots.
 
 ## version 0.3.0
 
