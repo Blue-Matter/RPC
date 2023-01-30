@@ -4,3 +4,5 @@
 ^Meta$
 ^data-raw$
 ^.*\.rpc$
+^joss$
+^\.github$
