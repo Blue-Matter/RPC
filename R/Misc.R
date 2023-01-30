@@ -37,4 +37,3 @@ runMSEhist <- function(OM) {
 #' @importFrom graphics grid matplot
 plot.default <- function(...) graphics::plot.default(..., panel.first = graphics::grid())
 matplot <- function(...) graphics::matplot(..., panel.first = graphics::grid())
-
