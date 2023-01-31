@@ -55,7 +55,7 @@ runMSE_DDM <- function(OM, M0, M1, MPs = "NFref", HistRel = FALSE,
   # Get density-dependent MSY/unfished reference points
   refpt <- lapply(1:OM@nsim, function(x) {
     #B0 <- Hist@Ref$ReferencePoints$SSB0[x] Not the appropriate B0 to use
-    mat <- m$Stock$Mat_age[x, , OM@nyears]
+    #mat <- m$Stock$Mat_age[x, , OM@nyears]
     weight <- m$Stock$Wt_age[x, , OM@nyears]
     fec <- m$Stock$Fec_Age[x, , OM@nyears]
 
@@ -66,7 +66,7 @@ runMSE_DDM <- function(OM, M0, M1, MPs = "NFref", HistRel = FALSE,
     surv_M <- rep(exp(-M0[x]), n_age)
 
     DDM_NPR0 <- calc_NPR(surv = exp(-M0[x]) %>% rep(n_age), n_age = n_age, plusgroup = m$Stock$plusgroup)
-    DDM_phi0 <- sum(DDM_NPR0 * weight * mat)
+    DDM_phi0 <- sum(DDM_NPR0 * fec)
 
     if(m$Stock$SRrel[x] == 1) {
       DDM_R0 <- (Arec * DDM_phi0 - 1)/Brec/DDM_phi0
@@ -199,7 +199,7 @@ yield_fn_wrapper <- function(x, M, fec, weight, vul,
     for(i in 1:20) {
       M_DD[i] <- ifelse(dep[i] >= 1, M_bounds[1],
                         ifelse(dep[i] <= 0, M_bounds[2], M_bounds[1] + (M_bounds[2] - M_bounds[1]) * (1 - dep[i])))
-      out <- yield_fn(x, M = rep(M_DD[i], length(mat)), fec, weight, vul, SR, Arec, Brec, catch_eq,
+      out <- yield_fn(x, M = rep(M_DD[i], length(fec)), fec, weight, vul, SR, Arec, Brec, catch_eq,
                       opt = FALSE, x_transform = x_transform, plusgroup = plusgroup)
       if (abs(out["B"]/B0 - dep[i]) <= 1e-4) break
       dep[i+1] <- out["B"]/B0
@@ -223,7 +223,7 @@ yield_fn <- function(x, M, fec, weight, vul, SR = c("BH", "Ricker"), Arec, Brec,
     FMort <- ifelse(x_transform, exp(x), x)
     surv <- exp(-vul * FMort - M)
   } else {
-    U <- ifelse(x_transform, ilogit(x), x)
+    U <- ifelse(x_transform, SAMtool:::ilogit(x), x)
     surv <- exp(-M) * (1 - vul * U)
   }
   n_age <- length(M)

@@ -32,8 +32,9 @@ These objects can be used to re-create figures, obtain LRP estimates, etc. in th
 for example, see \link{plot_hist} and \link{plot_LRP}.
 }
 \examples{
+\dontrun{
 RPC(launch.browser = TRUE)
-
+}
 }
 \seealso{
 \link{OM} for operating models included in this package.
