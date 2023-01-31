@@ -646,9 +646,14 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
 
     ##### Plot new
     out2 <- local({
-      MSEhist@SampPars$Stock$R0 <- R0_new
-      MSEhist@SampPars$Stock$hs <- h_new
-      stock_recruit_int(MSEhist)
+      MSEhist2 <- MSEhist
+      MSEhist2@SampPars$Stock$SRrel[] <- SR_new
+      MSEhist2@SampPars$Stock$R0[] <- R0_new
+      MSEhist2@SampPars$Stock$hs[] <- h_new
+
+      MSEhist2@SampPars$Stock$aR[] <- SRalphaconv(h_new, SSBpR, SR = 2)
+      MSEhist2@SampPars$Stock$bR <- SRbetaconv(h_new, R0_new, SSBpR, SR = 2) %>% matrix(ncol = 1)
+      stock_recruit_int(MSEhist2)
     })
 
     matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
