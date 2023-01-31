@@ -1,115 +1,66 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'Reference Point Calculator (RPC): A Shiny app for exploration of limit reference points for fisheries management'
 tags:
-  - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - reference points
+  - population dynamics
+  - fisheries science
+  - management strategy evaluation
 authors:
-  - name: Adrian M. Price-Whelan
-    orcid: 0000-0000-0000-0000
-    equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
+  - name: Quang C. Huynh
+    orcid: 0000-0001-7835-4376
+    corresponding: true
+    affiliation: 1
+  - name: Tom R. Carruthers
+    orcid: 0000-0001-9173-9043
+    affiliation: 1
+  - name: Adrian R. Hordyk
+    orcid: 0000-0001-5620-3446
+    affiliation: 1
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
+ - name: Blue Matter Science, North Vancouver, BC, Canada
    index: 1
- - name: Institution Name, Country
-   index: 2
- - name: Independent Researcher, Country
-   index: 3
-date: 13 August 2017
+date: 1 February 2023
 bibliography: paper.bib
-
-# Optional fields if submitting to a AAS journal too, see this blog post:
-# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+`RPC` is a Shiny app that facilitates exploration of candidate limit reference points used for fisheries management of various marine species. The app leverages the computational efficiency of the `openMSE` R software package [@openmse:2021], produces standardized figures, and provides an interactive, graphical user interface for the analysis without the need for backend coding.
 
 # Statement of need
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+Contemporary fisheries management focuses on identifying the status of exploited fish stocks relative to a limit reference point (LRP) to inform potential management actions [@caddymahon:1994; @sainsbury:2008; @fsp:2022]. Typically, a stock assessment provides a historical reconstruction of the population and the current status relative to some benchmark is needed. In some management areas, fishery objectives can guide the choice of LRP relative to long-term yield or economic profit. In Canadian fisheries policy, the LRP identifies a threshold to biological serious harm where there is significantly reduced productivity and recruitment. This interpretation of serious harm is consistent with international practice for fisheries management [@sheltonrice:2002], but various metrics pertaining to spawning output (and potentially fishing mortality) can be used as the LRP to meet this definition. Comparative tools would facilitate evaluation of various LRPs and could be used identify whether candidate metrics are appropriate for a given stock. As far as we know, no comprehensive software package is currently available to perform such an analysis.
 
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
+# Overview
 
-# Mathematics
+The app is divided into four major steps.
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+In Step 1, users select an operating model that represents most closely resembles their population of interest. The app provides three options: (1) selecting a pre-loaded operating model of various Canadian and international fish stocks, (2) uploading a `*.rds` file containing an operating model compatible with `openMSE`, or (3) completing the `MERA` qualitative questionnaire that is converted a quantitative population dynamics model [@mera:2023].
 
-Double dollars make self-standing equations:
+Step 2 generates figures to explore the population status with time series and phase plots of the stock trajectory over time relative to various LRPs. With stochastic operating models, the probability that the stock has exceeded candidate LRPs is reported. While the app cannot provide a recommendation for any individual operating model, supporting text providing a summary description on the derivation and assumptions behind each candidate LRP. When necessary, diagnostic plots to determine if the past trajectory of the stock has met the assumptions of historical-based LRPs are provided to inform the user of any potential limitations.
 
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
+Step 2 addresses an immediate technical need to identify a potential LRP, while Steps 3 and 4 support a broader analysis that identifies management options that promote fisheries sustainability [@marentette:2021]. Step 3 provides the opportunity to explore various management options, including management procedures that use fixed catch scenarios, fixed effort (fishing mortality rate) scenarios, harvest strategies based on the true or estimated population status, or empirically-based management procedures from the `DLMtool` package [@dlmtool:2018]. These management procedures are then applied in projections with closed-loop simulation.
 
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
+Step 4 returns the results from the projections in Step 3. Projected outcomes of the operating model are reported here, and panels provide users the opportunity to create performance measures to calculate the probability that some quantity, such as catch or biomass relative to a candidate LRP, exceeds a specified threshold during the projection. Such performance measures can evaluate (1) whether candidate LRPs are sensible under some reference projections, for example, with no fishing, or (2) the scope of management options, i.e., catch levels, needed to ensure the stock remains above the LRP with high probability.
 
-# Citations
+A summary fifth panel provides additional information on stock dynamics that are not covered in the panel for Step 2. This panel also provides further options for altering the assumptions of the stock dynamics in the projection period. These feature are intended for modeling hypothesized time-varying productivity scenarios (induced by climate change or other natural environmental factors).
 
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
 
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
+# Usage
 
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
+The source code for `RPC` is stored on [Github](https://github.com/Blue-Matter/RPC). The app is hosted in the eponymous R package which can be downloaded and run on a local computer. Alternatively, the app can be directly accessed at [https://apps.bluematterscience.com/RPC](https://apps.bluematterscience.com/RPC).
+
+The app can be used primarily for exploring historical dynamics and LRPs (Step 2 only, \autoref{fig:screenshot}), while evaluating and recommending management options (Steps 3 and 4) is an optional step. Work in progress can be saved to file and returned to later by uploading the session file to the app. Furthermore, we envision some users will need additional flexibility in their analyses and require backend coding in R, for example, for detailed operating model setup and/or final analyses to develop recommendations for management. For such purposes, the core suite of R functions used in the Shiny app are available from the R package.
+
+While `RPC` focuses on Canadian case studies, several LRP methods in the app are used in other management jurisdictions, e.g. @ICES:2021. Therefore, this app will be of interest for a global audience for fisheries population modeling.
 
 # Figures
 
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+![Screenshot of RPC upon selecting an operating model.\label{fig:screenshot}](figures/RPC-screenshot.png)
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+We acknowledge funding from the Sustainable Fisheries Science Fund from the Government of Canada. Feedback from test users in the Department of Fisheries and Oceans (DFO) working group guided the functionality and the layout of the app.
 
 # References
+
