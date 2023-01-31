@@ -685,6 +685,16 @@ hist_phi0 <- function(x, figure = TRUE) {
 
   phi0 <- MSEhist@Ref$ByYear$SSB0/MSEhist@Ref$ByYear$R0
 
+  if (any(is.na(phi0))) {
+    phi0 <- sapply(1:MSEhist@OM@nsim, function(x) {
+      sapply(1:(MSEhist@OM@nyears + MSEhist@OM@proyears), function(y) {
+        calc_phi0(surv = exp(-MSEhist@SampPars$Stock$M_ageArray[x, , y]),
+                  Fec = MSEhist@SampPars$Stock$Fec_Age[x, , y],
+                  plusgroup = MSEhist@SampPars$Stock$plusgroup)
+      })
+    }) %>% t()
+  }
+
   nyh <- MSEhist@OM@nyears
   hy <- MSEhist@OM@CurrentYr - (nyh:1) + 1
   py <- MSEhist@OM@CurrentYr + 1:MSEhist@OM@proyears

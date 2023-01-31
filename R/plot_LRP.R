@@ -400,13 +400,20 @@ LRP_R <- function(x, figure = c("ts", "SR", "none"), SR_xlim, SR_ylim, SR_y_RPS0
 
     }
 
-    if(any(SR_include == 3)) { # Plot recruits per spawner lines
+    if(any(SR_include == 3)) { # Plot replacement lines
 
       StockPars <- MSEhist@SampPars$Stock
       FleetPars <- MSEhist@SampPars$Fleet
 
       RpS_crash <- median(1/MSEhist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
       RpS_0 <- median(MSEhist@Ref$ByYear$R0[, SR_y_RPS0]/MSEhist@Ref$ByYear$SSB0[, SR_y_RPS0])
+      if (is.na(RpS_0)) {
+        RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
+          1/calc_phi0(surv = exp(-StockPars$M_ageArray[x, , y]),
+                    Fec = StockPars$Fec_Age[x, , y],
+                    plusgroup = StockPars$plusgroup)
+        }, numeric(1), y = SR_y_RPS0) %>% median()
+      }
       RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
 
       abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")

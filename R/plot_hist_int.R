@@ -177,6 +177,12 @@ generate_pareto_par <- function(shape, mu = 1) {
   return(list(mu = mu, location = location, variance = variance))
 }
 
+# Calculate unfished spawners per recruit
+calc_phi0 <- function(surv, Fec, plusgroup) {
+  NPR <- calc_NPR(surv, n_age = length(surv), plusgroup = plusgroup)
+  sum(NPR * Fec)
+}
+
 MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age, maxage,
                      relRfun, SRRpars,
                      R0x = 1, SRrelx = 4L, hx = 1, SSBpR = 0, opt = 1L, plusgroup = 1L) {
