@@ -181,19 +181,17 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
 #' @param ... Additional arguments depending on \code{type}. See details.
 #'
 #' @details
-#' \code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
 #'
-#' \code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium").
-#' Provide the type with argument \code{SSB0_type}.
-#'
-#' \code{type = "SSBMSY"} calculates SSB relative to SSBMSY.
-#'
-#' \code{type = "F"} calculates F relative to FMSY.
-#'
-#' \code{type = "SPR"} calculates SPR relative to frac.
-#'
-#' \code{type = "SSBMSY"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{Chist_yr}.
-#'
+#' \itemize{
+#' \item \code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
+#' \item \code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium"). Provide the type with argument \code{SSB0_type}.
+#' \item \code{type = "SSBMSY"} calculates SSB relative to SSBMSY.
+#' \item \code{type = "F"} calculates F relative to FMSY.
+#' \item \code{type = "SPR"} calculates SPR relative to \code{frac}.
+#' \item \code{type = "Catch"} calculates catch relative to historical catch. Provide the reference year with argument \code{Chist_yr}.
+#' \item \code{type = "SSB50\%Rmax"} calculates SSB relative to that at half of maximum predicted recruitment. See \link{LRP_50Rmax}.
+#' \item \code{type = "SSB90\%R/S"} calculates SSB relative to the SSB at 90th percentile of the historical replacement line. See \link{LRP_RPS90}.
+#' }
 #' @examples
 #' \donttest{
 #' library(MSEtool)
@@ -209,6 +207,7 @@ make_PMobj <- function(x, type = c("SSB", "SSB0", "SSBMSY", "F", "SPR", "Catch",
 
   if(inherits(x, "reactivevalues")) {
     MSEproj <- x$MSEproj
+    MSEproj@Hist <- x$MSEhist
   } else {
     MSEproj <- x
   }
@@ -566,7 +565,7 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F",
     abline(v=CurrentYr+c(0,(1:100)*10),col='grey')
   }
 
-  plot(1,1,typ='n',axes=F,xlab="",ylab="")
+  graphics::plot.default(1,1,typ='n',axes=F,xlab="",ylab="")
 
   if(type == "SSB0") {
     legend('topleft',legend=c(expression(SSB), expression(Dynamic~SSB[0]), expression(Initial~SSB[0])),
