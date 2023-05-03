@@ -821,7 +821,7 @@ server <- function(input, output, session) {
         withProgress(message="Running MSE Simulation test:", {
           OBJs$MSEhist@OM@interval <<-
             sapply(MPs$Sel, function(x) get(x, envir = MPinterval, inherits = FALSE) %>% eval())
-          OBJs$MSEproj <<- Project(OBJs$MSEhist, MPs = MPs$Sel)
+          OBJs$MSEproj <<- Project(OBJs$MSEhist, MPs = MPs$Sel, extended = TRUE)
           MSErun(1)
           #saveRDS(MSEproj,"C:/temp/MSEproj.rda")
         })

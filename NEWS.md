@@ -3,7 +3,8 @@ The source code of the `RPC` package is available for download from [GitHub](htt
 
 ## version 0.4.1
 
-- Check when `MSE@Misc$extended` is empty when calculating surplus production in projections.
+- Check when `MSE@Misc$extended` is empty when calculating surplus production in projections. 
+- Revert so that `extended = TRUE` in shiny app (introduced in 0.4.0)
 - Update deprecated arguments, use geom_line with linewidth argument.
 
 ## version 0.4.0
