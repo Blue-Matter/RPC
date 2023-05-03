@@ -1,8 +1,8 @@
 Package: RPC
 Type: Package
 Title: Reference Point Calculator
-Version: 0.4.0
-Date: 2023-01-28
+Version: 0.4.1
+Date: 2023-05-02
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
@@ -24,7 +24,7 @@ Imports:
     dplyr,
     DT,
     EnvStats,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     ggpubr,
     ggrepel,
     ggspider,

@@ -88,7 +88,8 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
       structure(dimnames = list(MP = MSEproj@MPs, Year = c(CurrentYr, py[-length(py)]))) %>%
       reshape2::melt()
 
-    g <- ggplot(dat_MP, aes(Year, value)) + geom_line(size = 1, aes(colour = MP)) +
+    g <- ggplot(dat_MP, aes(Year, value)) +
+      geom_line(linewidth = 1, aes(colour = MP)) +
       theme_bw() +
       coord_cartesian(xlim = range(ay)) +
       geom_vline(xintercept = CurrentYr, linetype = 4) +
@@ -100,7 +101,8 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
       structure(dimnames = list(MP = MSEproj@MPs, Year = c(CurrentYr, py))) %>%
       reshape2::melt()
 
-    g <- ggplot(dat_MP, aes(Year, value)) + geom_line(size = 1, aes(colour = MP)) +
+    g <- ggplot(dat_MP, aes(Year, value)) +
+      geom_line(linewidth = 1, aes(colour = MP)) +
       theme_bw() +
       coord_cartesian(xlim = range(ay), ylim = c(0, 1.2 * max_y)) +
       geom_vline(xintercept = CurrentYr, linetype = 4) +
@@ -125,7 +127,8 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
     SSB_out$Type <- factor(SSB_out$Type,
                            levels = c("Historical~SSB", "Equilibrium~SSB[0]", "Initial~SSB[0]", "Dynamic~SSB[0]"))
 
-    g <- g + geom_line(data = SSB_out, aes(linetype = Type, size = Type)) +
+    g <- g +
+      geom_line(data = SSB_out, aes(linetype = Type, linewidth = Type)) +
       geom_point(data = SSB_out, aes(shape = Type)) +
       scale_linetype_manual(name = "SSB Type", values = c(1, 2, 1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "SSB Type", values = c(NA_integer_, 1, 16, 4), labels = scales::label_parse()) +
@@ -141,7 +144,8 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
                          Year = ay)
     SSB_out <- rbind(SSBhist, SSBMSY)
 
-    g <- g + geom_line(data = SSB_out, aes(linetype = Type, size = Type)) +
+    g <- g +
+      geom_line(data = SSB_out, aes(linetype = Type, linewidth = Type)) +
       geom_point(data = SSB_out, aes(shape = Type)) +
       scale_linetype_manual(name = "SSB Type", values = c(1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "SSB Type", values = c(NA_integer_, 4), labels = scales::label_parse()) +
@@ -149,7 +153,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
 
   } else if(type == "SP") {
     SP <- data.frame(value = hist, Year = hy)
-    g <- g + geom_line(data = SP, size = 2)
+    g <- g + geom_line(data = SP, linewidth = 2)
   } else if(type == "F") {
     FMSY <- data.frame(value = apply(MSEproj@RefPoint$ByYear$FMSY, 2, median),
                        Type = "F[MSY]",
@@ -160,17 +164,18 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
     F_out <- rbind(Fhist, FMSY)
     F_out$Type <- factor(F_out$Type, levels = c("Historical~F", "F[MSY]"))
 
-    g <- g + geom_line(data = F_out, aes(linetype = Type, size = Type)) +
+    g <- g +
+      geom_line(data = F_out, aes(linetype = Type, linewidth = Type)) +
       geom_point(data = F_out, aes(shape = Type)) +
       scale_linetype_manual(name = "F Type", values = c(1, 3), labels = scales::label_parse()) +
       scale_shape_manual(name = "F Type", values = c(NA_integer_, 4), labels = scales::label_parse()) +
       scale_size_manual(name = "F Type", values = c(2, 0.5), labels = scales::label_parse())
   } else if(type == "SPR") {
     SPR <- data.frame(value = hist, Year = hy)
-    g <- g + geom_line(data = SPR, size = 2)
+    g <- g + geom_line(data = SPR, linewidth = 2)
   } else {
     Catch <- data.frame(value = hist, Year = hy)
-    g <- g + geom_line(data = Catch, size = 2)
+    g <- g + geom_line(data = Catch, linewidth = 2)
   }
 
   return(g)
@@ -330,7 +335,7 @@ prob_plot <- function(x, PM_list = list(), xlim = NULL, ylim = NULL, figure = TR
         structure(dimnames = list(MP = MSEproj@MPs, Year = py)) %>%
         reshape2::melt(value.name = "Probability")
 
-      ggplot(dat, aes(Year, Probability, colour = MP)) + geom_line(size = 1) +
+      ggplot(dat, aes(Year, Probability, colour = MP)) + geom_line(linewidth = 1) +
         theme_bw() +
         coord_cartesian(xlim = xlim, ylim = ylim) +
         scale_colour_manual(values = MPcols %>% structure(names = MSEproj@MPs)) +
@@ -462,7 +467,7 @@ Stoch_plot_int <- function(x, ref = 1, ylab, py, MPcols, MPlabcols, MPind, qval,
   upper <- structure(qs[3, MPind, length(py):1, drop = FALSE], dimnames = list(Type = "Upper", MP = MPs, Year = rev(py))) %>% reshape2::melt()
 
   ggplot(rbind(lower, upper), aes(Year, value)) +
-    geom_line(size = 2, data = meds, aes(colour = MP)) +
+    geom_line(linewidth = 2, data = meds, aes(colour = MP)) +
     geom_polygon(aes(fill = MP, group = MP)) +
     theme_bw() +
     scale_fill_manual(values = MPcols[MPind]) +

@@ -1,6 +1,11 @@
 The source code of the `RPC` package is available for download from [GitHub](https://www.github.com/Blue-Matter/RPC). The App is also hosted online at https://apps.bluematterscience.com/RPC.
 
 
+## version 0.4.1
+
+- Check when `MSE@Misc$extended` is empty when calculating surplus production in projections.
+- Update deprecated arguments, use geom_line with linewidth argument.
+
 ## version 0.4.0
 
 - Forwards compatibility for MSEtool 3.6.1
