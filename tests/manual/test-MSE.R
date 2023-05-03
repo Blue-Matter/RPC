@@ -4,8 +4,9 @@ OMs <- avail("OM", package = "RPC")
 
 for(i in 1:length(OMs)) {
 #for(i in 1:2) {
-  MSEhist <- get(OMs[i]) %>% SubCpars(1:3) %>% runMSE(Hist = TRUE, silent = TRUE)
-  x <- Project(MSEhist, MPs = c("NFref", "AvC"), silent = TRUE)
+  OM_test <- get(OMs[i])
+  MSEhist <- OM_test %>% SubCpars(1:3) %>% runMSE(Hist = TRUE, silent = TRUE)
+  x <- Project(MSEhist, MPs = c("NFref", "AvC"), silent = TRUE, extended = TRUE)
   x@Hist <- MSEhist
 
   testthat::expect_s4_class(x, "MSE")

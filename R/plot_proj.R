@@ -9,7 +9,14 @@
 #' @return Various plots using base graphics or ggplot2.
 #' @examples
 #' Hist <- MSEtool::runMSE(Hist = TRUE)
-#' hist_bio(Hist)
+#' MSE <- MSEtool::Project(
+#'   Hist,
+#'   MPs = c("NFref", "AvC"),
+#'   extended = TRUE # Needed for type = "SP"
+#' )
+#' MSE@Hist <- Hist
+#' proj_plot(MSE, Hist, type = "SP")
+#'
 #' @author Q. Huynh
 
 #' @rdname plot-MSE
@@ -42,6 +49,7 @@ proj_plot<-function(x, MSEhist, type = c("SSB0", "SSBMSY", "SP", "F", "SPR", "Ca
                  "SSB0" = MSEproj@SSB_hist,
                  "SSBMSY" = MSEproj@SSB_hist,
                  "SP" = local({
+                   if (!length(MSE@proj@Misc$extended)) stop("Re-run MSE with extended = TRUE")
                    B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)
                    Removals <- apply(MSEproj@Misc$extended$Removals, c(1, 3, 4), sum)
                    B[, 1, 2:(nyh+1)] - B[, 1, 1:nyh] + Removals[, 1, 1:nyh]
@@ -409,6 +417,7 @@ stoch_plot <- function(x, MPstoch, qval = 0.9, type = c("SSB0", "SSBMSY", "SP", 
     do.call(ggpubr::ggarrange, g)
 
   } else if(type == "SP") {
+    if (!length(MSE@proj@Misc$extended)) stop("Re-run MSE with extended = TRUE")
     B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)[, MPind, , drop = FALSE]
     Removals <- apply(MSEproj@Misc$extended$Removals, c(1, 3, 4), sum)[, MPind, , drop = FALSE]
     SP <- B[, , nyh + 2:nyp, drop = FALSE] - B[, , nyh + 2:nyp - 1, drop = FALSE] + Removals[, , nyh + 2:nyp - 1, drop = FALSE]
@@ -520,6 +529,7 @@ hist_sim <- function(x, MSEhist, MP, sims, type = c("SSB0", "SSBMSY", "SP", "F",
     matlines(yrs,t(SSB),col=makeTransparent(cols,80),type='l',lty=1,lwd=5)
   } else if(type == "SP") {
 
+    if (!length(MSE@proj@Misc$extended)) stop("Re-run MSE with extended = TRUE")
     layout(matrix(1:2, nrow = 1), widths = c(0.8, 0.2))
 
     B <- apply(MSEproj@Misc$extended$B, c(1, 3, 4), sum)[, MPind, ][sims, , drop = FALSE]
