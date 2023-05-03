@@ -4,7 +4,8 @@ OMs <- avail("OM", package = "RPC")
 
 for(i in 1:length(OMs)) {
 #for(i in 1:2) {
-  x <- get(OMs[i]) %>% SubCpars(1:3) %>% runMSE(Hist = TRUE, silent = TRUE)
+  OM_test <- get(OMs[i])
+  x <- OM_test %>% SubCpars(1:3) %>% runMSE(Hist = TRUE, silent = TRUE)
 
   testthat::expect_s4_class(x, "Hist")
 
