@@ -37,3 +37,13 @@ runMSEhist <- function(OM) {
 #' @importFrom graphics grid matplot
 plot.default <- function(...) graphics::plot.default(..., panel.first = graphics::grid())
 matplot <- function(...) graphics::matplot(..., panel.first = graphics::grid())
+
+max <- function(..., na.rm = TRUE) {
+  dots <- list(...)
+  infinite_test <- sapply(dots, function(x) all(is.infinite(x)))
+  if (all(infinite_test)) return(0)
+
+  dots <- lapply(dots, function(x) x[is.finite(x)])
+  dots$na.rm <- na.rm
+  do.call(base::max, dots)
+}
