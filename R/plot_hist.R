@@ -534,6 +534,19 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
 #' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
 #' @param h_mult Scalar for the new steepness value (a multiple of the old steepness parameter).
 #' @param y_fit Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.
+#' @examples
+#'
+#' # Example of backend use of `hist_SRR_change`
+#' OM <- SubCpars(RPC::DFO_4X5Y_Haddock_2015, 1:2)
+#' Hist <- runMSE(OM, Hist = TRUE)
+#' vars <- hist_SRR_change(Hist, h_mult = 0.6) # Steepness is sixty percent of whatever is in the OM
+#'
+#' OM@cpars$R0 <- vars$R0
+#' OM@cpars$hs <- vars$h
+#' OM@SRrel <- vars$SRrel
+#' OM@cpars$Perr_y <- Hist@SampPars$Stock$Perr_y
+#' OM@cpars$Perr_y[, 1:(OM@maxage + OM@nyears)] <- vars$Perr_y
+#' Hist_new <- runMSE(OM, Hist = TRUE)
 #' @export
 hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
   #SR_new <- match.arg(SR_new)

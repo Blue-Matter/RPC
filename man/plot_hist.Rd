@@ -163,6 +163,18 @@ of yield per recruit (YPR) and spawning potential ratio (SPR).
 Hist <- MSEtool::runMSE(Hist = TRUE)
 bio <- hist_bio(Hist)
 bio$SBiomass
+
+# Example of backend use of `hist_SRR_change`
+OM <- SubCpars(RPC::DFO_4X5Y_Haddock_2015, 1:2)
+Hist <- runMSE(OM, Hist = TRUE)
+vars <- hist_SRR_change(Hist, h_mult = 0.6) # Steepness is sixty percent of whatever is in the OM
+
+OM@cpars$R0 <- vars$R0
+OM@cpars$hs <- vars$h
+OM@SRrel <- vars$SRrel
+OM@cpars$Perr_y <- Hist@SampPars$Stock$Perr_y
+OM@cpars$Perr_y[, 1:(OM@maxage + OM@nyears)] <- vars$Perr_y
+Hist_new <- runMSE(OM, Hist = TRUE)
 }
 \author{
 Q. Huynh
