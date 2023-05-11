@@ -61,7 +61,7 @@ hist_resample_recruitment(
   nsim_plot = 5
 )
 
-hist_SRR_change(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE)
+hist_SRR_change(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sims = 1:25)
 
 hist_phi0(x, figure = TRUE)
 
@@ -79,7 +79,7 @@ the Hist object.}
 
 \item{yr_plot}{The year (relative to OM@CurrentYr) to plot for the right figure.}
 
-\item{sim}{The simulation to plot for the left figure.}
+\item{sim}{The individual simulation to plot for the left figure.}
 
 \item{change_mean}{The percent change in the mean of the new parameters relative to the old.}
 
@@ -116,6 +116,8 @@ the Hist object.}
 \item{h_mult}{Scalar for the new steepness value (a multiple of the old steepness parameter).}
 
 \item{y_fit}{Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.}
+
+\item{sims}{A subset of simulations for plotting (limited to 25 by default to reduce time to generate plots)}
 }
 \value{
 Various plots using base graphics. Returns invisibly a named list, where each entry is usually a matrix with rows indexing simulation

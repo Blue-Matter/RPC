@@ -110,7 +110,7 @@ hist_future_recruit <- function(x, figure = TRUE) {
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param n_age_plot The number of ages to plot in the left figure.
 #' @param yr_plot The year (relative to OM@@CurrentYr) to plot for the right figure.
-#' @param sim The simulation to plot for the left figure.
+#' @param sim The individual simulation to plot for the left figure.
 #' @export
 hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"), n_age_plot, yr_plot, sim,
                               figure = TRUE) {
@@ -534,6 +534,7 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
 #' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
 #' @param h_mult Scalar for the new steepness value (a multiple of the old steepness parameter).
 #' @param y_fit Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.
+#' @param sims A subset of simulations for plotting (limited to 25 by default to reduce time to generate plots)
 #' @examples
 #'
 #' # Example of backend use of `hist_SRR_change`
@@ -548,7 +549,7 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
 #' OM@cpars$Perr_y[, 1:(OM@maxage + OM@nyears)] <- vars$Perr_y
 #' Hist_new <- runMSE(OM, Hist = TRUE)
 #' @export
-hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
+hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sims = 1:25) {
   #SR_new <- match.arg(SR_new)
   SRR <- switch(SR_new,
                 "1" = "BH",
@@ -635,6 +636,7 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
 
   if(figure) {
 
+
     old_par <- par(no.readonly = TRUE)
     on.exit(par(old_par))
 
@@ -645,7 +647,13 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
     medR <- apply(out$R, 2, median)
 
     ##### Plot old stock-recruit relationship
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (max(sims) > nrow(out$SSB)) sims <- sims[sims < nrow(out$SSB)]
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "Current operating model")
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
@@ -669,7 +677,8 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
       stock_recruit_int(MSEhist2)
     })
 
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "New operating model")
     plotquant(out2$predR, yrs = out2$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
