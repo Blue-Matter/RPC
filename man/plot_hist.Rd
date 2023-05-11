@@ -48,7 +48,7 @@ hist_spatial(x, type = c("par", "matrix", "all"), ...)
 
 hist_sel(x, yr, maturity = TRUE, figure = TRUE)
 
-hist_YieldCurve(x, yr_bio, yr_sel, F_range, figure = TRUE)
+hist_YieldCurve(x, yr_bio, yr_sel, F_range, figure = TRUE, sims)
 
 hist_resample_recruitment(
   x,
@@ -99,6 +99,8 @@ the Hist object.}
 
 \item{F_range}{Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.}
 
+\item{sims}{A subset of simulations for plotting. Some functions have a low limit by default, i.e. 25, to reduce time to generate plots). Set to \code{NULL} to plot all simulations.}
+
 \item{dist}{Character to denote to sample either from a lognormal distribution or Pareto distribution.}
 
 \item{mu}{The mean of the distribution (default = 1).}
@@ -116,8 +118,6 @@ the Hist object.}
 \item{h_mult}{Scalar for the new steepness value (a multiple of the old steepness parameter).}
 
 \item{y_fit}{Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.}
-
-\item{sims}{A subset of simulations for plotting (limited to 25 by default to reduce time to generate plots)}
 }
 \value{
 Various plots using base graphics. Returns invisibly a named list, where each entry is usually a matrix with rows indexing simulation

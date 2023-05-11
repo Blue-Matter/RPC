@@ -76,14 +76,16 @@ LRP_50Rmax(
   x,
   figure = c("ts", "prob", "none"),
   prob_ratio = 1,
-  prob_ylim = c(0, 1)
+  prob_ylim = c(0, 1),
+  sims = 1:25
 )
 
 LRP_RPS90(
   x,
   figure = c("ts", "prob", "none"),
   prob_ratio = 1,
-  prob_ylim = c(0, 1)
+  prob_ylim = c(0, 1),
+  sims = 1:25
 )
 }
 \arguments{

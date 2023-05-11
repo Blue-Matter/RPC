@@ -19,7 +19,7 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
 
-    if(addline) for(i in 1:2)lines(yrs[i, ],x[i,],col='black',lty=i)
+    if(addline && nrow(x) > 1) for(i in 1:2) lines(yrs[i, ],x[i,],col='black',lty=i)
     lines(apply(yrs, 2, median, na.rm = TRUE), apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
 
   } else {
@@ -30,7 +30,7 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
 
-    if(addline) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
+    if(addline && nrow(x) > 1) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
     lines(yrs, apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
   }
 

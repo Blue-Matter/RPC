@@ -693,7 +693,7 @@ LRP_Fmed <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_y
 #' @rdname plot_LRP
 #' @details \code{LRP_50Rmax} returns  \code{SSB50\%Rmax}, the SSB corresponding to 50% of maximum recruitment from the stock-recruit relationship.
 #' @export
-LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
+LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1), sims = 1:25) {
   figure <- match.arg(figure)
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
@@ -728,7 +728,17 @@ LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
     par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
     # Plot stock-recruit relationship with SSB 50%Rmax
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
@@ -776,7 +786,7 @@ LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
 #' and recruits-per-spawner.
 #' @export
 #' @export
-LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
+LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1), sims = 1:25) {
 
   figure <- match.arg(figure)
 
@@ -813,7 +823,17 @@ LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_
     par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
     # Plot stock-recruit relationship
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)

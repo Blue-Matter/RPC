@@ -384,7 +384,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
 #' @param yr_sel The year (relative to OM@@CurrentYr) for the selectivity parameters.
 #' @param F_range Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.
 #' @export
-hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
+hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -412,7 +412,14 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
-  YC <- lapply(1:MSEhist@OM@nsim, function(x) {
+
+  if (missing(sims) || is.null(sims)) {
+    sims <- 1:MSEhist@OM@nsim
+  } else if (max(sims) > MSEhist@OM@nsim) {
+    sims <- sims[sims < MSEhist@OM@nsim]
+  }
+
+  YC <- lapply(sims, function(x) {
     sapply(log(F_search), function(y) {
       MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
@@ -423,7 +430,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
     })
   })
 
-  SPR_F <- vapply(1:MSEhist@OM@nsim, function(x) {
+  SPR_F <- vapply(sims, function(x) {
     vapply(log(F_search), function(ff) {
       MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
@@ -534,7 +541,7 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
 #' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
 #' @param h_mult Scalar for the new steepness value (a multiple of the old steepness parameter).
 #' @param y_fit Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.
-#' @param sims A subset of simulations for plotting (limited to 25 by default to reduce time to generate plots)
+#' @param sims A subset of simulations for plotting. Some functions have a low limit by default, i.e. 25, to reduce time to generate plots). Set to \code{NULL} to plot all simulations.
 #' @examples
 #'
 #' # Example of backend use of `hist_SRR_change`
@@ -636,7 +643,6 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sim
 
   if(figure) {
 
-
     old_par <- par(no.readonly = TRUE)
     on.exit(par(old_par))
 
@@ -647,7 +653,11 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sim
     medR <- apply(out$R, 2, median)
 
     ##### Plot old stock-recruit relationship
-    if (max(sims) > nrow(out$SSB)) sims <- sims[sims < nrow(out$SSB)]
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
 
     SSB_sim <- out$SSB[sims, , drop = FALSE]
     R_sim <- out$R[sims, , drop = FALSE]
@@ -777,7 +787,13 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
 
-  per_recruit <- sapply(1:MSEhist@OM@nsim, function(x) {
+  if (missing(sims) || is.null(sims)) {
+    sims <- 1:MSEhist@OM@nsim
+  } else if (max(sims) > MSEhist@OM@nsim) {
+    sims <- sims[sims < MSEhist@OM@nsim]
+  }
+
+  per_recruit <- sapply(sims, function(x) {
     vapply(log(F_search), function(ff) {
       MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
