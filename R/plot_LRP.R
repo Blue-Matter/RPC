@@ -400,22 +400,20 @@ LRP_R <- function(x, figure = c("ts", "SR", "none"), SR_xlim, SR_ylim, SR_y_RPS0
 
     }
 
-    if(any(SR_include == 3)) { # Plot recruits per spawner lines
+    if(any(SR_include == 3)) { # Plot replacement lines
 
       StockPars <- MSEhist@SampPars$Stock
       FleetPars <- MSEhist@SampPars$Fleet
 
       RpS_crash <- median(1/MSEhist@Ref$ByYear$SPRcrash[, 1]/StockPars$SSBpR[, 1])
-
-      RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
-        MSEtool:::Ref_int_cpp(0, M_at_Age = StockPars$M_ageArray[x, , y],
-                              Wt_at_Age = StockPars$Wt_age[x, , y], Mat_at_Age = StockPars$Mat_age[x, , y],
-                              Fec_at_Age = StockPars$Fec_Age[x, , y],
-                              V_at_Age = MSEhist@SampPars$Fleet$V[x, , y],
-                              maxage = StockPars$maxage,
-                              plusgroup = StockPars$plusgroup)[3, ]
-      }, numeric(1), y = SR_y_RPS0) %>% median()
-
+      RpS_0 <- median(MSEhist@Ref$ByYear$R0[, SR_y_RPS0]/MSEhist@Ref$ByYear$SSB0[, SR_y_RPS0])
+      if (is.na(RpS_0)) {
+        RpS_0 <- vapply(1:MSEhist@OM@nsim, function(x, y) {
+          1/calc_phi0(surv = exp(-StockPars$M_ageArray[x, , y]),
+                    Fec = StockPars$Fec_Age[x, , y],
+                    plusgroup = StockPars$plusgroup)
+        }, numeric(1), y = SR_y_RPS0) %>% median()
+      }
       RpS_med <- apply(out$R/out$SSB, 1, median) %>% median()
 
       abline(a = 0, b = RpS_0, lty = 2, lwd = 2, col = "blue")
@@ -695,7 +693,7 @@ LRP_Fmed <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_y
 #' @rdname plot_LRP
 #' @details \code{LRP_50Rmax} returns  \code{SSB50\%Rmax}, the SSB corresponding to 50% of maximum recruitment from the stock-recruit relationship.
 #' @export
-LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
+LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1), sims = 1:25) {
   figure <- match.arg(figure)
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
@@ -730,7 +728,17 @@ LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
     par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
     # Plot stock-recruit relationship with SSB 50%Rmax
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
@@ -778,7 +786,7 @@ LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob
 #' and recruits-per-spawner.
 #' @export
 #' @export
-LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1)) {
+LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1), sims = 1:25) {
 
   figure <- match.arg(figure)
 
@@ -815,7 +823,17 @@ LRP_RPS90 <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_
     par(mfrow = c(1, 2), mar = c(5, 4, 1, 1))
 
     # Plot stock-recruit relationship
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4)
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)

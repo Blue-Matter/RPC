@@ -25,4 +25,4 @@ The user manual is available online at: https://blue-matter.github.io/openMSE/RP
 
 ## Development
 
-RPC is currently in beta testing as features are added and the interface is improved from feedback from end users. Feature requests and bug reports can be submitted as a issue in the Github repository: https://github.com/Blue-Matter/RPC/issues
+Feature requests and bug reports can be submitted as a issue in the Github repository: https://github.com/Blue-Matter/RPC/issues

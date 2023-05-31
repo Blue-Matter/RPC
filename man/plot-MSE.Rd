@@ -93,7 +93,14 @@ Figures of results of the closed-loop simulation by MP
 }
 \examples{
 Hist <- MSEtool::runMSE(Hist = TRUE)
-hist_bio(Hist)
+MSE <- MSEtool::Project(
+  Hist,
+  MPs = c("NFref", "AvC"),
+  extended = TRUE # Needed for type = "SP"
+)
+MSE@Hist <- Hist
+proj_plot(MSE, Hist, type = "SP")
+
 }
 \author{
 Q. Huynh

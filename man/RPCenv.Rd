@@ -35,6 +35,6 @@ Environments that the shiny app will use to store information.
 \item \code{MPdesc}: Stores descriptions of selected MPs.
 
 \item \code{MPinterval}: Stores MP intervals.
-}}
 
+}}
 \keyword{datasets}

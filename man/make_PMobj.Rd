@@ -35,18 +35,16 @@ A \linkS4class{PMobj} object.
 Function that defines and returns performance measures.
 }
 \details{
-\code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
-
-\code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium").
-Provide the type with argument \code{SSB0_type}.
-
-\code{type = "SSBMSY"} calculates SSB relative to SSBMSY.
-
-\code{type = "F"} calculates F relative to FMSY.
-
-\code{type = "SPR"} calculates SPR relative to frac.
-
-\code{type = "SSBMSY"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{Chist_yr}.
+\itemize{
+\item \code{type = "SSB"} calculates SSB relative to historical SSB. Provide the reference year with argument \code{SSBhist_yr}.
+\item \code{type = "SSB0"} calculates SSB relative to SSB0 (either "Dynamic", "Initial", or "Equilibrium"). Provide the type with argument \code{SSB0_type}.
+\item \code{type = "SSBMSY"} calculates SSB relative to SSBMSY.
+\item \code{type = "F"} calculates F relative to FMSY.
+\item \code{type = "SPR"} calculates SPR relative to \code{frac}.
+\item \code{type = "Catch"} calculates catch relative to historical catch. Provide the reference year with argument \code{Chist_yr}.
+\item \code{type = "SSB50\%Rmax"} calculates SSB relative to that at half of maximum predicted recruitment. See \link{LRP_50Rmax}.
+\item \code{type = "SSB90\%R/S"} calculates SSB relative to the SSB at 90th percentile of the historical replacement line. See \link{LRP_RPS90}.
+}
 }
 \examples{
 \donttest{

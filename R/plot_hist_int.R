@@ -19,7 +19,7 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
 
-    if(addline) for(i in 1:2)lines(yrs[i, ],x[i,],col='black',lty=i)
+    if(addline && nrow(x) > 1) for(i in 1:2) lines(yrs[i, ],x[i,],col='black',lty=i)
     lines(apply(yrs, 2, median, na.rm = TRUE), apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
 
   } else {
@@ -30,7 +30,7 @@ plotquant<-function(x,p=c(0.05,0.25,0.75,0.95), yrs, cols=list(colm="dark blue",
 
     if(!is.na(ablines[1])) abline(h = ablines, col = '#99999980')
 
-    if(addline) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
+    if(addline && nrow(x) > 1) for(i in 1:2) lines(yrs, x[i, ], col = 'black', lty = i)
     lines(yrs, apply(x, 2, median, na.rm = TRUE), lwd = 2, col = cols$colm)
   }
 
@@ -177,9 +177,46 @@ generate_pareto_par <- function(shape, mu = 1) {
   return(list(mu = mu, location = location, variance = variance))
 }
 
+# Calculate unfished spawners per recruit
+calc_phi0 <- function(surv, Fec, plusgroup) {
+  NPR <- calc_NPR(surv, n_age = length(surv), plusgroup = plusgroup)
+  sum(NPR * Fec)
+}
 
-calc_phi0 <- function(M, Wt, Mat, Fec, plusgroup) {
-  1/MSEtool:::Ref_int_cpp(0, M, Wt, Mat, Fec, rep(0, length(M)), length(M) - 1, plusgroup)[3, 1]
+MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age, maxage,
+                     relRfun, SRRpars,
+                     R0x = 1, SRrelx = 4L, hx = 1, SSBpR = 0, opt = 1L, plusgroup = 1L) {
+
+  if (packageVersion("MSEtool") >= "3.6.1") {
+
+    if(missing(relRfun)) {
+      relRfun <- function(...) invisible()
+      SRRpars <- data.frame()
+    }
+
+    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
+                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
+                       V_at_Age = V_at_Age, maxage = maxage,
+                       relRfun = relRfun,
+                       SRRpars = SRRpars,
+                       R0x = R0x,
+                       SRrelx = SRrelx, hx = hx,
+                       SSBpR = SSBpR,
+                       opt = opt, plusgroup = plusgroup)
+
+  } else if(missing(relRfun)) {
+
+    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
+                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
+                       V_at_Age = V_at_Age, maxage = maxage,
+                       R0x = R0x,
+                       SRrelx = SRrelx, hx = hx,
+                       SSBpR = SSBpR,
+                       opt = opt, plusgroup = plusgroup)
+
+  } else {
+    stop("Need to update to MSEtool 3.6.1")
+  }
 }
 
 

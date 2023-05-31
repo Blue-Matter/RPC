@@ -1,7 +1,7 @@
 
 column(12,
        column(1, h1("RPC"), style = "height:65px"),
-       column(5, h3(paste("Reference Point Calculator", packageVersion("RPC"), "(beta)")), style = "height:65px;padding-top:8px"),
+       column(5, h3(paste("Reference Point Calculator", packageVersion("RPC"))), style = "height:65px;padding-top:8px"),
 
 
        column(6, style = "padding-top:25px",
@@ -44,7 +44,7 @@ column(12,
                                         br(), br(),
                                         h5(tags$b("Acknowledgements", style = "color:#347ab6")),
                                         column(12,
-                                               h5("Fisheries and Oceans Canada, WG members")
+                                               h5("Department of Fisheries and Oceans Canada")
                                         ),
                                         column(12, tags$a(img(src = "bluematter.png", height = 38, width = 80), href = "https://www.bluematterscience.com", target = '_blank'))
                                  ),

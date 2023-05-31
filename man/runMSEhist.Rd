@@ -21,6 +21,6 @@ Returns a Hist object with shiny progress bars.
 }
 \section{Functions}{
 \itemize{
-\item \code{modOM}: Modifies an OM with fewer simulations and projection years if desired.
-}}
+\item \code{modOM()}: Modifies an OM with fewer simulations and projection years if desired.
 
+}}

@@ -110,7 +110,7 @@ hist_future_recruit <- function(x, figure = TRUE) {
 #' @param var A string to indicate which object to plot from OM@@cpars.
 #' @param n_age_plot The number of ages to plot in the left figure.
 #' @param yr_plot The year (relative to OM@@CurrentYr) to plot for the right figure.
-#' @param sim The simulation to plot for the left figure.
+#' @param sim The individual simulation to plot for the left figure.
 #' @export
 hist_bio_schedule <- function(x, var = c("Len_age", "Wt_age", "Mat_age", "M_ageArray"), n_age_plot, yr_plot, sim,
                               figure = TRUE) {
@@ -384,7 +384,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
 #' @param yr_sel The year (relative to OM@@CurrentYr) for the selectivity parameters.
 #' @param F_range Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.
 #' @export
-hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
+hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
@@ -412,22 +412,33 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
 
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
-  YC <- lapply(1:MSEhist@OM@nsim, function(x) {
+
+  if (missing(sims) || is.null(sims)) {
+    sims <- 1:MSEhist@OM@nsim
+  } else if (max(sims) > MSEhist@OM@nsim) {
+    sims <- sims[sims < MSEhist@OM@nsim]
+  }
+
+  YC <- lapply(sims, function(x) {
     sapply(log(F_search), function(y) {
-      MSEtool:::MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
-                         Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                         V_at_Age = V[x, ], maxage = StockPars$maxage,
-                         R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
-                         SSBpR = StockPars$SSBpR[x, 1],
-                         opt = 2, plusgroup = StockPars$plusgroup)
+      MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
+               SSBpR = StockPars$SSBpR[x, 1],
+               opt = 2, plusgroup = StockPars$plusgroup)
     })
   })
 
-  SPR_F <- vapply(1:MSEhist@OM@nsim, function(x) {
-    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
-                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                          V_at_Age = V[x, ], maxage = StockPars$maxage,
-                          plusgroup = StockPars$plusgroup)[2, ]
+  SPR_F <- vapply(sims, function(x) {
+    vapply(log(F_search), function(ff) {
+      MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = 1, SRrelx = 4L, hx = 1,
+               SSBpR = 0,
+               opt = 2, plusgroup = StockPars$plusgroup)["SB_SB0"]
+    }, numeric(1))
   }, numeric(length(F_search)))
 
   Y <- sapply(YC, function(x) x["Yield", ])
@@ -530,8 +541,22 @@ hist_resample_recruitment <- function(x, dist = c("Lognormal", "Pareto"), mu = 1
 #' @param SR_new A new stock-recruit relationship (1 = Beverton-Holt, 2 = Ricker)
 #' @param h_mult Scalar for the new steepness value (a multiple of the old steepness parameter).
 #' @param y_fit Length two vector for the range of years of SSB and recruit pairs used to fit the SR function.
+#' @param sims A subset of simulations for plotting. Some functions have a low limit by default, i.e. 25, to reduce time to generate plots). Set to \code{NULL} to plot all simulations.
+#' @examples
+#'
+#' # Example of backend use of `hist_SRR_change`
+#' OM <- SubCpars(RPC::DFO_4X5Y_Haddock_2015, 1:2)
+#' Hist <- runMSE(OM, Hist = TRUE)
+#' vars <- hist_SRR_change(Hist, h_mult = 0.6) # Steepness is sixty percent of whatever is in the OM
+#'
+#' OM@cpars$R0 <- vars$R0
+#' OM@cpars$hs <- vars$h
+#' OM@SRrel <- vars$SRrel
+#' OM@cpars$Perr_y <- Hist@SampPars$Stock$Perr_y
+#' OM@cpars$Perr_y[, 1:(OM@maxage + OM@nyears)] <- vars$Perr_y
+#' Hist_new <- runMSE(OM, Hist = TRUE)
 #' @export
-hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
+hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sims = 1:25) {
   #SR_new <- match.arg(SR_new)
   SRR <- switch(SR_new,
                 "1" = "BH",
@@ -628,7 +653,17 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
     medR <- apply(out$R, 2, median)
 
     ##### Plot old stock-recruit relationship
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    if (missing(sims) || is.null(sims)) {
+      sims <- 1:nrow(out$SSB)
+    } else if (max(sims) > nrow(out$SSB)) {
+      sims <- sims[sims < nrow(out$SSB)]
+    }
+
+    SSB_sim <- out$SSB[sims, , drop = FALSE]
+    R_sim <- out$R[sims, , drop = FALSE]
+
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "Current operating model")
     plotquant(out$predR, yrs = out$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
@@ -642,12 +677,18 @@ hist_SRR_change <- function(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE) {
 
     ##### Plot new
     out2 <- local({
-      MSEhist@SampPars$Stock$R0 <- R0_new
-      MSEhist@SampPars$Stock$hs <- h_new
-      stock_recruit_int(MSEhist)
+      MSEhist2 <- MSEhist
+      MSEhist2@SampPars$Stock$SRrel[] <- SR_new
+      MSEhist2@SampPars$Stock$R0[] <- R0_new
+      MSEhist2@SampPars$Stock$hs[] <- h_new
+
+      MSEhist2@SampPars$Stock$aR[] <- SRalphaconv(h_new, SSBpR, SR = 2)
+      MSEhist2@SampPars$Stock$bR <- SRbetaconv(h_new, R0_new, SSBpR, SR = 2) %>% matrix(ncol = 1)
+      stock_recruit_int(MSEhist2)
     })
 
-    matplot(out$SSB, out$R, type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
+    matplot(SSB_sim, R_sim,
+            type = "p", col = "#99999920", xlim = c(0, 1.1 * max(medSSB)), ylim = c(0, 1.1 * max(medR)),
             xlab = "Spawning biomass", ylab = "Recruitment", pch = 4, main = "New operating model")
     plotquant(out2$predR, yrs = out2$predSSB, addline=T)
     points(medSSB, medR, pch = 19)
@@ -679,15 +720,17 @@ hist_phi0 <- function(x, figure = TRUE) {
     MSEhist <- x
   }
 
-  phi0 <- sapply(1:MSEhist@OM@nsim, function(x) {
-    sapply(1:(MSEhist@OM@nyears + MSEhist@OM@proyears), function(y) {
-      calc_phi0(M = MSEhist@SampPars$Stock$M_ageArray[x, , y],
-                Wt = MSEhist@SampPars$Stock$Wt_age[x, , y],
-                Mat = MSEhist@SampPars$Stock$Mat_age[x, , y],
-                Fec = MSEhist@SampPars$Stock$Fec_Age[x, , y],
-                plusgroup = MSEhist@SampPars$Stock$plusgroup)
-    })
-  }) %>% t()
+  phi0 <- MSEhist@Ref$ByYear$SSB0/MSEhist@Ref$ByYear$R0
+
+  if (any(is.na(phi0))) {
+    phi0 <- sapply(1:MSEhist@OM@nsim, function(x) {
+      sapply(1:(MSEhist@OM@nyears + MSEhist@OM@proyears), function(y) {
+        calc_phi0(surv = exp(-MSEhist@SampPars$Stock$M_ageArray[x, , y]),
+                  Fec = MSEhist@SampPars$Stock$Fec_Age[x, , y],
+                  plusgroup = MSEhist@SampPars$Stock$plusgroup)
+      })
+    }) %>% t()
+  }
 
   nyh <- MSEhist@OM@nyears
   hy <- MSEhist@OM@CurrentYr - (nyh:1) + 1
@@ -744,15 +787,25 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
 
-  per_recruit <- sapply(1:MSEhist@OM@nsim, function(x) {
-    MSEtool:::Ref_int_cpp(F_search, M_at_Age = M[x, ],
-                          Wt_at_Age = Wt_age[x, ], Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-                          V_at_Age = V[x, ], maxage = StockPars$maxage,
-                          plusgroup = StockPars$plusgroup)[1:2, ]
+  if (missing(sims) || is.null(sims)) {
+    sims <- 1:MSEhist@OM@nsim
+  } else if (max(sims) > MSEhist@OM@nsim) {
+    sims <- sims[sims < MSEhist@OM@nsim]
+  }
+
+  per_recruit <- sapply(sims, function(x) {
+    vapply(log(F_search), function(ff) {
+      MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
+               Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
+               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               R0x = 1, SRrelx = 4L, hx = 1,
+               SSBpR = 0,
+               opt = 2, plusgroup = StockPars$plusgroup)[c("Yield", "SB_SB0")]
+    }, numeric(2))
   }, simplify = "array")
 
-  YPR <- per_recruit[1, , ]
-  SPR_F <- per_recruit[2, , ]
+  YPR <- per_recruit["Yield", , ]
+  SPR_F <- per_recruit["SB_SB0", , ]
   out <- list(FM = F_search,
               YPR = t(YPR),
               SPR = t(SPR_F))

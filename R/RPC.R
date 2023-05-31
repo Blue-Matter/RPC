@@ -6,8 +6,9 @@
 #' @details \code{RPC} opens up the App in the user browser.
 #'
 #' @examples
+#' \dontrun{
 #' RPC(launch.browser = TRUE)
-#'
+#' }
 #' @export
 RPC <- function(...) shiny::runApp(system.file("shiny_apps/RPC", package = "RPC"), ...)
 

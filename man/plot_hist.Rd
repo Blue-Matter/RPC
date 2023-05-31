@@ -48,7 +48,7 @@ hist_spatial(x, type = c("par", "matrix", "all"), ...)
 
 hist_sel(x, yr, maturity = TRUE, figure = TRUE)
 
-hist_YieldCurve(x, yr_bio, yr_sel, F_range, figure = TRUE)
+hist_YieldCurve(x, yr_bio, yr_sel, F_range, figure = TRUE, sims)
 
 hist_resample_recruitment(
   x,
@@ -61,7 +61,7 @@ hist_resample_recruitment(
   nsim_plot = 5
 )
 
-hist_SRR_change(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE)
+hist_SRR_change(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sims = 1:25)
 
 hist_phi0(x, figure = TRUE)
 
@@ -79,7 +79,7 @@ the Hist object.}
 
 \item{yr_plot}{The year (relative to OM@CurrentYr) to plot for the right figure.}
 
-\item{sim}{The simulation to plot for the left figure.}
+\item{sim}{The individual simulation to plot for the left figure.}
 
 \item{change_mean}{The percent change in the mean of the new parameters relative to the old.}
 
@@ -98,6 +98,8 @@ the Hist object.}
 \item{yr_sel}{The year (relative to OM@CurrentYr) for the selectivity parameters.}
 
 \item{F_range}{Length two vector for the range of F to plot the yield curve. By default, \code{c(1e-8, 3 * max(M))}.}
+
+\item{sims}{A subset of simulations for plotting. Some functions have a low limit by default, i.e. 25, to reduce time to generate plots). Set to \code{NULL} to plot all simulations.}
 
 \item{dist}{Character to denote to sample either from a lognormal distribution or Pareto distribution.}
 
@@ -163,6 +165,18 @@ of yield per recruit (YPR) and spawning potential ratio (SPR).
 Hist <- MSEtool::runMSE(Hist = TRUE)
 bio <- hist_bio(Hist)
 bio$SBiomass
+
+# Example of backend use of `hist_SRR_change`
+OM <- SubCpars(RPC::DFO_4X5Y_Haddock_2015, 1:2)
+Hist <- runMSE(OM, Hist = TRUE)
+vars <- hist_SRR_change(Hist, h_mult = 0.6) # Steepness is sixty percent of whatever is in the OM
+
+OM@cpars$R0 <- vars$R0
+OM@cpars$hs <- vars$h
+OM@SRrel <- vars$SRrel
+OM@cpars$Perr_y <- Hist@SampPars$Stock$Perr_y
+OM@cpars$Perr_y[, 1:(OM@maxage + OM@nyears)] <- vars$Perr_y
+Hist_new <- runMSE(OM, Hist = TRUE)
 }
 \author{
 Q. Huynh
