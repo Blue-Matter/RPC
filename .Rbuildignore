@@ -6,3 +6,5 @@
 ^.*\.rpc$
 ^joss$
 ^\.github$
+^LICENSE.md$
+^Dockerfile$
