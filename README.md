@@ -10,7 +10,7 @@ RPC is coded in R using [Shiny](https://shiny.rstudio.com/).
 
 ## Deployment
 
-The App is available online at the Blue Matter website: https://apps.bluematterscience.com/RPC/
+The App is available online at the Blue Matter website: https://shiny.bluematterscience.com/app/rpc/
 
 By installing the package, the App can also be loaded in a local R session:
 

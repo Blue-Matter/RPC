@@ -1,4 +1,4 @@
-The source code of the `RPC` package is available for download from [GitHub](https://www.github.com/Blue-Matter/RPC). The App is also hosted online at https://apps.bluematterscience.com/RPC.
+The source code of the `RPC` package is available for download from [GitHub](https://www.github.com/Blue-Matter/RPC). The App is also hosted online at https://shiny.bluematterscience.com/app/rpc.
 
 
 ## version 0.4.1

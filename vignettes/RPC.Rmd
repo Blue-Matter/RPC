@@ -1,5 +1,5 @@
 ---
-title: "Reference Point Calculator version 0.4.0"
+title: "Reference Point Calculator version `r packageVersion('RPC')`"
 subtitle: "User Guide"
 author: 
 - "Quang Huynh (<quang@bluematterscience.com>)"
@@ -81,7 +81,7 @@ This document:
 
 ## Quick Start
 
-For a demonstration of the RPC, go to the [online app](https://apps.bluematterscience.com/RPC/). 
+For a demonstration of the RPC, go to the [online app](https://shiny.bluematterscience.com/app/rpc/). 
 
 Alternatively, the RPC can be run on a local computer in R:
 
@@ -218,6 +218,7 @@ RPC contains functions that are used the App and can directly be called in R. Fo
 ```{r eval = FALSE}
 x <- LRP_SP(output$Hist, figure = "phase")
 ```
+
 will return a phase plot of historical surplus production vs. biomass displayed in the App. 
 
 ![*Figures in the App, such as the surplus production phase plot here, can be called in R.*](LRP_SP.png)
