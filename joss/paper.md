@@ -19,7 +19,7 @@ authors:
 affiliations:
  - name: Blue Matter Science, North Vancouver, BC, Canada
    index: 1
-date: 1 February 2023
+date: 1 June 2023
 bibliography: paper.bib
 ---
 
@@ -48,7 +48,7 @@ A summary fifth panel provides additional information on stock dynamics that are
 
 # Usage
 
-The source code for `RPC` is stored on [Github](https://github.com/Blue-Matter/RPC). The app is hosted in the eponymous R package which can be downloaded and run on a local computer. Alternatively, the app can be directly accessed at [https://apps.bluematterscience.com/RPC](https://apps.bluematterscience.com/RPC).
+The source code for `RPC` is stored on [Github](https://github.com/Blue-Matter/RPC). The app is hosted in the eponymous R package which can be downloaded and run on a local computer. Alternatively, the app can be directly accessed at [https://shiny.bluematterscience.com/app/rpc](https://shiny.bluematterscience.com/app/rpc).
 
 Work in progress can be saved to file and returned to later by uploading the session file to the app. We envision some users will need additional flexibility in their analyses and require backend coding in R, for example, for detailed operating model setup and/or final analyses to develop recommendations for management. For such purposes, the core suite of R functions used in the Shiny app are available from the R package.
 
