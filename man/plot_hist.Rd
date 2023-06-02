@@ -162,7 +162,8 @@ of unfished spawning biomass per recruit (\code{phi0}).
 of yield per recruit (YPR) and spawning potential ratio (SPR).
 }
 \examples{
-Hist <- MSEtool::runMSE(Hist = TRUE)
+library(MSEtool)
+Hist <- MSEtool::runMSE(Hist = TRUE, silent = TRUE)
 bio <- hist_bio(Hist)
 bio$SBiomass
 

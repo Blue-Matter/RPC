@@ -92,6 +92,7 @@ Figures of results of the closed-loop simulation by MP
 \code{radar_plot} plots all performance measures for all MPs, where each metric is plotted along the vertex of a polygon.
 }
 \examples{
+library(DLMtool)
 Hist <- MSEtool::runMSE(Hist = TRUE)
 MSE <- MSEtool::Project(
   Hist,

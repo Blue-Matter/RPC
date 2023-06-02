@@ -8,7 +8,8 @@
 #' @return Various plots using base graphics. Returns invisibly a named list, where each entry is usually a matrix with rows indexing simulation
 #' and columns indexing year.
 #' @examples
-#' Hist <- MSEtool::runMSE(Hist = TRUE)
+#' library(MSEtool)
+#' Hist <- MSEtool::runMSE(Hist = TRUE, silent = TRUE)
 #' bio <- hist_bio(Hist)
 #' bio$SBiomass
 #' @author Q. Huynh

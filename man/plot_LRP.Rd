@@ -115,6 +115,8 @@ Only used if \code{figure = "SR"}, and \code{any(SR_include == 3)}.}
 \item{SR_include}{A vector including any of \code{c(1, 2, 3)} that indicates what to plot in the stock-recruit figure. 1 = individual S-R pairs,
 2 = stock-recruit relationship, 3 = reference recruits-per-spawner (R/S) lines
 (maximum R/S corresponding to stock-recruit alpha, median historical R/S, and year-specific unfished R/S).}
+
+\item{sims}{A subset of simulations to plot (to reduce time to produce figure)}
 }
 \value{
 Returns invisibly a list with matrices and arrays used to generate various plots associated with
@@ -150,7 +152,8 @@ frequently also referred to as the F-replacement F).
 and recruits-per-spawner.
 }
 \examples{
-Hist <- MSEtool::runMSE(MSEtool::testOM, Hist = TRUE)
+library(MSEtool)
+Hist <- MSEtool::runMSE(MSEtool::testOM, Hist = TRUE, silent = TRUE)
 
 LRP <- LRP_SSBhist(Hist, SSB_y = 50, prob_ratio = 0.5)
 str(LRP)

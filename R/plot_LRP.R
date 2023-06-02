@@ -11,7 +11,8 @@
 #' @return Returns invisibly a list with matrices and arrays used to generate various plots associated with
 #' time series and probabilities.
 #' @examples
-#' Hist <- MSEtool::runMSE(MSEtool::testOM, Hist = TRUE)
+#' library(MSEtool)
+#' Hist <- MSEtool::runMSE(MSEtool::testOM, Hist = TRUE, silent = TRUE)
 #'
 #' LRP <- LRP_SSBhist(Hist, SSB_y = 50, prob_ratio = 0.5)
 #' str(LRP)
@@ -691,6 +692,7 @@ LRP_Fmed <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_y
 
 
 #' @rdname plot_LRP
+#' @param sims A subset of simulations to plot (to reduce time to produce figure)
 #' @details \code{LRP_50Rmax} returns  \code{SSB50\%Rmax}, the SSB corresponding to 50% of maximum recruitment from the stock-recruit relationship.
 #' @export
 LRP_50Rmax <- function(x, figure = c("ts", "prob", "none"), prob_ratio = 1, prob_ylim = c(0, 1), sims = 1:25) {

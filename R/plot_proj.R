@@ -8,6 +8,7 @@
 #' @param type Character describing the type of output.
 #' @return Various plots using base graphics or ggplot2.
 #' @examples
+#' library(DLMtool)
 #' Hist <- MSEtool::runMSE(Hist = TRUE)
 #' MSE <- MSEtool::Project(
 #'   Hist,
