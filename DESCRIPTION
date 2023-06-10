@@ -7,7 +7,7 @@ Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
 Maintainer: Quang Huynh <quang@bluematterscience.com>
-Description: A Shiny App for the exploration of fisheries reference points using operating models.
+Description: A Shiny App for the exploration of fisheries reference points using operating models <doi:10.21105/joss.05418>.
 License: GPL-3
 Depends:
     R (>= 4.0.0),

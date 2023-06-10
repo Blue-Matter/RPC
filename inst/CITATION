@@ -1,0 +1,15 @@
+citHeader("To cite RPC in publications use:")
+
+bibentry(
+  bibtype   = "Article",
+  doi       = "10.21105/joss.05418",
+  year      = "2023",
+  publisher = "The Open Journal",
+  volume    = 8,
+  number    = 86,
+  pages     = 5418,
+  author    = "Quang C. Huynh and Tom R. Carruthers and Adrian R. Hordyk",
+  title     = "Reference Point Calculator (RPC): A Shiny app for exploration of limit reference points for fisheries management",
+  journal   = "Journal of Open Source Software",
+  textVersion = "Huynh et al. (2023). Reference Point Calculator (RPC): A Shiny app for exploration of limit reference points for fisheries management. Journal of Open Source Software, 8(86), 5418, https://doi.org/10.21105/joss.05418"
+)
