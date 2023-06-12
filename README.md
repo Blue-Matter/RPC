@@ -1,5 +1,7 @@
 # Reference Point Calculator (RPC)
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05418/status.svg)](https://doi.org/10.21105/joss.05418)
+
 Reference Point Calculator is an online App for exploring and deriving limit and target reference points for Canadian fisheries. Use of RPC falls into two general categories:
 - Visualize the historical dynamics of fish stocks and fisheries to investigate and determine appropriate reference points  
 - Design and test management procedures and measure their performance against reference points and other objectives
