@@ -65,7 +65,7 @@ hist_SRR_change(x, SR_new = 1, h_mult = 1, y_fit, figure = TRUE, sims = 1:25)
 
 hist_phi0(x, figure = TRUE)
 
-hist_per_recruit(x, yr_bio, yr_sel, F_range, figure = TRUE)
+hist_per_recruit(x, yr_bio, yr_sel, F_range, figure = TRUE, sims)
 }
 \arguments{
 \item{x}{An object of class \linkS4class{Hist}, or a shiny \code{reactivevalues} object containing a slot named \code{MSEhist} which is

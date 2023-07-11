@@ -759,7 +759,7 @@ hist_phi0 <- function(x, figure = TRUE) {
 #' @details \code{hist_per_recruit} returns a list containing a matrix (by simulation and F)
 #' of yield per recruit (YPR) and spawning potential ratio (SPR).
 #' @export
-hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE) {
+hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
   if(inherits(x, "reactivevalues")) {
     MSEhist <- x$MSEhist
   } else {
