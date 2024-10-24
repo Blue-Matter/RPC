@@ -1160,7 +1160,7 @@ server <- function(input, output, session) {
     OM <- modOM(OBJs$OM, input$DD_nsim, input$DD_proyears)
     OM@cpars[["R0"]] <- new_par$R0
     OM@cpars[["hs"]] <- new_par$h
-    OM@SRrel <- new_par$SRrel
+    OM@SRrel <- as.numeric(new_par$SRrel)
     if(is.null(OM@cpars[["Perr_y"]])) {
       OM@cpars[["Perr_y"]] <- OBJs$MSEhist@SampPars$Stock$Perr_y
     }
