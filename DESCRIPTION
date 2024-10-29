@@ -1,8 +1,8 @@
 Package: RPC
 Type: Package
 Title: Reference Point Calculator
-Version: 0.4.1
-Date: 2023-06-02
+Version: 0.4.2
+Date: 2024-10-29
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))
@@ -17,7 +17,7 @@ Imports:
     stats,
     utils,
     DLMtool,
-    MSEtool (> 3.2.0),
+    MSEtool (> 3.6.2),
     MSEextra,
     SAMtool (>= 1.2.0),
     changepoint,

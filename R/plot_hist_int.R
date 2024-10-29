@@ -185,38 +185,22 @@ calc_phi0 <- function(surv, Fec, plusgroup) {
 
 MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age, maxage,
                      relRfun, SRRpars,
-                     R0x = 1, SRrelx = 4L, hx = 1, SSBpR = 0, opt = 1L, plusgroup = 1L) {
+                     R0x = 1, SRrelx = 4L, hx = 1, SSBpR = 0, opt = 1L, plusgroup = 1L, spawn_time_frac = 0) {
 
-  if (packageVersion("MSEtool") >= "3.6.1") {
-
-    if(missing(relRfun)) {
-      relRfun <- function(...) invisible()
-      SRRpars <- data.frame()
-    }
-
-    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
-                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
-                       V_at_Age = V_at_Age, maxage = maxage,
-                       relRfun = relRfun,
-                       SRRpars = SRRpars,
-                       R0x = R0x,
-                       SRrelx = SRrelx, hx = hx,
-                       SSBpR = SSBpR,
-                       opt = opt, plusgroup = plusgroup)
-
-  } else if(missing(relRfun)) {
-
-    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
-                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
-                       V_at_Age = V_at_Age, maxage = maxage,
-                       R0x = R0x,
-                       SRrelx = SRrelx, hx = hx,
-                       SSBpR = SSBpR,
-                       opt = opt, plusgroup = plusgroup)
-
-  } else {
-    stop("Need to update to MSEtool 3.6.1")
+  if(missing(relRfun)) {
+    relRfun <- function(...) invisible()
+    SRRpars <- data.frame()
   }
+
+  MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
+                     Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
+                     V_at_Age = V_at_Age, maxage = maxage,
+                     relRfun = relRfun,
+                     SRRpars = SRRpars,
+                     R0x = R0x,
+                     SRrelx = SRrelx, hx = hx,
+                     SSBpR = SSBpR,
+                     opt = opt, plusgroup = plusgroup, spawn_time_frac = spawn_time_frac)
 }
 
 

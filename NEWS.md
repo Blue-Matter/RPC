@@ -1,5 +1,9 @@
 The source code of the `RPC` package is available for download from [GitHub](https://www.github.com/Blue-Matter/RPC). The App is also hosted online at https://shiny.bluematterscience.com/app/rpc.
 
+## version 0.4.2
+
+- Ensure `OM@SRrel` is numeric when the app uses `hist_SRR_change` to update the stock-recruit relationship.
+- Add `spawn_time_frac` into per recruit and yield curve calculates, requires MSEtool 3.6.2
 
 ## version 0.4.1
 

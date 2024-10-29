@@ -420,6 +420,8 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
     sims <- sims[sims < MSEhist@OM@nsim]
   }
 
+  if (is.null(StockPars$spawn_time_frac)) StockPars$spawn_time_frac <- rep(0, MSEhist@OM@nsim)
+
   YC <- lapply(sims, function(x) {
     sapply(log(F_search), function(y) {
       MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
@@ -427,7 +429,8 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
                V_at_Age = V[x, ], maxage = StockPars$maxage,
                R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
                SSBpR = StockPars$SSBpR[x, 1],
-               opt = 2, plusgroup = StockPars$plusgroup)
+               opt = 2, plusgroup = StockPars$plusgroup,
+               spawn_time_frac = StockPars$spawn_time_frac[x])
     })
   })
 
@@ -438,7 +441,8 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
                V_at_Age = V[x, ], maxage = StockPars$maxage,
                R0x = 1, SRrelx = 4L, hx = 1,
                SSBpR = 0,
-               opt = 2, plusgroup = StockPars$plusgroup)["SB_SB0"]
+               opt = 2, plusgroup = StockPars$plusgroup,
+               spawn_time_frac = StockPars$spawn_time_frac[x])["SB_SB0"]
     }, numeric(1))
   }, numeric(length(F_search)))
 
@@ -794,6 +798,8 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
     sims <- sims[sims < MSEhist@OM@nsim]
   }
 
+  if (is.null(StockPars$spawn_time_frac)) StockPars$spawn_time_frac <- rep(0, MSEhist@OM@nsim)
+
   per_recruit <- sapply(sims, function(x) {
     vapply(log(F_search), function(ff) {
       MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
@@ -801,7 +807,8 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
                V_at_Age = V[x, ], maxage = StockPars$maxage,
                R0x = 1, SRrelx = 4L, hx = 1,
                SSBpR = 0,
-               opt = 2, plusgroup = StockPars$plusgroup)[c("Yield", "SB_SB0")]
+               opt = 2, plusgroup = StockPars$plusgroup,
+               spawn_time_frac = StockPars$spawn_time_frac[x])[c("Yield", "SB_SB0")]
     }, numeric(2))
   }, simplify = "array")
 
