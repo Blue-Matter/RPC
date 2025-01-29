@@ -183,7 +183,7 @@ calc_phi0 <- function(surv, Fec, plusgroup) {
   sum(NPR * Fec)
 }
 
-MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age, maxage,
+MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age, Wt_at_Age_C, maxage,
                      relRfun, SRRpars,
                      R0x = 1, SRrelx = 4L, hx = 1, SSBpR = 0, opt = 1L, plusgroup = 1L, spawn_time_frac = 0) {
 
@@ -192,15 +192,27 @@ MSYCalcs <- function(logF, M_at_Age, Wt_at_Age, Mat_at_Age, Fec_at_Age, V_at_Age
     SRRpars <- data.frame()
   }
 
-  MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
-                     Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
-                     V_at_Age = V_at_Age, maxage = maxage,
-                     relRfun = relRfun,
-                     SRRpars = SRRpars,
-                     R0x = R0x,
-                     SRrelx = SRrelx, hx = hx,
-                     SSBpR = SSBpR,
-                     opt = opt, plusgroup = plusgroup, spawn_time_frac = spawn_time_frac)
+  if (any(names(formals(MSEtool:::MSYCalcs)) == "Wt_at_Age_C")) {
+    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
+                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
+                       V_at_Age = V_at_Age, Wt_at_Age_C = Wt_at_Age_C, maxage = maxage,
+                       relRfun = relRfun,
+                       SRRpars = SRRpars,
+                       R0x = R0x,
+                       SRrelx = SRrelx, hx = hx,
+                       SSBpR = SSBpR,
+                       opt = opt, plusgroup = plusgroup, spawn_time_frac = spawn_time_frac)
+  } else {
+    MSEtool:::MSYCalcs(logF = logF, M_at_Age = M_at_Age, Wt_at_Age = Wt_at_Age,
+                       Mat_at_Age = Mat_at_Age, Fec_at_Age = Fec_at_Age,
+                       V_at_Age = V_at_Age, maxage = maxage,
+                       relRfun = relRfun,
+                       SRRpars = SRRpars,
+                       R0x = R0x,
+                       SRrelx = SRrelx, hx = hx,
+                       SSBpR = SSBpR,
+                       opt = opt, plusgroup = plusgroup, spawn_time_frac = spawn_time_frac)
+  }
 }
 
 

@@ -411,6 +411,12 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
   Fec_age <- StockPars$Fec_Age[, , yr_bio]
   V <- FleetPars$V[, , yr_sel]
 
+  if (!is.null(FleetPars$Wt_age_C)) {
+    Wt_age_C <- FleetPars$Wt_age_C[, , yr_bio]
+  } else {
+    Wt_age_C <- Wt_age
+  }
+
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
 
@@ -426,7 +432,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
     sapply(log(F_search), function(y) {
       MSYCalcs(y, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               V_at_Age = V[x, ], Wt_at_Age_C = Wt_age_C[x, ], maxage = StockPars$maxage,
                R0x = StockPars$R0[x], SRrelx = StockPars$SRrel[x], hx = StockPars$hs[x],
                SSBpR = StockPars$SSBpR[x, 1],
                opt = 2, plusgroup = StockPars$plusgroup,
@@ -438,7 +444,7 @@ hist_YieldCurve <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
     vapply(log(F_search), function(ff) {
       MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               V_at_Age = V[x, ], Wt_at_Age_C = Wt_age_C[x, ], maxage = StockPars$maxage,
                R0x = 1, SRrelx = 4L, hx = 1,
                SSBpR = 0,
                opt = 2, plusgroup = StockPars$plusgroup,
@@ -789,6 +795,12 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
   Fec_age <- StockPars$Fec_Age[, , yr_bio]
   V <- FleetPars$V[, , yr_sel]
 
+  if (!is.null(FleetPars$Wt_age_C)) {
+    Wt_age_C <- FleetPars$Wt_age_C[, , yr_bio]
+  } else {
+    Wt_age_C <- Wt_age
+  }
+
   if(missing(F_range)) F_range <- c(1e-8, 3 * max(M))
   F_search <- seq(min(F_range), max(F_range), length.out = 50)
 
@@ -804,7 +816,7 @@ hist_per_recruit <- function(x, yr_bio, yr_sel, F_range, figure = TRUE, sims) {
     vapply(log(F_search), function(ff) {
       MSYCalcs(ff, M_at_Age = M[x, ], Wt_at_Age = Wt_age[x, ],
                Mat_at_Age = Mat_age[x, ], Fec_at_Age = Fec_age[x, ],
-               V_at_Age = V[x, ], maxage = StockPars$maxage,
+               V_at_Age = V[x, ], Wt_at_Age_C = Wt_age_C[x, ], maxage = StockPars$maxage,
                R0x = 1, SRrelx = 4L, hx = 1,
                SSBpR = 0,
                opt = 2, plusgroup = StockPars$plusgroup,
