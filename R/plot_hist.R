@@ -357,7 +357,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
 
       # Retention
       tsplot(MSEhist@SampPars$Fleet$retA_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
-             xlab="",ylab="Retention",cols = cols, ymax = 1.1)
+             xlab="",ylab="Realized Retention",cols = cols, ymax = 1.1)
 
       # Realized Selectivity
       tsplot(MSEhist@SampPars$Fleet$V_real[, , yind[y]], yrs=0:MSEhist@OM@maxage,
@@ -365,7 +365,7 @@ hist_sel <- function(x, yr, maturity = TRUE, figure = TRUE) {
 
     }
     if(maturity) {
-      plot(1, 1, axes = FALSE, typ = "n", ylab = "", xlab = "")
+      graphics::plot(1, 1, axes = FALSE, type = "n", ylab = "", xlab = "")
       legend("left", c("Selectivity", legend_sel), col = c("darkgreen", "darkblue"), lwd = 3, cex = 1.5, bty = "n")
       mtext("Age", 1, outer = TRUE, line = 2)
     }
