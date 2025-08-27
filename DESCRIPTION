@@ -2,7 +2,7 @@ Package: RPC
 Type: Package
 Title: Reference Point Calculator
 Version: 0.4.2
-Date: 2024-10-29
+Date: 2025-08-27
 Authors@R: c(
     person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")),
     person("Quang", "Huynh",, "quang@bluematterscience.com", role="aut"))

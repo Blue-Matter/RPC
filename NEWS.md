@@ -5,6 +5,7 @@ The source code of the `RPC` package is available for download from [GitHub](htt
 - Ensure `OM@SRrel` is numeric when the app uses `hist_SRR_change` to update the stock-recruit relationship.
 - Add `spawn_time_frac` into per recruit and yield curve calculations, requires MSEtool 3.6.2
 - Update yield curve function for MSEtool > 3.7.3
+- Minor labeling changes and text updates
 
 ## version 0.4.1
 
