@@ -12,7 +12,6 @@ RUN apt-get update && apt-get install -y \
     git \
     libicu-dev \
     pandoc \
-    pandoc-citeproc \
     zlib1g-dev
 
 # install basic shiny functionality to R, including remotes to install from GitHub
